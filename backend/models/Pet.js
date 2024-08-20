@@ -27,6 +27,9 @@ const Pet = mongoose.model(
         available:{
             type:Boolean
         },
+        description:{
+            type:String
+        },
         user:Object,
         adopter:Object
     },{timestamps:true}) //Isso serve para saber a criação e edição do dado no banco

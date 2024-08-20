@@ -8,9 +8,9 @@ const ObjectId = require('mongoose').Types.ObjectId
 module.exports = class PetController{
 
     static async Create(req,res){
-        const {name , age , weight , color } = req.body
+        const {name , age , weight , color , description } = req.body
         const images = req.files
-        const available = true //para que o pet cadastro começe sendo disponivel para adoção
+        const available = true //para que o pet cadastrado começe sendo disponivel para adoção
 
         if(!name){
             res.status(422).json({message:'O nome não pode ser nulo , por favor verifique o que foi digitado'})
@@ -45,8 +45,9 @@ module.exports = class PetController{
             age,
             weight,
             color,
-            available,
             images:[],
+            available,
+            description,
             user:{
                 _id:user._id,
                 name:user.name,
@@ -154,7 +155,7 @@ module.exports = class PetController{
 
     static async UpdatePetById(req,res){
         const id = req.params.id
-        const {name , age , weight , color ,available} = req.body
+        const {name , age , weight , color ,description, available} = req.body
         const images = req.files
         const updateData = {}
 
@@ -205,6 +206,7 @@ module.exports = class PetController{
             return
         }
         updateData.available = available
+        updateData.description = description
 
         console.log(`images :${images}`)
         if(images.length > 0){
