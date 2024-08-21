@@ -2,16 +2,24 @@ const User = require('../models/User')
 const bcrypt = require('bcrypt')
 
 //helpers
+const LoginAuth =  require('../helpers/LoginAuth')
 const CreateUserToken = require('../helpers/CreatedUserToken')
 const GetToken = require('../helpers/GetToken')
 const GetUserByToken = require('../helpers/GetUserByToken')
+const EmailSend = require('../service/email/EmailSend')
 
 const jwt = require('jsonwebtoken')
 
 module.exports = class UserController{
+    
     static async Register(req,res){
 
+        function GenerateRandomFourDigitNumber() {
+            return Math.floor(1000 + Math.random() * 9000);
+        }
+
         const {name,email,phone,password,confirmpassword} = req.body
+        const primaryLogin = false
 
         if(!name){
             res.status(422).json({message:'O nome não pode ser nulo , por favor verifique o que foi digitado'})
@@ -46,17 +54,22 @@ module.exports = class UserController{
 
         const salt = await bcrypt.genSalt(12)
         const PasswordHash = await bcrypt.hash(password,salt)
+        const token = GenerateRandomFourDigitNumber()
 
         const user = new User({
             name,
             email,
             phone,
-            password:PasswordHash
+            password:PasswordHash,
+            primaryLogin,
+            token
         })
 
+        EmailSend.EmailPrimaryLogin(user.email,token)
+
         try{
-            const NewUser = await user.save()
-            await CreateUserToken(NewUser,req,res)
+            await user.save()
+            res.status(200).json({message:'Usuário criado com sucesso'})
         }catch(erro){
             console.log(erro)
             res.status(500).json({message:erro})
@@ -67,6 +80,24 @@ module.exports = class UserController{
 
         const {email,password} = req.body
 
+        const ValidationLogin = await LoginAuth.LoginAuthentication(email,password)
+        
+        if(!ValidationLogin.validation){
+            res.status(422).json({message:'Usuário ou senha Incorreto , por favor verifique o que foi digitado !'})
+            return 
+        }
+
+        if(ValidationLogin.Userdb.primaryLogin === false){
+            res.status(422).json({message:'Por favor entre no seu e-mail e coloque o token infromado para validar a sua conta !'})
+            return 
+        }
+
+        await CreateUserToken(ValidationLogin.Userdb,req,res)
+    }
+
+    static async PrimaryLogin(req,res){
+        const {email,password,token} = req.body
+
         if(!email){
             res.status(422).json({message:'O email não pode ser nulo , por favor verifique o que foi digitado'})
             return
@@ -75,29 +106,46 @@ module.exports = class UserController{
             res.status(422).json({message:'A senha não pode ser nula , por favor verifique o que foi digitado'})
             return
         }
-        const UserExists = await User.findOne({email:email})
 
-        if(!UserExists){
-            res.status(422).json({message:'Não existe nenhum usuário com esse e-mail , por favor verifique o que foi digitado'})
+        const ValidationLogin = await LoginAuth.LoginAuthentication(email,password)
+
+        if(!ValidationLogin.validation){
+            res.status(422).json({message:'Usuário ou senha Incorreto , por favor verifique o que foi digitado !'})
             return
         }
 
-        const CheckPassword = await bcrypt.compare(password,UserExists.password)
+        const NewPrimaryLogin = true
 
-        if(!CheckPassword){
-            res.status(422).json({
-                message:"Senha Inválida !!!"
-            })
+        console.log(`Valor token do Userdb : ${ValidationLogin.Userdb.token} Valor do token:${token}`)
+
+        if(ValidationLogin.Userdb.primaryLogin===false){
+            if(ValidationLogin.Userdb.token === Number(token)){
+                try{
+                    await User.findOneAndUpdate(
+                        {_id:ValidationLogin.Userdb._id},
+                        {$set:{primaryLogin:NewPrimaryLogin}}
+                    )
+                    await CreateUserToken(ValidationLogin.Userdb,req,res)
+                }catch(erro){
+                    res.status(500).json({message:erro})
+                    console.log(`Erro de scopo :${erro}`)
+                    return
+                }
+                
+            }else{
+                res.status(422).json({message:'Token com valor incorreto , por favor verifique o mesmo'})
+                return
+            }
+        }else{
+            res.status(422).json({message:'Sua conta já foi checada , por favor se redirecione para o login'})
             return
         }
-
-        await CreateUserToken(UserExists,req,res)
     }
 
     static async CheckUser(req,res){
         let CurrentUser 
 
-        console.log(req.headers.authorization)
+        console.log(`entrou em checkuser com Autorization : ${req.headers.authorization}`)
 
         if(req.headers.authorization){
             const Token = GetToken(req)

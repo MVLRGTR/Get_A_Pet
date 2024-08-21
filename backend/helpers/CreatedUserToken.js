@@ -13,4 +13,4 @@ const CreateUserToken = async (user,req,res)=>{
     })
 }
 
-module.exports =CreateUserToken
+module.exports = CreateUserToken

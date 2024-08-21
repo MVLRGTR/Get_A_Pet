@@ -10,6 +10,7 @@ import AddPet from './components/pages/pets/AddPet'
 import EditPet from './components/pages/pets/EditPet'
 import PetDetails from './components/pages/pets/PetDetails'
 import MyAdoptions from './components/pages/pets/MyAdoptions'
+import PrimaryLogin from './components/pages/auth/PrimaryLogin'
 /*Components */
 import Navbar from './components/Layouts/Navbar'
 import Footer from './components/Layouts/Footer'
@@ -36,6 +37,7 @@ function App() {
             <Route path='/pets/edit/:id' element={<EditPet />} />
             <Route path='/pets/:id' element={<PetDetails/>} />
             <Route path='/pets/myadoptions' element={<MyAdoptions/>} />
+            <Route path='/login/primarylogin' element={<PrimaryLogin/>} />
             <Route path='/' element={<Home />} />
             
 

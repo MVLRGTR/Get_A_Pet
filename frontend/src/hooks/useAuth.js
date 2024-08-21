@@ -1,6 +1,6 @@
 import api from '../utils/api'
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { json, useNavigate } from 'react-router-dom'
 import useFlashMessage from './useFlashMessage'
 
 export default function useAuth() {
@@ -50,10 +50,30 @@ export default function useAuth() {
     async function login(user) {
         let msgText = 'Login Realizado com sucesso !!!'
         let msgType = 'success'
+        const msgErroPrimaryLogin = 'Por favor entre no seu e-mail e coloque o token infromado para validar a sua conta !'
 
         try {
             const data = await api.post('/users/login',user).then((response)=>{return response.data})
+            console.log(`data try : ${JSON.stringify(data)}`)
             await authUser(data)
+        } catch (erro) {
+            msgText = erro.response.data.message
+            msgType = 'error'
+            if(msgErroPrimaryLogin === erro.response.data.message){
+                navigate('/login/primarylogin')
+            }
+        }
+        setFlashMessage(msgText, msgType)
+    }
+
+    async function primaryLogin(user) {
+        let msgText = 'Login Realizado com sucesso !!!'
+        let msgType = 'success'
+        const op = true
+
+        try {
+            const data = await api.post('/users/primarylogin',user).then((response)=>{return response.data})
+            await authUser(data,op)
         } catch (erro) {
             msgText = erro.response.data.message
             msgType = 'error'
@@ -75,5 +95,5 @@ export default function useAuth() {
 
     }
 
-    return { authenticated, register, logout ,login }
+    return { authenticated, register, logout ,login ,primaryLogin}
 }

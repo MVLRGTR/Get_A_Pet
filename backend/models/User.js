@@ -22,6 +22,13 @@ const User = mongoose.model(
         phone:{
             type:String,
             require:true
+        },
+        primaryLogin:{
+            type:Boolean,
+            require:true
+        },
+        token:{
+            type:Number
         }
     },{timestamps:true}) //Isso serve para saber a criação e edição do dado no banco
 )
