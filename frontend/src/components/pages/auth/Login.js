@@ -23,10 +23,11 @@ function Login(){
             <h1>Login</h1>
             <form onSubmit={handleSubmit}>
                 <Input type='email' name='email' text='E-mail' placeholder='Digite seu e-mail aqui' handleOnChange={handleChange} />
-                <Input type='password' name='password' text='Senha' placeholder='Digite sea senha  aqui' handleOnChange={handleChange} />
+                <Input type='password' name='password' text='Senha' placeholder='Digite sua senha  aqui' handleOnChange={handleChange} />
                 <input type='submit' value='Entrar'/>
             </form>
             <p>Não tem conta  ?<Link to='/register'> Clique aqui </Link> </p>
+            <p>Precisa recuperar sua conta ?<Link to='/forgotpassword'> Clique aqui</Link> </p>
         </section>
     )
 }

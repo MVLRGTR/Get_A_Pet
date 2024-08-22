@@ -142,6 +142,33 @@ module.exports = class UserController{
         }
     }
 
+    static async ForgotPassword(req,res){
+
+        function GenerateRandomFourDigitNumber() {
+            return Math.floor(1000 + Math.random() * 9000);
+        }
+
+        const email = req.body.email
+        const Newtoken = GenerateRandomFourDigitNumber()
+
+        const UserExists = await User.findOne({email:email})
+
+        if(!UserExists){
+            res.status(422).json({message:'E-mail não existe na nossa base de dados , por favor utilize outro !!!'})
+            return
+        }
+
+        await User.findOneAndUpdate(
+            {_id:UserExists._id},
+            {$set:{token:Newtoken}}
+        )
+
+        EmailSend.EmailForgotPassword(UserExists.email,Newtoken)
+
+        res.status(200).json({message:'Token enviado com sucesso para o e-mail cadastrado !!!'})
+
+    }
+
     static async CheckUser(req,res){
         let CurrentUser 
 

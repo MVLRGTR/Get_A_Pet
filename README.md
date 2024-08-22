@@ -8,7 +8,7 @@ FUNCIONALIDADES ADICIONADAS :
 
 1º [x] : Parte de descrição do pet
 2º [x] : validação de e-mail para primeiro acesso
-3º [] : Recuperação de senha
+3º [x] : Recuperação de senha
 4º [] : Área de chat entre os tutores
 5º [] : Área de Administração 
        [] : -Mudanças de senhas

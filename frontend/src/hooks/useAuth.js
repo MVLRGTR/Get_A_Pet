@@ -54,7 +54,6 @@ export default function useAuth() {
 
         try {
             const data = await api.post('/users/login',user).then((response)=>{return response.data})
-            console.log(`data try : ${JSON.stringify(data)}`)
             await authUser(data)
         } catch (erro) {
             msgText = erro.response.data.message
@@ -82,6 +81,21 @@ export default function useAuth() {
         setFlashMessage(msgText, msgType)
     }
 
+    async function ForgotPasswordUser(user) {
+        let msgText = 'Email enviado com sucesso para o e-mail cadastrado !!!'
+        let msgType = 'success'
+
+        try {
+            await api.post('/users/forgotpassword',user).then((response)=>{return response.data})
+            navigate('/login')
+        } catch (erro) {
+            msgText = erro.response.data.message
+            msgType = 'error'
+            console.log(erro)
+        }
+        setFlashMessage(msgText, msgType)
+    }
+
     async function logout() {
         let msgText = 'Logout Realizado com sucesso !!!'
         let msgType = 'success'
@@ -95,5 +109,5 @@ export default function useAuth() {
 
     }
 
-    return { authenticated, register, logout ,login ,primaryLogin}
+    return { authenticated, register, logout ,login ,primaryLogin,ForgotPasswordUser}
 }
