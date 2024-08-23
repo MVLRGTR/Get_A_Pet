@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken')
 const GetToken = require('../helpers/GetToken')
 
 const CheckToken =(req,res,next)=>{
-    console.log(`authorization ${req.headers.authorization}`)
+    // console.log(`authorization ${req.headers.authorization}`)
     if(!req.headers.authorization){
         return res.status(401).json({message:"Acesso Negado !!!"})
     }

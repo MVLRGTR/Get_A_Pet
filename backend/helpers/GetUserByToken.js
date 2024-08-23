@@ -7,7 +7,7 @@ const GetUserByToken = async (token)=>{
     }
     const decoded = jwt.verify(token,'meutokenjwt')
     // const UserId = decoded.id
-    const user = await User.findById({_id:decoded.id})
+    const user = await User.findById({_id:decoded.id}).select('_id name img phone')
     return user
 
 }

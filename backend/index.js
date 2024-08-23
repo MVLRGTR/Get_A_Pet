@@ -4,6 +4,7 @@ const cors = require('cors')
 //Import Routes
 const UserRoutes = require('./routes/UserRoutes')
 const PetRoutes = require('./routes/PetRoutes')
+const MessageRoutes = require('./routes/MessageRoutes')
 
 const app = express()
 
@@ -20,3 +21,4 @@ app.use(express.static('public'))
 app.listen(5000)
 app.use('/users',UserRoutes)
 app.use('/pets',PetRoutes)
+app.use('/message',MessageRoutes)

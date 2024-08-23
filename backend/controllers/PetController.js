@@ -11,7 +11,7 @@ module.exports = class PetController{
         const {name , age , weight , color , description } = req.body
         const images = req.files
         const available = true //para que o pet cadastrado começe sendo disponivel para adoção
-
+        console.log(`Entrou aqui para verificar o req.user : ${JSON.stringify(req.user)}`)
         if(!name){
             res.status(422).json({message:'O nome não pode ser nulo , por favor verifique o que foi digitado'})
             return
@@ -39,6 +39,7 @@ module.exports = class PetController{
 
         const token = GetToken(req)
         const user = await GetUserByToken(token)
+        console.log(`user : ${JSON.stringify(user)}`)
 
         const pet = new Pet({
             name,

@@ -33,4 +33,6 @@ FUNCIONALIDADES ADICIONADAS :
         [] : -Conclusão de adoções 
         [] : -Notificação na data da visita para o pet
 11º [] : Melhorias na API
-        [] : -Tratamento de entradas de dados 
+        [] : -Tratamento de entradas de dados
+        [] : -Erros de segurança
+12º [] : Tutor atual fazer recusa da adoção bem como o possivel adotante desisti da adoção tembém , unilateralidade das ações de adoção
