@@ -36,3 +36,4 @@ FUNCIONALIDADES ADICIONADAS :
         [] : -Tratamento de entradas de dados
         [] : -Erros de segurança
 12º [] : Tutor atual fazer recusa da adoção bem como o possivel adotante desisti da adoção tembém , unilateralidade das ações de adoção
+13º [] : Paginas de Mensagens Frontend

@@ -92,4 +92,41 @@ module.exports = class MessageController {
         }
 
     }
+
+    static async GetAllMessageChat(req,res){
+        const to = req.body.to
+
+        const token = GetToken(req)
+        const user = await GetUserByToken(token)
+
+        if (!to) {
+            res.status(422).json({ message: 'A requisição precisa ter o campo de quem recebeu a mensagem, por favor verifique o que foi digitado' })
+            return
+        }
+
+        try{
+            const toExist = await User.findById(to).select('_id')
+            if (!toExist) {
+                res.status(422).json({ message: 'Erro ao processar sua operação, por favor verifique o que foi digitado' })
+                return
+            }
+        }catch(erro){
+                res.status(500).json({ message: 'Erro ao processar sua operação, por favor verifique o que foi digitado',erro:erro })
+                return
+        }
+
+        const messagesChat = await Message.find({
+            $or: [
+                { to: new ObjectId(to), from: user._id },
+                { to: user._id, from: new ObjectId(to) }
+            ]
+        }).sort({ createdAt: 1 })
+
+        res.status(200).json({
+            message:'Mensagens retornadas com sucesso',
+            messagesChat,
+            userMessageRequest:user._id
+        })
+        
+    }
 }

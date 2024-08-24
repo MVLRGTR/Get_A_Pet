@@ -4,6 +4,7 @@ const MessageController = require('../controllers/MessageController')
 //middleware
 const VerifyToken = require('../helpers/Verify-token') 
 
+router.get('/getallmessagechat',VerifyToken,MessageController.GetAllMessageChat)
 router.post('/create',VerifyToken,MessageController.SendMessage)
 router.patch('/view',VerifyToken,MessageController.ViewedMsg)
 
