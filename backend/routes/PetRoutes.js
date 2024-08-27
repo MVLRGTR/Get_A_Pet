@@ -14,7 +14,8 @@ router.get('/myadoptions',VerifyToken,PetController.GetUserAdoptionsPets)
 router.get('/:id',PetController.PetById)
 router.delete('/:id',VerifyToken,PetController.DeletePetById)
 router.patch('/:id',VerifyToken ,ImageUpload.array('images'),PetController.UpdatePetById)
-router.patch('/schedule/:id',VerifyToken,PetController.ScheduleVisity)
+router.patch('/adoptionrequest/:id',VerifyToken,PetController.AdoptionRequest)
 router.patch('/concludeadopter/:id',VerifyToken,PetController.ConcludeAdoption)
+router.patch('/cancellationrequestadopter/:id',VerifyToken,PetController.CancellationRequestAdopter)
 
 module.exports = router
