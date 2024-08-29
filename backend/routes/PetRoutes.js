@@ -17,5 +17,7 @@ router.patch('/:id',VerifyToken ,ImageUpload.array('images'),PetController.Updat
 router.patch('/adoptionrequest/:id',VerifyToken,PetController.AdoptionRequest)
 router.patch('/concludeadopter/:id',VerifyToken,PetController.ConcludeAdoption)
 router.patch('/cancellationrequestadopter/:id',VerifyToken,PetController.CancellationRequestAdopter)
+router.patch('/cancellationadoptionbytutor/:id',VerifyToken,PetController.CancellationAdoptionByTutor)
+router.patch('/renewadoptionbytutor/:id',VerifyToken,PetController.RenewAdoptionByTutor)
 
 module.exports = router

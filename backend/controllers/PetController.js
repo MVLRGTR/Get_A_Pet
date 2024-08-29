@@ -1,9 +1,11 @@
 const Pet = require('../models/Pet')
+const NotificationsController = require('../controllers/NotificationsController')
 
 //helpers
 const GetToken = require('../helpers/GetToken')
 const GetUserByToken = require('../helpers/GetUserByToken')
 const ObjectId = require('mongoose').Types.ObjectId
+
 
 module.exports = class PetController {
 
@@ -70,6 +72,7 @@ module.exports = class PetController {
                 message: 'Pet Cadastrado com sucesso',
                 NewPet
             })
+            NotificationsController.CreateAll(`Temos um novo pet para adoção que se chama ${pet.name}`)
         } catch (error) {
             res.status(500).json({ message: error })
         }
@@ -160,6 +163,11 @@ module.exports = class PetController {
 
         if (pet.user._id.toString() !== user._id.toString()) {  //verificando se a requisição de exclusão vem do usuario que criou o pet
             res.status(422).json({ message: 'Erro ao processar sua operação , por favor verifique o que foi digitado' })
+            return
+        }
+
+        if(pet.adopter.length != 0 && pet.available === false){
+            res.status(422).json({ message: 'Erro ao processar sua operação ,o pet não pode ser excluido pois o mesmo já tem um adotante, por favor verifique o que foi digitado' })
             return
         }
 
@@ -306,7 +314,7 @@ module.exports = class PetController {
             return
         }
         if(!pet.available){
-            res.status(404).json({ message: 'Pet ja foi adotado , por favor verifique o que foi digitado' })
+            res.status(404).json({ message: 'Pet ja foi retirado da adoção , por favor verifique o que foi digitado' })
             return
         }
 
@@ -356,7 +364,7 @@ module.exports = class PetController {
             return
         }
         if(!pet.available){
-            res.status(404).json({ message: 'Pet ja foi adotado , por favor verifique o que foi digitado' })
+            res.status(422).json({ message: 'Pet ja foi adotado , por favor verifique o que foi digitado' })
             return
         }
 
@@ -380,6 +388,73 @@ module.exports = class PetController {
             return
         }
         
+    }
+
+    static async CancellationAdoptionByTutor(req,res){
+        const id = req.params.id
+
+        if (!ObjectId.isValid(id)) {
+            res.status(422).json({ message: 'Id do pet inválido , por favor verifique o que foi digitado' })
+            return
+        }
+        const pet = await Pet.findOne({ _id: id })
+        if (!pet) {
+            res.status(404).json({ message: 'Pet não existe no banco de dados , por favor verifique o que foi digitado' })
+            return
+        }
+
+        const token = GetToken(req)
+        const user = await GetUserByToken(token)
+
+        if(pet.user._id.toString() != user._id.toString()){
+            res.status(422).json({ message: 'Pet não pertece ao usuario da solicitação , por favor verifique o que foi digitado' })
+            return
+        }
+        if(!pet.available){
+            res.status(422).json({ message: 'Pet já foi tirado do processo de adoção , por favor verifique o que foi digitado' })
+            return
+        }
+
+        pet.available = false
+        pet.adopter = []
+        await Pet.findByIdAndUpdate(id,pet)
+
+        res.status(200).json({message: `Retirada de adoção o pet ${pet.name}  concluida  com sucesso , solicitado pelo tutor ${user.name} !!!`})
+    }
+
+    static async RenewAdoptionByTutor(req,res){
+        const id = req.params.id
+
+        if (!ObjectId.isValid(id)) {
+            res.status(422).json({ message: 'Id do pet inválido , por favor verifique o que foi digitado' })
+            return
+        }
+        const pet = await Pet.findOne({ _id: id })
+        if (!pet) {
+            res.status(404).json({ message: 'Pet não existe no banco de dados , por favor verifique o que foi digitado' })
+            return
+        }
+
+        const token = GetToken(req)
+        const user = await GetUserByToken(token)
+
+        if(pet.user._id.toString() != user._id.toString()){
+            res.status(422).json({ message: 'Pet não pertece ao usuario da solicitação , por favor verifique o que foi digitado' })
+            return
+        }
+        if(pet.available){
+            res.status(422).json({ message: 'Pet já está no processo de adoção , por favor verifique o que foi digitado' })
+            return
+        }
+        if(pet.adopter.length === 1){
+            res.status(422).json({ message: 'Pet já foi adotado, por isso não é possivél coloca-lo novamente em um processo de adoção, por favor verifique o que foi digitado' })
+            return
+        }
+
+        pet.available = true
+        await Pet.findByIdAndUpdate(id,pet)
+
+        res.status(200).json({message: `Renovação de adoção do pet ${pet.name}  concluida  com sucesso , solicitado pelo tutor ${user.name} !!!`})
     }
 
 }

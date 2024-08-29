@@ -5,6 +5,7 @@ const cors = require('cors')
 const UserRoutes = require('./routes/UserRoutes')
 const PetRoutes = require('./routes/PetRoutes')
 const MessageRoutes = require('./routes/MessageRoutes')
+const NotificationsRoutes = require('./routes/NotificationsRoutes')
 
 const app = express()
 
@@ -22,3 +23,4 @@ app.listen(5000)
 app.use('/users',UserRoutes)
 app.use('/pets',PetRoutes)
 app.use('/message',MessageRoutes)
+app.use('/notifications',NotificationsRoutes)
