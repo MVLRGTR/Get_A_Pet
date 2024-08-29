@@ -52,7 +52,7 @@ BACKEND :
         [x] : -Concluir adoção e excluir ostros possiveis adotantes
         [] : -Desistencia da adoção por parte do tutor atual
         [x] : -Desistencia da adoção por parte do adotante
-        [] : -Retorno dos pets do usuario
+        [x] : -Retorno dos pets adotados e com requisição de adoção do usuario
 7º  [] => Status da adoção
 8º  [] => Tratamentos de dados 
 9º  [] => Tratamento de erros da API
@@ -85,3 +85,4 @@ FRONTEND :
 7º  [] => Adição do componente busca de um tutor
 8º  [] => Adicionar componente de enviar mensagem no pagina da descrição do Pet
 9º  [] => Pagina minhas adoções mostrar os tutores interessados em um pet especifico
+10º [] => Pagina de tutores

@@ -90,6 +90,11 @@ module.exports = class PetController {
 
         const pets = await Pet.find({ 'user._id': user._id }).sort('-createdAt')   //Para acessar sub-documents no mongodb fazemos a utilização dessa sintaxe
 
+        if (!pets) {
+            res.status(404).json({ message: 'Não existem pets para o usuario informado  no banco de dados , por favor verifique o que foi digitado' })
+            return
+        }
+
         res.status(200).json({
             message: 'Pets do usuario retornados com suscesso !!!',
             pets
@@ -98,15 +103,27 @@ module.exports = class PetController {
     }
 
     static async GetUserAdoptionsPets(req, res) {
+        // Nesse endpoint faço o retorno de requisições de adoções bem como pets com adoção já concluidas para esse usuario , pets com adoção concluidas serão tratadas no front-end
         const token = GetToken(req)
         const user = await GetUserByToken(token)
 
-        const pets = await Pet.find({ 'adopter._id': user._id }).sort('-createdAt')
+        try{
+            const pets = await Pet.find({
+                adopter:{
+                    $elemMatch:{_id:user._id}
+                }
+            })
 
-        res.status(200).json({
-            message: 'Pets adotados do usuario retornados com suscesso !!!',
-            pets
-        })
+            if(!pets){
+                return res.status(404).json({message:'Nenhum pet encontrado para o id do adotante fornecido , por favor verifique o que foi digitado'})
+            }
+
+            res.status(200).json({message:'Pets do adotante retornado com sucesso',pets})
+
+        }catch(erro){
+            res.status(500).json({ message: 'Erro ao buscar os pets', erro })
+            console.log(`erro : ${erro}`)
+        }
     }
 
     static async PetById(req, res) {
@@ -233,6 +250,10 @@ module.exports = class PetController {
         const pet = await Pet.findOne({ _id: id })
         if (!pet) {
             res.status(404).json({ message: 'Pet não existe no banco de dados , por favor verifique o que foi digitado' })
+            return
+        }
+        if(!pet.available){
+            res.status(422).json({ message: 'Pet não disponivél para adoção , por favor verifique o que foi digitado' })
             return
         }
 
