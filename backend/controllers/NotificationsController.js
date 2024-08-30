@@ -7,6 +7,9 @@ const ObjectId = require('mongoose').Types.ObjectId
 
 module.exports = class NotificationsController{
 
+    //o tratamento da regra para notificações do sistema e diferente para as notificações de açoes do usuario no sistema
+    //sendo a terminação all indicada para notificações globais para todos os usuarios e to para usuarios direcionados
+
     static async CreateAll(text){
         try{
             const notification = new Notifications({message:text})
@@ -25,12 +28,17 @@ module.exports = class NotificationsController{
             return
         }
 
-        const notification = await Notifications.find({
+        const notifications = await Notifications.find({
             to:'all',
             userviewed:{$nin:[user._id]}
-        }).sort('-createdAt') 
+        }).sort('-createdAt').select('_id message to createdAt updatedAt') 
 
-        res.status(200).json({message:'Notificações retornadas com sucesso',notification})
+        if (!notifications) {
+            res.status(404).json({ message: 'Notificação não existe no banco de dados , por favor verifique o que foi digitado' })
+            return
+        }
+
+        res.status(200).json({message:'Notificações retornadas com sucesso',notifications})
     }
 
     static async ViewedAll(req,res){
@@ -65,5 +73,75 @@ module.exports = class NotificationsController{
 
         
 
+    }
+
+    static async CreateTo(text,to){
+        try{
+            const notification = new Notifications({
+                message:text,
+                to:'to',
+                userviewed:[to]
+            })
+            Notifications.create(notification)
+        }catch(erro){
+            console.log(erro)
+        }
+    }
+
+    static async GetToNotificationsUser(req,res){
+        const token = GetToken(req)
+        const user = await GetUserByToken(token)
+        
+        if (!user) {
+            res.status(422).json({ message: 'Nenhum usuario encontrado , por favor verifique o que foi digitado' })
+            return
+        }
+
+        const notifications = await Notifications.find({
+            to:'to',
+            userviewed:user._id
+        }).sort('-createdAt').select('_id message to createdAt updatedAt') 
+
+        if (!notifications) {
+            res.status(404).json({ message: 'Notificação não existe no banco de dados , por favor verifique o que foi digitado' })
+            return
+        }
+
+        res.status(200).json({message:'Notificações retornadas com sucesso',notifications})
+    }
+
+    static async ViewedTo(req,res){
+        const idnotification = req.params.id
+        const token = GetToken(req)
+        const user = await GetUserByToken(token)
+
+        if(!ObjectId.isValid(idnotification)){
+            res.status(422).json({ message: 'O id da notificação  invalido , por favor verifique o que foi digitado' })
+            return
+        }
+
+        const notificationUser = await Notifications.findOne({
+            _id:idnotification,
+            to:'to'
+        }).sort('-createdAt') 
+
+        if (!notificationUser) {
+            res.status(404).json({ message: 'Notificação não existe no banco de dados , por favor verifique o que foi digitado' })
+            return
+        }
+        if(notificationUser.userviewed[0].toString() != user._id.toString()){
+            res.status(422).json({ message: 'Erro ao processar sua operação , por favor verifique o que foi digitado' })
+            return
+        }
+        if(notificationUser.viewed === true){
+            res.status(422).json({ message: 'Essa solicitação já foi feita anteriormente , por favor verifique o que foi digitado' })
+            return
+        }
+
+        notificationUser.viewed =true
+        notificationUser.save()
+
+        res.status(200).json({message:'Notificação visualizada com sucesso !!!'})
+        return
     }
 }

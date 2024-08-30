@@ -73,6 +73,7 @@ module.exports = class PetController {
                 NewPet
             })
             NotificationsController.CreateAll(`Temos um novo pet para adoção que se chama ${pet.name}`)
+            NotificationsController.CreateTo('Seu novo pet foi criado com sucesso !!!' ,user._id)
         } catch (error) {
             res.status(500).json({ message: error })
         }
