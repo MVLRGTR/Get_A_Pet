@@ -19,11 +19,12 @@ BACKEND :
         [x] : -Tirar pet da adoção por parte do tutor atual
         [x] : -Desistencia da adoção por parte do adotante
         [x] : -Retorno dos pets adotados e com requisição de adoção do usuario
-7º  [] => Status da adoção
-        [] : -Notificação de conclusão de adoção
-        [] : -Notificação de pet retirado da adoção
-        [] : -Notificação de pet retornado a adoção
-        [] : -Notificação de pet adotado por outro tutor
+7º  [x] => Status da adoção por notificação
+        [x] : -Notificação de conclusão de adoção
+        [x] : -Notificação de pet retirado da adoção
+        [x] : -Notificação de pet adotado por outro tutor
+8º  [] => Notificação de mensagem de outro tutor da plataforma
+8º  [] => Inclusão de endereço do usuario bem como a vinculação com o seu pet tutoriado   
 8º  [] => Tratamentos de dados 
 9º  [] => Tratamento de erros da API
 10º [] => Buscar um pet 

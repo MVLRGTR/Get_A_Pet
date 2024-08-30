@@ -1,5 +1,6 @@
 const Message = require('../models/Message')
 const User = require('../models/User')
+const NotificationController = require('../controllers/NotificationsController')
 
 //helpers
 const GetToken = require('../helpers/GetToken')
@@ -45,6 +46,7 @@ module.exports = class MessageController {
                 message: 'Messagem enviada com sucesso',
                 NewMessageSend
             })
+            NotificationController.CreateTo(`Você tem um nova mensagem do tutor(a) ${user.name}`,to)
         } catch (erro) {
             res.status(500).json({ message: error })
         }
