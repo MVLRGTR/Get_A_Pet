@@ -10,9 +10,15 @@ module.exports = class NotificationsController{
     //o tratamento da regra para notificações do sistema e diferente para as notificações de açoes do usuario no sistema
     //sendo a terminação all indicada para notificações globais para todos os usuarios e to para usuarios direcionados
 
-    static async CreateAll(text){
+    static async CreateAll(text,type,image,link){
         try{
-            const notification = new Notifications({message:text})
+            const notification = new Notifications({message:text,type:type})
+            if(link){
+                notification.link = link
+            }
+            if(image){
+                notification.image = image
+            }
             Notifications.create(notification)
         }catch(erro){
             console.log(`erro apresentado : ${erro}`)
@@ -75,13 +81,20 @@ module.exports = class NotificationsController{
 
     }
 
-    static async CreateTo(text,to){
+    static async CreateTo(text,to,type,image,link){
         try{
             const notification = new Notifications({
                 message:text,
-                to:'to',
-                userviewed:[to]
+                to:to,
+                userviewed:[to],
+                type:type
             })
+            if(link){
+                notification.link = link
+            }
+            if(image){
+                notification.image = image
+            }
             Notifications.create(notification)
         }catch(erro){
             console.log(erro)

@@ -72,7 +72,7 @@ module.exports = class PetController {
                 message: 'Pet Cadastrado com sucesso',
                 NewPet
             })
-            NotificationsController.CreateTo(`Seu novo pet ${pet.name}  foi criado com sucesso !!!`,user._id)
+            NotificationsController.CreateTo(`${user.name} seu pet ${pet.name} foi adicionado para adoção com sucesso !!!`,user._id,'Pet Criado com sucesso',pet.images[0])
         } catch (error) {
             res.status(500).json({ message: error })
         }
@@ -180,7 +180,7 @@ module.exports = class PetController {
 
         if(pet.adopter.length > 0){
             pet.adopter.map((index) => {
-                NotificationsController.CreateTo(`Infelizmente o pet : ${pet.name} foi retirado da adoção pelo seu tutor , mas não se preocupe, pois você pode achar outra pet para doção em nossa plataforma `,index._id)
+                NotificationsController.CreateTo(`Infelizmente o pet : ${pet.name} ao qual você tinhna interesse foi retirado da adoção pelo seu tutor , mas não se preocupe, pois você pode achar outros pets para doção em nossa plataforma `,index._id,`Pet retirado da adoção`)
             })
         }
 
@@ -300,7 +300,7 @@ module.exports = class PetController {
             message: `O pedido de adoção foi feito com sucesso , entre em contato com ${pet.user.name} no telefone ${pet.user.phone} para acertar os detelhes da adoção !!!`
         })
 
-        NotificationsController.CreateTo(`Você tem uma nova solicitação de adoção para você tem uma nova solicitação de adoção para o seu pet ${pet.name} do possivél tutor ${user.name}`,pet.user._id)
+        NotificationsController.CreateTo(`Você tem uma nova solicitação de adoção para o seu pet ${pet.name} do possivél tutor ${user.name}`,pet.user._id,'Solicitação de adoção',pet.images[0])
 
     }
 
@@ -361,10 +361,10 @@ module.exports = class PetController {
 
         if(AdoptionsRelease.length > 0){
             AdoptionsRelease.map((index)=>{
-                NotificationsController.CreateTo(`Infelizmente o pet ${pet.name} foi adotado por outro tutor , mas não se preocupe porque temos varios pets na nossa plataforma , encontre um e seja feliz`,index._id)
+                NotificationsController.CreateTo(`Infelizmente o pet ${pet.name} foi adotado por outro tutor , mas não se preocupe porque temos varios pets na nossa plataforma , encontre um e seja feliz`,index._id,`Pet retirado da adoção`)
             })
         }
-        NotificationsController.CreateTo(`Parabéns !!! você agora é o novo tutor do pet ${pet.name}`,AdoptionOk._id)
+        NotificationsController.CreateTo(`Parabéns !!! você agora é o novo tutor do pet ${pet.name}`,AdoptionOk._id,`Conclusão da adoção`,pet.images[0])
             
     }
 
@@ -402,7 +402,7 @@ module.exports = class PetController {
             pet.adopter = adoptions
             await Pet.findByIdAndUpdate(id,pet)
             res.status(200).json({message: `Exclusão do pedido de adoção  concuido com sucesso para o tutor ${user.name} !!!`})
-            NotificationsController.CreateTo(`Tivemos a desistência da possivél adoção por parte do tutor ${user.name} para o pet ${pet.name}`,pet.user._id)
+            NotificationsController.CreateTo(`Tivemos a desistência da possivél adoção por parte do tutor ${user.name} para o pet ${pet.name}`,pet.user._id,`Desistência da adoção`,pet.images[0])
         }else{
             res.status(404).json({ message: 'Erro ao processar sua solicitação ,pois não existem solicitações desse usuario para adoção do pet informado, por favor verifique o que foi digitado' })
             return
@@ -436,7 +436,7 @@ module.exports = class PetController {
 
         if(pet.adopter.length > 0){
             pet.adopter.map((index) => {
-                NotificationsController.CreateTo(`Infelizmente o pet ${pet.name} foi retirado de adoção pelo tutor atual , mas não se preocupe temos outros pets em nossa plataforma.`,index._id)
+                NotificationsController.CreateTo(`Infelizmente o pet ${pet.name} foi retirado de adoção pelo tutor atual , mas não se preocupe temos outros pets em nossa plataforma.`,index._id,`Desistência da adoção`)
             })
         }
 

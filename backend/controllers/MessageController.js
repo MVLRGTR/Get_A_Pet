@@ -46,7 +46,7 @@ module.exports = class MessageController {
                 message: 'Messagem enviada com sucesso',
                 NewMessageSend
             })
-            NotificationController.CreateTo(`Você tem um nova mensagem do tutor(a) ${user.name}`,to)
+            NotificationController.CreateTo(`Você tem um nova mensagem do tutor(a) ${user.name}`,to,'Nova menssagem')
         } catch (erro) {
             res.status(500).json({ message: error })
         }

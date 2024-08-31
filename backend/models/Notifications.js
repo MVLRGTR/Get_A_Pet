@@ -19,8 +19,14 @@ const Notifications = mongoose.model(
         userviewed:{
             type:Array
         },
-        images:{
+        image:{
             type:Array,
+        },
+        type:{
+            type:String
+        },
+        link:{
+            type:String
         },
     },{timestamps:true})
 )
