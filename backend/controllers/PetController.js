@@ -8,6 +8,10 @@ const GetUserByToken = require('../helpers/GetUserByToken')
 const OrderPetsByCEP = require('../helpers/OrderPetsByCEP')
 const ObjectId = require('mongoose').Types.ObjectId
 
+//others
+const fs = require('fs')
+const path = require('path')
+
 
 module.exports = class PetController {
 
@@ -83,7 +87,7 @@ module.exports = class PetController {
 
     static async GetAllPets(req, res) {
         const cepUser = req.body.cep
-        const pets = await Pet.find().sort('-createdAt')
+        const pets = await Pet.find({available:true}).sort('-createdAt')
 
         if(cepUser){
             console.log(`cepUser :${cepUser} cepUser typeof : ${typeof cepUser} cepUser.lenght :${cepUser.toString().length}`)
@@ -185,6 +189,15 @@ module.exports = class PetController {
             res.status(422).json({ message: 'Erro ao processar sua operação ,o pet não pode ser excluido pois o mesmo já tem um adotante, por favor verifique o que foi digitado' })
             return
         }
+
+        pet.images.map((image) => {
+            const imagePath = path.join(__dirname, '..', 'public', 'images', 'pets', image);
+            fs.unlink(imagePath, (err) => {
+                if (err) {
+                    console.error('Erro ao excluir a imagem:', err);
+                }
+            })
+        })
 
         await Pet.findByIdAndDelete(id)
 

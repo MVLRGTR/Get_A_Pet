@@ -31,7 +31,7 @@ BACKEND :
         [x] : -Adicionar Pets a lista
         [x] : -Exlcuir Pets da lista
 8º  [x] => Colocar em ordem os pets mais proximos de acordo com o cep fornecido caso tenha  essa informação
-8º  [] => Ao excluir um pet , remover os arquivos do pet associado
+8º  [x] => Ao excluir um pet , remover os arquivos do pet associado
 8º  [] => Abrir a localização no maps do pet em questão (Integração back e frontend)
 9º  [] => Tratamento de erros da API
 10º [] => Buscar um pet 
