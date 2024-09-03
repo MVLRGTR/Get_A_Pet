@@ -1,5 +1,6 @@
 const Pet = require('../models/Pet')
 const NotificationsController = require('../controllers/NotificationsController')
+const User = require('../models/User')
 
 //helpers
 const GetToken = require('../helpers/GetToken')
@@ -30,10 +31,6 @@ module.exports = class PetController {
             res.status(422).json({ message: 'A cor nao pode ser nula , por favor verifique o que foi digitado' })
             return
         }
-
-
-        console.log(`Images : ${images} images.lenght : ${images.length}`)
-
         if (!images) {
             res.status(422).json({ message: 'pelo menos uma image é obrigatória , por favor verifique o que foi digitado' })
             return
@@ -41,6 +38,12 @@ module.exports = class PetController {
 
         const token = GetToken(req)
         const user = await GetUserByToken(token)
+        const userDb = await User.findById(user._id)
+
+        if(!userDb.address){
+            res.status(422).json({ message: 'Você não pode adicionar um pet na nossa plataforma sem ter um endereço cadastrado' })
+            return
+        }
         console.log(`user : ${JSON.stringify(user)}`)
 
         const pet = new Pet({
@@ -56,15 +59,13 @@ module.exports = class PetController {
                 name: user.name,
                 img: user.img,
                 phone: user.phone
-            }
+            },
+            address:userDb.address
         })
 
         for (let image of images) {
             pet.images.push(image.filename)
-            console.log(`image.filename :${image.filename}`)
         }
-
-        console.log(`pet ${pet} e pet.images :${pet.images}`)
 
         try {
             const NewPet = await pet.save()
@@ -72,7 +73,7 @@ module.exports = class PetController {
                 message: 'Pet Cadastrado com sucesso',
                 NewPet
             })
-            NotificationsController.CreateTo(`${user.name} seu pet ${pet.name} foi adicionado para adoção com sucesso !!!`,user._id,'Pet Criado com sucesso',pet.images[0])
+            NotificationsController.CreateTo(`${user.name} seu pet ${pet.name} foi adicionado para adoção com sucesso !!!`,user._id,'Pet Criado com sucesso',pet.images[0],NewPet._id)
         } catch (error) {
             res.status(500).json({ message: error })
         }
@@ -274,6 +275,12 @@ module.exports = class PetController {
 
         const token = GetToken(req)
         const user = await GetUserByToken(token)
+        const userDb = await User.findById(user._id)
+
+        if(!userDb.address){
+            res.status(422).json({ message: 'Você não pode adotar um pet na nossa plataforma sem ter um endereço cadastrado' })
+            return
+        }
 
         if (pet.user._id.toString() === user._id.toString()) {  //verificando se a requisição de adoção vem do usuario que criou o pet
             res.status(422).json({ message: 'Não podemos fazer um pedido de adoção para o seu proprio pet , por favor verifique o que foi digitado' })
@@ -300,7 +307,7 @@ module.exports = class PetController {
             message: `O pedido de adoção foi feito com sucesso , entre em contato com ${pet.user.name} no telefone ${pet.user.phone} para acertar os detelhes da adoção !!!`
         })
 
-        NotificationsController.CreateTo(`Você tem uma nova solicitação de adoção para o seu pet ${pet.name} do possivél tutor ${user.name}`,pet.user._id,'Solicitação de adoção',pet.images[0])
+        NotificationsController.CreateTo(`Você tem uma nova solicitação de adoção para o seu pet ${pet.name} do possivél tutor ${user.name}`,pet.user._id,'Solicitação de adoção',pet.images[0],pet._id)
 
     }
 
@@ -364,7 +371,7 @@ module.exports = class PetController {
                 NotificationsController.CreateTo(`Infelizmente o pet ${pet.name} foi adotado por outro tutor , mas não se preocupe porque temos varios pets na nossa plataforma , encontre um e seja feliz`,index._id,`Pet retirado da adoção`)
             })
         }
-        NotificationsController.CreateTo(`Parabéns !!! você agora é o novo tutor do pet ${pet.name}`,AdoptionOk._id,`Conclusão da adoção`,pet.images[0])
+        NotificationsController.CreateTo(`Parabéns !!! você agora é o novo tutor do pet ${pet.name}`,AdoptionOk._id,`Conclusão da adoção`,pet.images[0],pet._id)
             
     }
 

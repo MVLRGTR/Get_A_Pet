@@ -11,6 +11,7 @@ router.post('/primarylogin',UserController.PrimaryLogin)
 router.post('/forgotpassword',UserController.ForgotPassword)
 router.get('/checkuser',UserController.CheckUser)
 router.get('/:id',UserController.GetUserById)
-router.patch('/edit/:id',VerifyToken,ImageUpload.single('image'),UserController.EditUser)
+router.patch('/edit',VerifyToken,ImageUpload.single('image'),UserController.EditUser)
+router.patch('/editaddress',VerifyToken,UserController.EditUserAddress)
 
 module.exports = router

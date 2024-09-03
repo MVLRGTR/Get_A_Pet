@@ -203,48 +203,38 @@ module.exports = class UserController{
     }
 
     static async EditUser(req,res){
-        const id = req.params.id
 
         const token = GetToken(req)
         const user = await GetUserByToken(token)
+        const userDb = await User.findById(user._id)
 
         const {name,email,phone,password,confirmpassword} = req.body
-
 
         if(req.file){
             console.log(`entrou aqui , valor req.file.filename :${req.file.filename} valor req.file : ${req.file}`)
             user.img = req.file.filename
         }
-
         console.log(`valor user.image :${user.image} user:${user}`)
-
         if(!name){
             res.status(422).json({message:'O nome não pode ser nulo , por favor verifique o que foi digitado'})
             return
         }
-
         user.name = name
-
         if(!email){
             res.status(422).json({message:'O email não pode ser nulo , por favor verifique o que foi digitado'})
             return
         }
         const UserExistsByEmail = await User.findOne({email:email})
-        if(user.email !== email && UserExistsByEmail){
-            res.status(422).json({message:'E-mail inválido, já cadastro para outro usuario , por favor verifique o que foi digitado'})
+        if(userDb.email !== email && UserExistsByEmail){
+            res.status(422).json({message:'E-mail inválido , por favor verifique o que foi digitado'})
             return
         }
-
         user.email = email
-
         if(!phone){
             res.status(422).json({message:'O telefone não pode ser nulo , por favor verifique o que foi digitado'})
             return
         }
-
         user.phone = phone
-
-        console.log(`user :${user}`)
 
         if(password != confirmpassword){
             res.status(422).json({message:'As senhas não conferem , por favor verifique o que foi digitado'})
@@ -259,7 +249,7 @@ module.exports = class UserController{
             await User.findOneAndUpdate(
                 {_id:user.id},
                 {$set:user},
-                {new:true}
+                // {new:true}
             )
             res.status(200).json({message:'Usuario atualizado com sucesso !!!'})
         }catch(erro){
@@ -268,6 +258,44 @@ module.exports = class UserController{
         }
 
         
+    }
+
+    static async EditUserAddress(req,res){
+
+        const token = GetToken(req)
+        const user = await GetUserByToken(token)
+        const userDb = await User.findById(user._id)
+        let address = {}
+
+        const {cep,street,number,complement} = req.body
+
+
+        if(!cep || cep.length != 8){
+            res.status(422).json({message:'O CEP fornecido é inválido , por favor verifique o que foi digitado'})
+            return
+        }
+        if(!street || street.length < 4){
+            res.status(422).json({message:'Rua fornecida inválida , por favor verifique o que foi digitado'})
+            return
+        }
+        if(!number || typeof number != 'number'){
+            res.status(422).json({message:'Número incorreto , por favor verifique o que foi digitado'})
+            return
+        }
+
+        address = {
+            cep,
+            street,
+            number,
+            complement
+        }
+
+        userDb.address = address
+        await userDb.save()
+        res.status(200).json({
+            message: 'Endereço atualizado com sucesso !!!'
+        })
+
     }
 
 }

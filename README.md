@@ -24,7 +24,10 @@ BACKEND :
         [x] : -Notificação de pet retirado da adoção
         [x] : -Notificação de pet adotado por outro tutor
         [x] : -Notificação de mensagem de outro tutor da plataforma
-8º  [] => Inclusão de endereço do usuario bem como a vinculação com o seu pet tutoriado   
+8º  [x] => Inclusão de endereço do usuario 
+8º  [x] => Vinculação do endereço do pet com o tutor atual  
+8º  [x] => Usuario so podera adicionar um novo pet ou adotar caso tenha endereço cadastrado na plataforma
+8º  [] => Colocar em ordem os pets mais proximos de acordo com o cep fornecido caso tenha
 8º  [] => Tratamentos de dados 
 9º  [] => Tratamento de erros da API
 10º [] => Buscar um pet 

@@ -29,7 +29,8 @@ const User = mongoose.model(
         },
         token:{
             type:Number
-        }
+        },
+        address:Object
     },{timestamps:true}) //Isso serve para saber a criação e edição do dado no banco
 )
 

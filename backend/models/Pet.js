@@ -31,7 +31,8 @@ const Pet = mongoose.model(
             type:String
         },
         user:Object,
-        adopter:Array
+        adopter:Array,
+        address:Object
     },{timestamps:true}) //Isso serve para saber a criação e edição do dado no banco
 )
 
