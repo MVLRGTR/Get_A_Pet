@@ -27,9 +27,12 @@ BACKEND :
 8º  [x] => Inclusão de endereço do usuario 
 8º  [x] => Vinculação do endereço do pet com o tutor atual  
 8º  [x] => Usuario so podera adicionar um novo pet ou adotar caso tenha endereço cadastrado na plataforma
-8º  [] => Lista de pets favoritos
-8º  [] => Abrir a localização no maps do pet em questão
-8º  [] => Colocar em ordem os pets mais proximos de acordo com o cep fornecido caso tenha  essa informação
+8º  [x] => Lista de pets favoritos
+        [x] : -Adicionar Pets a lista
+        [x] : -Exlcuir Pets da lista
+8º  [x] => Colocar em ordem os pets mais proximos de acordo com o cep fornecido caso tenha  essa informação
+8º  [] => Ao excluir um pet , remover os arquivos do pet associado
+8º  [] => Abrir a localização no maps do pet em questão (Integração back e frontend)
 9º  [] => Tratamento de erros da API
 10º [] => Buscar um pet 
 11º [] => Buscar um tutor ou todos 

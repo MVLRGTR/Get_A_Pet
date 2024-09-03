@@ -80,6 +80,7 @@ module.exports = class PetController {
         }
 
     }
+
     static async GetAllPets(req, res) {
         const cepUser = req.body.cep
         const pets = await Pet.find().sort('-createdAt')
@@ -94,7 +95,6 @@ module.exports = class PetController {
                 })
             }else{
                 res.status(404).json({message:'Cep informado inválido , por favor verifique o que foi digitado'})
-                return 
             }
         }else{
             res.status(200).json({
@@ -303,7 +303,7 @@ module.exports = class PetController {
         for (let index of pet.adopter) {
             if (index._id.toString() === user._id.toString()) {
                 res.status(422).json({ message: 'Erro ao processar a sua solicitação, você já fez essa solicitação anteriormente, por favor verifique o que foi digitado' });
-                return;
+                return
             }
         }
 
@@ -500,6 +500,81 @@ module.exports = class PetController {
         await Pet.findByIdAndUpdate(id,pet)
 
         res.status(200).json({message: `Renovação de adoção do pet ${pet.name}  concluida  com sucesso , solicitado pelo tutor ${user.name} !!!`})
+    }
+
+    static async AddFavoritePet(req,res){
+        const petid = req.params.id
+
+        if (!ObjectId.isValid(petid)) {
+            res.status(422).json({ message: 'Id do pet inválido , por favor verifique o que foi digitado' })
+            return
+        }
+        const pet = await Pet.findOne({ _id: petid }).select('_id name age weight images available description user address createdAt updatedAt')
+        if (!pet) {
+            res.status(404).json({ message: 'Pet não existe no banco de dados , por favor verifique o que foi digitado' })
+            return
+        }
+
+        const token = GetToken(req)
+        const user = await GetUserByToken(token)
+        const userDb = await User.findById(user._id)
+
+        if(userDb._id.toString()===pet.user._id.toString()){
+            res.status(422).json({ message: 'Erro ao processar a sua solicitação, você não pode adicionar seu próprio pet como favorito, por favor verifique o que foi digitado' });
+            return
+        }
+
+        for(let index of userDb.favoritepets){
+            if(index._id.toString() === pet._id.toString()){
+                res.status(422).json({ message: 'Erro ao processar a sua solicitação, você já fez essa solicitação anteriormente, por favor verifique o que foi digitado' });
+                return
+            }
+        }
+        
+        userDb.favoritepets.push(pet)
+        await User.findByIdAndUpdate(user.id,userDb)
+
+        res.status(200).json({
+            message: `O pet ${pet.name} foi adicionado a sua lista de pets favoritos com sucesso !!!`
+        })
+    }
+
+    static async RemoveFavoritePet(req,res){
+        const petid = req.params.id
+        let validation = false
+        let favoritepets = []
+
+        if (!ObjectId.isValid(petid)) {
+            res.status(422).json({ message: 'Id do pet inválido , por favor verifique o que foi digitado' })
+            return
+        }
+        const pet = await Pet.findOne({ _id: petid }).select('_id name age weight images available description user address createdAt updatedAt')
+        if (!pet) {
+            res.status(404).json({ message: 'Pet não existe no banco de dados , por favor verifique o que foi digitado' })
+            return
+        }
+
+        const token = GetToken(req)
+        const user = await GetUserByToken(token)
+        const userDb = await User.findById(user._id)
+
+        for(let index of userDb.favoritepets){
+            if(index._id.toString() === pet._id.toString()){
+                validation = true
+            }else{
+                favoritepets.push(index)
+            }
+        }
+
+        if(validation){
+            userDb.favoritepets = favoritepets
+            await User.findByIdAndUpdate(user._id,userDb)
+            res.status(200).json({message: `Pet ${pet.name} excluido da sua lista de favoritos com sucesso !!!`})
+        }else{
+            res.status(404).json({ message: 'Pet não existe na sua lista de favoritos , por favor verifique o que foi digitado' })
+            return
+        }
+
     }
 
 }
