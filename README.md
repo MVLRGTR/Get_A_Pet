@@ -27,8 +27,9 @@ BACKEND :
 8º  [x] => Inclusão de endereço do usuario 
 8º  [x] => Vinculação do endereço do pet com o tutor atual  
 8º  [x] => Usuario so podera adicionar um novo pet ou adotar caso tenha endereço cadastrado na plataforma
-8º  [] => Colocar em ordem os pets mais proximos de acordo com o cep fornecido caso tenha
-8º  [] => Tratamentos de dados 
+8º  [] => Lista de pets favoritos
+8º  [] => Abrir a localização no maps do pet em questão
+8º  [] => Colocar em ordem os pets mais proximos de acordo com o cep fornecido caso tenha  essa informação
 9º  [] => Tratamento de erros da API
 10º [] => Buscar um pet 
 11º [] => Buscar um tutor ou todos 

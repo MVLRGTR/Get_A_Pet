@@ -5,6 +5,7 @@ const User = require('../models/User')
 //helpers
 const GetToken = require('../helpers/GetToken')
 const GetUserByToken = require('../helpers/GetUserByToken')
+const OrderPetsByCEP = require('../helpers/OrderPetsByCEP')
 const ObjectId = require('mongoose').Types.ObjectId
 
 
@@ -79,13 +80,28 @@ module.exports = class PetController {
         }
 
     }
-
     static async GetAllPets(req, res) {
+        const cepUser = req.body.cep
         const pets = await Pet.find().sort('-createdAt')
-        res.status(200).json({
-            message: 'Pets retornados com sucesso !!!',
-            pets
-        })
+
+        if(cepUser){
+            console.log(`cepUser :${cepUser} cepUser typeof : ${typeof cepUser} cepUser.lenght :${cepUser.toString().length}`)
+            if(typeof cepUser === 'number' && cepUser.toString().length === 8){
+                const PetsOrder = OrderPetsByCEP(pets,cepUser)
+                res.status(200).json({
+                    message: 'Pets retornados com sucesso !!!',
+                    PetsOrder
+                })
+            }else{
+                res.status(404).json({message:'Cep informado inválido , por favor verifique o que foi digitado'})
+                return 
+            }
+        }else{
+            res.status(200).json({
+                message: 'Pets retornados com sucesso !!!',
+                pets
+            })
+        }
     }
 
     static async GetAllUserPets(req, res) {
@@ -110,20 +126,17 @@ module.exports = class PetController {
         // Nesse endpoint faço o retorno de requisições de adoções bem como pets com adoção já concluidas para esse usuario , pets com adoção concluidas serão tratadas no front-end
         const token = GetToken(req)
         const user = await GetUserByToken(token)
-
         try{
             const pets = await Pet.find({
                 adopter:{
                     $elemMatch:{_id:user._id}
                 }
             })
-
             if(!pets){
-                return res.status(404).json({message:'Nenhum pet encontrado para o id do adotante fornecido , por favor verifique o que foi digitado'})
+                res.status(404).json({message:'Nenhum pet encontrado para o id do adotante fornecido , por favor verifique o que foi digitado'})
+                return 
             }
-
             res.status(200).json({message:'Pets do adotante retornado com sucesso',pets})
-
         }catch(erro){
             res.status(500).json({ message: 'Erro ao buscar os pets', erro })
             console.log(`erro : ${erro}`)

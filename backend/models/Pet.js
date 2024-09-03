@@ -30,6 +30,9 @@ const Pet = mongoose.model(
         description:{
             type:String
         },
+        distance:{
+            type:Number
+        },
         user:Object,
         adopter:Array,
         address:Object
