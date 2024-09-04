@@ -6,11 +6,13 @@ const User = require('../models/User')
 const GetToken = require('../helpers/GetToken')
 const GetUserByToken = require('../helpers/GetUserByToken')
 const OrderPetsByCEP = require('../helpers/OrderPetsByCEP')
+const Verifytoken = require('../helpers/Verify-token')
 const ObjectId = require('mongoose').Types.ObjectId
 
 //others
 const fs = require('fs')
 const path = require('path')
+const CheckToken = require('../helpers/Verify-token')
 
 
 module.exports = class PetController {
@@ -149,6 +151,7 @@ module.exports = class PetController {
 
     static async PetById(req, res) {
         const id = req.params.id
+    
         if (!ObjectId.isValid(id)) {
             res.status(422).json({ message: 'Id do pet inválido , por favor verifique o que foi digitado' })
             return
@@ -158,10 +161,37 @@ module.exports = class PetController {
             res.status(404).json({ message: 'Pet não existe no banco de dados , por favor verifique o que foi digitado' })
             return
         }
-        res.status(200).json({
-            message: 'Pet retornado com sucesso',
-            pet
-        })
+
+        if(!pet.available){
+            try{
+                const token = GetToken(req)
+                const user = await GetUserByToken(token)
+                if(user._id.toString() === pet.user._id.toString()){
+                    res.status(200).json({
+                        message: 'Pet retornado com sucesso',
+                        pet
+                    })
+                    return
+                }
+                if(pet.adopter[0]._id.toString() === user._id.toString() ){
+                    res.status(200).json({
+                        message: 'Pet retornado com sucesso',
+                        pet
+                    })
+                    return
+                }else{
+                    res.status(404).json({ message: 'Erro ao processar sua operação , Não autorizado , por favor verifique o que foi digitado ' })
+                }
+                
+            }catch(error) {
+                res.status(404).json({ message: 'Erro ao processar sua operação , por favor verifique o que foi digitado ' })
+            }
+        }else{
+            res.status(200).json({
+                message: 'Pet retornado com sucesso',
+                pet
+            })
+        }
     }
 
     static async DeletePetById(req, res) {
@@ -207,7 +237,7 @@ module.exports = class PetController {
 
         if(pet.adopter.length > 0){
             pet.adopter.map((index) => {
-                NotificationsController.CreateTo(`Infelizmente o pet : ${pet.name} ao qual você tinhna interesse foi retirado da adoção pelo seu tutor , mas não se preocupe, pois você pode achar outros pets para doção em nossa plataforma `,index._id,`Pet retirado da adoção`)
+                NotificationsController.CreateTo(`Infelizmente o pet : ${pet.name} ao qual você tinha interesse foi retirado da adoção pelo seu tutor , mas não se preocupe, pois você pode achar outros pets para doção em nossa plataforma `,index._id,`Pet retirado da adoção`)
             })
         }
 
@@ -238,6 +268,11 @@ module.exports = class PetController {
 
         if (pet.user._id.toString() !== user._id.toString()) {  //verificando se a requisição de edição vem do usuario que criou o pet mesma logica acima 
             res.status(422).json({ message: 'Erro ao processar sua operação , por favor verifique o que foi digitado' })
+            return
+        }
+
+        if(!pet.available){
+            res.status(422).json({ message: 'Você não pode editar um pet que já saiu da adoção, por favor verifique o que foi digitado' })
             return
         }
 
@@ -497,7 +532,7 @@ module.exports = class PetController {
         const user = await GetUserByToken(token)
 
         if(pet.user._id.toString() != user._id.toString()){
-            res.status(422).json({ message: 'Pet não pertece ao usuario da solicitação , por favor verifique o que foi digitado' })
+            res.status(422).json({ message: 'Erro ao processar sua operação, por favor verifique o que foi digitado' })
             return
         }
         if(pet.available){

@@ -32,6 +32,10 @@ BACKEND :
         [x] : -Exlcuir Pets da lista
 8º  [x] => Colocar em ordem os pets mais proximos de acordo com o cep fornecido caso tenha  essa informação
 8º  [x] => Ao excluir um pet , remover os arquivos do pet associado
+8º  [x] => Após a adoção do pet a requisição petbyid so funcionar para o tutor atual e o tutor que disponibilizou o pet na plataforma
+        [x] : Requisição petbyid
+        [x] : requisição updatepetbyid
+        [x] : deletepetbyid
 8º  [] => Abrir a localização no maps do pet em questão (Integração back e frontend)
 9º  [] => Tratamento de erros da API
 10º [] => Buscar um pet 
