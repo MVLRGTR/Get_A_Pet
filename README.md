@@ -40,6 +40,9 @@ BACKEND :
         [x] : E-mail de verificação de conta
         [x] : E-mail de token para mudança de senha
         [] : Eviar e-mail para todos os usuarios quando um novo pet for adicionado a plataforma , bem como o link 
+        [] : E-mail de nova mensagem 
+        [] : E-mail de nova notificação
+8º  [] => Confgiguração das variaveis de ambiente
 8º  [] => Abrir a localização no maps do pet em questão (Integração back e frontend)
 9º  [] => Tratamento de erros da API
 10º [] => Buscar um pet 

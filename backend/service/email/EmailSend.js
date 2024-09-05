@@ -1,8 +1,10 @@
 const Send = require('./Nodemailer')
+const User = require('../../models/User')
+require('dotenv').config()
 
 module.exports = class SendEmail {
 
-    static EmailPrimaryLogin(to, token,link) {
+    static EmailPrimaryLogin(to, token) {
         
         const Email = `<!DOCTYPE html>
 <html lang="pt-br">
@@ -15,13 +17,13 @@ module.exports = class SendEmail {
 
 <body style="font-family: Helvetica;  min-height: 100vh; max-width: 900px; margin: auto;padding: 0;  ">
     <section style="max-width:900px; height: 95px; background-color: #ffd400; display: flex; justify-content: space-between;">
-        <img style="border-radius: 50%; padding: 10px;" src="https://static.vecteezy.com/ti/vetor-gratis/p1/13431434-design-de-logotipo-de-desenho-animado-de-mascote-de-cachorro-fofo-estilo-de-design-plano-vetor.jpg" alt="pets">
+        <img style="border-radius: 50%; padding: 10px;" src="${process.env.URL_API}/images/pets/icongetapet.jpg" alt="icon">
         <p style="color: #16479d; font-size: 1.7em;padding-right: 15px; ">Valide sua conta</p>
     </section>
 
     <section style="display: flex; flex-direction: row; max-width:900px ; margin: auto;">
 
-        <img src="https://img.freepik.com/fotos-premium/golden-retriever-na-floresta_416434-362.jpg" alt="">
+        <img src="${process.env.URL_API}/images/pets/dogbodyemail.jpg" alt="dog">
         <article style="padding-left: 10px; display: flex; flex-direction: column; background-color: #85731d79;">
             <h2 style="margin: auto;">Bem-vindo(a) ao Get A Pet! 🐾</h2>
             <p style="line-height: 1.8;">Ficamos muito felizes em tê-lo(a) conosco em nossa comunidade de amantes dos animais! Agora você pode explorar e conhecer os pets disponíveis para adoção, salvar seus favoritos e muito mais.
@@ -33,7 +35,7 @@ module.exports = class SendEmail {
                 </p>
             </div>
             <div style="display: flex; width: 320px; height: 50px; background-color: #ffd400; margin: auto; border-radius: 10px; ">
-                <a style="margin: auto; text-decoration: none; color: black; " href="${link}">Clique aqui para acessar sua conta</a>
+                <a style="margin: auto; text-decoration: none; color: black; " href="${process.env.URL_FRONTEND}/login/primarylogin">Clique aqui para acessar sua conta</a>
             </div>
         </article>
 
@@ -41,7 +43,7 @@ module.exports = class SendEmail {
 
     <section style="height: 200px; max-width: 900px; background-color: #ffd400; display: flex; justify-content: space-between;">
         <section style="flex-basis: 50%; display: flex; align-items: center;">
-            <img style="border-radius: 50%; padding: 10px; height: 80px; width: 80px;" src="https://static.vecteezy.com/ti/vetor-gratis/p1/13431434-design-de-logotipo-de-desenho-animado-de-mascote-de-cachorro-fofo-estilo-de-design-plano-vetor.jpg" alt="pets">
+            <img style="border-radius: 50%; padding: 10px; height: 80px; width: 80px;" src="${process.env.URL_API}/images/pets/icongetapet.jpg" alt="icon">
             <h2>Get A Pet</h2>
         </section>
         <section style="flex-basis: 50%; display: flex; align-items: center;">
@@ -56,7 +58,7 @@ module.exports = class SendEmail {
         console.log(`E-mail enviado com sucesso !!!`)
     }
 
-    static async EmailForgotPassword(to, token,link) {
+    static async EmailForgotPassword(to,token) {
         const Email = `<!DOCTYPE html>
 <html lang="pt-br">
 
@@ -68,13 +70,13 @@ module.exports = class SendEmail {
 
 <body style="font-family: Helvetica;  min-height: 100vh; max-width: 900px; margin: auto;padding: 0;  ">
     <section style="max-width:900px; height: 95px; background-color: #ffd400; display: flex; justify-content: space-between;">
-        <img style="border-radius: 50%; padding: 10px;" src="https://static.vecteezy.com/ti/vetor-gratis/p1/13431434-design-de-logotipo-de-desenho-animado-de-mascote-de-cachorro-fofo-estilo-de-design-plano-vetor.jpg" alt="pets">
+        <img style="border-radius: 50%; padding: 10px;" src="${process.env.URL_API}/images/pets/icongetapet.jpg">
         <p style="color: #16479d; font-size: 1.7em;padding-right: 15px; ">Recuperação de conta</p>
     </section>
 
     <section style="display: flex; flex-direction: row; max-width:900px ; margin: auto;">
 
-        <img src="https://img.freepik.com/fotos-premium/golden-retriever-na-floresta_416434-362.jpg" alt="">
+        <img src="${process.env.URL_API}/images/pets/dogbodyemail.jpg" alt="dog">
         <article style="padding-left: 10px; display: flex; flex-direction: column; background-color: #85731d79;">
             <h2 style="margin: auto;">Recupere  sua conta do Get A Pet! 🐾</h2>
             <p style="line-height: 1.8;">Estamos prontos para ajudá-lo(a) a voltar a utilizar sua conta na nossa plataforma. Para recuperar sua conta e aproveitar todos os recursos que o Get A Pet tem para  oferece a você, utilize o token de recuperação abaixo:    
@@ -85,7 +87,7 @@ module.exports = class SendEmail {
                 </p>
             </div>
             <div style="display: flex; width: 320px; height: 50px; background-color: #ffd400; margin: auto; border-radius: 10px; ">
-                <a style="margin: auto; text-decoration: none; color: black; " href="${link}">Clique aqui para recuperar sua conta</a>
+                <a style="margin: auto; text-decoration: none; color: black; " href="${process.env.URL_FRONTEND}/forgotpassword">Clique aqui para recuperar sua conta</a>
             </div>
         </article>
 
@@ -93,7 +95,7 @@ module.exports = class SendEmail {
 
     <section style="height: 200px; max-width: 900px; background-color: #ffd400; display: flex; justify-content: space-between;">
         <section style="flex-basis: 50%; display: flex; align-items: center;">
-            <img style="border-radius: 50%; padding: 10px; height: 80px; width: 80px;" src="https://static.vecteezy.com/ti/vetor-gratis/p1/13431434-design-de-logotipo-de-desenho-animado-de-mascote-de-cachorro-fofo-estilo-de-design-plano-vetor.jpg" alt="pets">
+            <img style="border-radius: 50%; padding: 10px; height: 80px; width: 80px;" src="${process.env.URL_API}/images/pets/icongetapet.jpg" alt="icon">
             <h2>Get A Pet</h2>
         </section>
         <section style="flex-basis: 50%; display: flex; align-items: center;">
@@ -108,4 +110,60 @@ module.exports = class SendEmail {
 
     }
 
+    static async EmailNewPetForAllUsers(pet){
+        const usersEmail = await User.find({}).select('email')
+
+        const Email = `<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novo Pet na Plataforma</title>
+</head>
+
+<body style="font-family: Helvetica;  min-height: 100vh; max-width: 900px; margin: auto;padding: 0;  ">
+    <section style="max-width:900px; height: 95px; background-color: #ffd400; display: flex; justify-content: space-between;">
+        <img style="border-radius: 50%; padding: 10px;" src="${process.env.URL_API}/images/pets/icongetapet.jpg">
+        <p style="color: #16479d; font-size: 1.7em;padding-right: 15px; ">Temos um novo pet disponível </p>
+    </section>
+
+    <section style="display: flex; flex-direction: row; max-width:900px ; margin: auto;">
+
+        <img src="${process.env.URL_API}/images/pets/dogbodyemail.jpg" alt="dog">
+        <article style="padding-left: 10px; display: flex; flex-direction: column; background-color: #85731d79;">
+            <h2 style="margin: auto;">${pet.name} 🐾</h2>
+            <p style="line-height: 1.8;">Esse novo amigo peludo está esperando por você! Acabamos de adicionar esse pet adorável em nossa plataforma, pronto para encontrar um lar cheio de amor.
+                Não perca a chance de conhecer esse novo companheiro e dar a ele uma nova casa. Clique no Link abaixo e venha conhecer o novo pet!
+            </p>
+            <div style="display: flex; padding-top: 20px; justify-content: center; align-items: center;">
+                <a href="${process.env.URL_FRONTEND}/pets/${pet._id}">
+                    <img style="width: 150px; height: 150px; border-radius: 50%; margin: auto;" src="${process.env.URL_API}/images/pets/${pet.images[0]}" alt="petadopter">
+                </a>
+            </div>
+            <div style="display: flex; width: 320px; height: 50px; background-color: #ffd400; margin: auto; border-radius: 10px; ">
+                <a style="margin: auto; text-decoration: none; color: black; " href=""${process.env.URL_FRONTEND}/pets/${pet._id}><strong>Conheça o novo Pet</strong></a>
+            </div>
+        </article>
+
+    </section>
+
+    <section style="height: 200px; max-width: 900px; background-color: #ffd400; display: flex; justify-content: space-between;">
+        <section style="flex-basis: 50%; display: flex; align-items: center;">
+            <img style="border-radius: 50%; padding: 10px; height: 80px; width: 80px;" src="${process.env.URL_API}/images/pets/icongetapet.jpg" alt="icon">
+            <h2>Get A Pet</h2>
+        </section>
+        <section style="flex-basis: 50%; display: flex; align-items: center;">
+            <p style="line-height: 1.8;">Por favor, não responda a este e-mail. Você está recebendo este e-mail porque criou uma conta Get A Pet em www.getapet.tech ou em nosso aplicativo móvel.</p>
+        </section>
+    </section>
+
+</body>
+</html>`
+        
+        usersEmail.map((user)=>{
+            Send(user.email, "Venha ver o novo pet", Email)
+            console.log(`E-mail enviado com sucesso !!!`)
+        })
+    }
 }

@@ -1,5 +1,6 @@
 const Pet = require('../models/Pet')
 const NotificationsController = require('../controllers/NotificationsController')
+const EmailSend = require('../service/email/EmailSend')
 const User = require('../models/User')
 
 //helpers
@@ -89,6 +90,8 @@ module.exports = class PetController {
         const cepUser = req.body.cep
         const pets = await Pet.find({available:true}).sort('-createdAt')
 
+        EmailSend.EmailNewPetForAllUsers()
+
         if(cepUser){
             console.log(`cepUser :${cepUser} cepUser typeof : ${typeof cepUser} cepUser.lenght :${cepUser.toString().length}`)
             if(typeof cepUser === 'number' && cepUser.toString().length === 8){
@@ -106,6 +109,7 @@ module.exports = class PetController {
                 pets
             })
         }
+
     }
 
     static async GetAllUserPets(req, res) {
