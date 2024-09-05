@@ -7,7 +7,7 @@ const ObjectId = require('mongoose').Types.ObjectId
 
 module.exports = class NotificationsController{
 
-    //o tratamento da regra para notificações do sistema e diferente para as notificações de açoes do usuario no sistema
+    //o tratamento da regra para notificações do sistema é diferente para as notificações de açoes do usuario no sistema
     //sendo a terminação all indicada para notificações globais para todos os usuarios e to para usuarios direcionados
 
     static async CreateAll(text,type,image,link){
@@ -36,7 +36,7 @@ module.exports = class NotificationsController{
 
         const notifications = await Notifications.find({
             to:'all',
-            userviewed:{$nin:[user._id]}
+            // userviewed:{$nin:[user._id]}
         }).sort('-createdAt').select('_id message to createdAt updatedAt') 
 
         if (!notifications) {

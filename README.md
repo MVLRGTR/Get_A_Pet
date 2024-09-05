@@ -36,6 +36,10 @@ BACKEND :
         [x] : Requisição petbyid
         [x] : requisição updatepetbyid
         [x] : deletepetbyid
+9º  [] => E-mail
+        [x] : E-mail de verificação de conta
+        [x] : E-mail de token para mudança de senha
+        [] : Eviar e-mail para todos os usuarios quando um novo pet for adicionado a plataforma , bem como o link 
 8º  [] => Abrir a localização no maps do pet em questão (Integração back e frontend)
 9º  [] => Tratamento de erros da API
 10º [] => Buscar um pet 
@@ -43,7 +47,6 @@ BACKEND :
 12º [] => Fale conosco
 13º [] : Área de Administração 
        [] : -Mudanças de senhas
-       [] : -Apagar comentarios 
        [] : -Editar informações de Usuarios 
        [] : -Editar e apagar um pet de um usuario
        [] : -Inclusão de campos a serem preechidos

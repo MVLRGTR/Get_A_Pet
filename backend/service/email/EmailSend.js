@@ -2,42 +2,51 @@ const Send = require('./Nodemailer')
 
 module.exports = class SendEmail {
 
-    static EmailPrimaryLogin(to, token) {
+    static EmailPrimaryLogin(to, token,link) {
+        
         const Email = `<!DOCTYPE html>
 <html lang="pt-br">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Email Validation</title>
+    <title>Validação de conta</title>
 </head>
 
-<body style="font-family: Helvetica; display: flex; flex-direction: column; background-color: darkgray; justify-content: space-between; min-height: 100vh; margin: 0; ">
-    <section style="width: 100vw; height: 90px; background-color: #ffd400; display: flex;">
-        <p style="color: #16479d; font-weight: bolder; font-size: 1.7em; margin: auto;">Bem vindo ao Get A Pet</p>
+<body style="font-family: Helvetica;  min-height: 100vh; max-width: 900px; margin: auto;padding: 0;  ">
+    <section style="max-width:900px; height: 95px; background-color: #ffd400; display: flex; justify-content: space-between;">
+        <img style="border-radius: 50%; padding: 10px;" src="https://static.vecteezy.com/ti/vetor-gratis/p1/13431434-design-de-logotipo-de-desenho-animado-de-mascote-de-cachorro-fofo-estilo-de-design-plano-vetor.jpg" alt="pets">
+        <p style="color: #16479d; font-size: 1.7em;padding-right: 15px; ">Valide sua conta</p>
     </section>
 
-    <section
-        style="margin: auto; border: 1px solid black; width: 280px; height: 260px; padding: 10px; border-radius: 5%; display: flex; flex-direction: column; background-color: #ffd400;">
-        <div style="display: flex; flex-direction: row; margin: auto;">
-            <img src="https://images.unsplash.com/photo-1507146426996-ef05306b995a?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxleHBsb3JlLWZlZWR8MXx8fGVufDB8fHx8fA%3D%3D" style="width: 70px; height: 70px; border-radius: 10px;" alt="Toughts">
-            <p style="font-weight: bolder; font-size: 1.5em; margin-left: 20px; color: #16479d;">Get A Pet</p>
-        </div>
+    <section style="display: flex; flex-direction: row; max-width:900px ; margin: auto;">
 
-        <article style="margin: auto; font-family: Helvetica; font-family: Helvetica; font-size: larger; ">
-            <p style="color: #16479d; font-weight: bolder;">O valor do seu Token :</p>
-            <div style="border: 1px solid #16479d; border-radius: 20px; width: 180px; height: 30px; display: flex; align-items: center; justify-content: center;">
-                <p style="margin: 0; color: #16479d;">${token}</p>
+        <img src="https://img.freepik.com/fotos-premium/golden-retriever-na-floresta_416434-362.jpg" alt="">
+        <article style="padding-left: 10px; display: flex; flex-direction: column; background-color: #85731d79;">
+            <h2 style="margin: auto;">Bem-vindo(a) ao Get A Pet! 🐾</h2>
+            <p style="line-height: 1.8;">Ficamos muito felizes em tê-lo(a) conosco em nossa comunidade de amantes dos animais! Agora você pode explorar e conhecer os pets disponíveis para adoção, salvar seus favoritos e muito mais.
+            Para acessar sua conta e aproveitar todos os recursos da plataforma, utilize o token de autenticação abaixo:
+            </p>
+            <div style="display: flex; padding-top: 20px;">
+                <p style="margin: auto;">
+                    <strong>${token}</strong>
+                </p>
+            </div>
+            <div style="display: flex; width: 320px; height: 50px; background-color: #ffd400; margin: auto; border-radius: 10px; ">
+                <a style="margin: auto; text-decoration: none; color: black; " href="${link}">Clique aqui para acessar sua conta</a>
             </div>
         </article>
+
     </section>
 
-    <section style="margin: auto; font-family: Helvetica; font-size: large; font-weight:700;">
-        <p>Acesse o site onde está hospedado o Toughts geralmente <a href="http://localhost:3000/loginprimary">localhost:3000/loginprimary</a> e coloque o token Informado</p>
-    </section>
-
-    <section style="width: 100vw; height: 90px; background-color: #ffd400; display: flex; ">
-        <p style="color: #16479d; font-weight: bolder; font-size: 1.7em; margin: auto;">Adote um pet e seja feliz</p>
+    <section style="height: 200px; max-width: 900px; background-color: #ffd400; display: flex; justify-content: space-between;">
+        <section style="flex-basis: 50%; display: flex; align-items: center;">
+            <img style="border-radius: 50%; padding: 10px; height: 80px; width: 80px;" src="https://static.vecteezy.com/ti/vetor-gratis/p1/13431434-design-de-logotipo-de-desenho-animado-de-mascote-de-cachorro-fofo-estilo-de-design-plano-vetor.jpg" alt="pets">
+            <h2>Get A Pet</h2>
+        </section>
+        <section style="flex-basis: 50%; display: flex; align-items: center;">
+            <p style="line-height: 1.8;">Por favor, não responda a este e-mail. Você está recebendo este e-mail porque criou uma conta Get A Pet em www.getapet.tech ou em nosso aplicativo móvel.</p>
+        </section>
     </section>
 
 </body>
@@ -47,42 +56,49 @@ module.exports = class SendEmail {
         console.log(`E-mail enviado com sucesso !!!`)
     }
 
-    static EmailForgotPassword(to, token) {
+    static async EmailForgotPassword(to, token,link) {
         const Email = `<!DOCTYPE html>
 <html lang="pt-br">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Email Validation</title>
+    <title>Recuperação de conta</title>
 </head>
 
-<body style="font-family: Helvetica; display: flex; flex-direction: column; background-color: darkgray; justify-content: space-between; min-height: 100vh; margin: 0; ">
-    <section style="width: 100vw; height: 90px; background-color: #ffd400; display: flex;">
-        <p style="color: #16479d; font-weight: bolder; font-size: 1.7em; margin: auto;">Recupere a sua senha com o token abaixo</p>
+<body style="font-family: Helvetica;  min-height: 100vh; max-width: 900px; margin: auto;padding: 0;  ">
+    <section style="max-width:900px; height: 95px; background-color: #ffd400; display: flex; justify-content: space-between;">
+        <img style="border-radius: 50%; padding: 10px;" src="https://static.vecteezy.com/ti/vetor-gratis/p1/13431434-design-de-logotipo-de-desenho-animado-de-mascote-de-cachorro-fofo-estilo-de-design-plano-vetor.jpg" alt="pets">
+        <p style="color: #16479d; font-size: 1.7em;padding-right: 15px; ">Recuperação de conta</p>
     </section>
 
-    <section
-        style="margin: auto; border: 1px solid black; width: 280px; height: 260px; padding: 10px; border-radius: 5%; display: flex; flex-direction: column; background-color: #ffd400;">
-        <div style="display: flex; flex-direction: row; margin: auto;">
-            <img src="https://images.unsplash.com/photo-1507146426996-ef05306b995a?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxleHBsb3JlLWZlZWR8MXx8fGVufDB8fHx8fA%3D%3D" style="width: 70px; height: 70px; border-radius: 10px;" alt="Toughts">
-            <p style="font-weight: bolder; font-size: 1.5em; margin-left: 20px; color: #16479d;">Get A Pet</p>
-        </div>
+    <section style="display: flex; flex-direction: row; max-width:900px ; margin: auto;">
 
-        <article style="margin: auto; font-family: Helvetica; font-family: Helvetica; font-size: larger; ">
-            <p style="color: #16479d; font-weight: bolder;">O valor do seu Token :</p>
-            <div style="border: 1px solid #16479d; border-radius: 20px; width: 180px; height: 30px; display: flex; align-items: center; justify-content: center;">
-                <p style="margin: 0; color: #16479d;">${token}</p>
+        <img src="https://img.freepik.com/fotos-premium/golden-retriever-na-floresta_416434-362.jpg" alt="">
+        <article style="padding-left: 10px; display: flex; flex-direction: column; background-color: #85731d79;">
+            <h2 style="margin: auto;">Recupere  sua conta do Get A Pet! 🐾</h2>
+            <p style="line-height: 1.8;">Estamos prontos para ajudá-lo(a) a voltar a utilizar sua conta na nossa plataforma. Para recuperar sua conta e aproveitar todos os recursos que o Get A Pet tem para  oferece a você, utilize o token de recuperação abaixo:    
+            </p>
+            <div style="display: flex; padding-top: 20px;">
+                <p style="margin: auto;">
+                    <strong>${token}</strong>
+                </p>
+            </div>
+            <div style="display: flex; width: 320px; height: 50px; background-color: #ffd400; margin: auto; border-radius: 10px; ">
+                <a style="margin: auto; text-decoration: none; color: black; " href="${link}">Clique aqui para recuperar sua conta</a>
             </div>
         </article>
+
     </section>
 
-    <section style="margin: auto; font-family: Helvetica; font-size: large; font-weight:700;">
-        <p>Acesse o site onde está hospedado o Get A Pet geralmente <a href="http://localhost:3000/loginprimary">localhost:3000/loginprimary</a> e coloque o token Informado</p>
-    </section>
-
-    <section style="width: 100vw; height: 90px; background-color: #ffd400; display: flex; ">
-        <p style="color: #16479d; font-weight: bolder; font-size: 1.7em; margin: auto;">Adote um pet e seja feliz</p>
+    <section style="height: 200px; max-width: 900px; background-color: #ffd400; display: flex; justify-content: space-between;">
+        <section style="flex-basis: 50%; display: flex; align-items: center;">
+            <img style="border-radius: 50%; padding: 10px; height: 80px; width: 80px;" src="https://static.vecteezy.com/ti/vetor-gratis/p1/13431434-design-de-logotipo-de-desenho-animado-de-mascote-de-cachorro-fofo-estilo-de-design-plano-vetor.jpg" alt="pets">
+            <h2>Get A Pet</h2>
+        </section>
+        <section style="flex-basis: 50%; display: flex; align-items: center;">
+            <p style="line-height: 1.8;">Por favor, não responda a este e-mail. Você está recebendo este e-mail porque criou uma conta Get A Pet em www.getapet.tech ou em nosso aplicativo móvel.</p>
+        </section>
     </section>
 
 </body>

@@ -12,8 +12,6 @@ const ObjectId = require('mongoose').Types.ObjectId
 //others
 const fs = require('fs')
 const path = require('path')
-const CheckToken = require('../helpers/Verify-token')
-
 
 module.exports = class PetController {
 

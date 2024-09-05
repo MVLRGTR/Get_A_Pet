@@ -24,3 +24,6 @@ app.use('/users',UserRoutes)
 app.use('/pets',PetRoutes)
 app.use('/message',MessageRoutes)
 app.use('/notifications',NotificationsRoutes)
+app.use((req, res, next) => {
+    res.status(404).json({ message: 'Rota não encontrada' });
+})

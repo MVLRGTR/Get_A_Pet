@@ -291,7 +291,7 @@ module.exports = class UserController{
         }
 
         userDb.address = address
-        await userDb.save()
+        await User.findByIdAndUpdate(userDb._id,userDb)
         res.status(200).json({
             message: 'Endereço atualizado com sucesso !!!'
         })
