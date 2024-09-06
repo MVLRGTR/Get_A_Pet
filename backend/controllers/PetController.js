@@ -20,7 +20,7 @@ module.exports = class PetController {
         const { name, age, weight, color, description } = req.body
         const images = req.files
         const available = true //para que o pet cadastrado começe sendo disponivel para adoção
-        console.log(`Entrou aqui para verificar o req.user : ${JSON.stringify(req.user)}`)
+        // console.log(`Entrou aqui para verificar o req.user : ${JSON.stringify(req.user)}`)
         if (!name) {
             res.status(422).json({ message: 'O nome não pode ser nulo , por favor verifique o que foi digitado' })
             return
@@ -44,13 +44,17 @@ module.exports = class PetController {
 
         const token = GetToken(req)
         const user = await GetUserByToken(token)
+        if(!user){
+            res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
+            return
+        }
         const userDb = await User.findById(user._id)
 
         if(!userDb.address){
             res.status(422).json({ message: 'Você não pode adicionar um pet na nossa plataforma sem ter um endereço cadastrado' })
             return
         }
-        console.log(`user : ${JSON.stringify(user)}`)
+        //console.log(`user : ${JSON.stringify(user)}`)
 
         const pet = new Pet({
             name,
@@ -80,6 +84,7 @@ module.exports = class PetController {
                 NewPet
             })
             NotificationsController.CreateTo(`${user.name} seu pet ${pet.name} foi adicionado para adoção com sucesso !!!`,user._id,'Pet Criado com sucesso',pet.images[0],NewPet._id)
+            EmailSend.EmailNewPetForAllUsers(pet)
         } catch (error) {
             res.status(500).json({ message: error })
         }
@@ -89,8 +94,6 @@ module.exports = class PetController {
     static async GetAllPets(req, res) {
         const cepUser = req.body.cep
         const pets = await Pet.find({available:true}).sort('-createdAt')
-
-        EmailSend.EmailNewPetForAllUsers()
 
         if(cepUser){
             console.log(`cepUser :${cepUser} cepUser typeof : ${typeof cepUser} cepUser.lenght :${cepUser.toString().length}`)
@@ -115,6 +118,10 @@ module.exports = class PetController {
     static async GetAllUserPets(req, res) {
         const token = GetToken(req)
         const user = await GetUserByToken(token)
+        if(!user){
+            res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
+            return
+        }
 
         const pets = await Pet.find({ 'user._id': user._id }).sort('-createdAt')   //Para acessar sub-documents no mongodb fazemos a utilização dessa sintaxe
 
@@ -134,6 +141,10 @@ module.exports = class PetController {
         // Nesse endpoint faço o retorno de requisições de adoções bem como pets com adoção já concluidas para esse usuario , pets com adoção concluidas serão tratadas no front-end
         const token = GetToken(req)
         const user = await GetUserByToken(token)
+        if(!user){
+            res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
+            return
+        }
         try{
             const pets = await Pet.find({
                 adopter:{
@@ -211,6 +222,10 @@ module.exports = class PetController {
 
         const token = GetToken(req)
         const user = await GetUserByToken(token)
+        if(!user){
+            res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
+            return
+        }
 
         if (pet.user._id.toString() !== user._id.toString()) {  //verificando se a requisição de exclusão vem do usuario que criou o pet
             res.status(422).json({ message: 'Erro ao processar sua operação , por favor verifique o que foi digitado' })
@@ -267,6 +282,10 @@ module.exports = class PetController {
 
         const token = GetToken(req)
         const user = await GetUserByToken(token)
+        if(!user){
+            res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
+            return
+        }
 
         if (pet.user._id.toString() !== user._id.toString()) {  //verificando se a requisição de edição vem do usuario que criou o pet mesma logica acima 
             res.status(422).json({ message: 'Erro ao processar sua operação , por favor verifique o que foi digitado' })
@@ -338,6 +357,10 @@ module.exports = class PetController {
 
         const token = GetToken(req)
         const user = await GetUserByToken(token)
+        if(!user){
+            res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
+            return
+        }
         const userDb = await User.findById(user._id)
 
         if(!userDb.address){
@@ -400,6 +423,10 @@ module.exports = class PetController {
 
         const token = GetToken(req)
         const user = await GetUserByToken(token)
+        if(!user){
+            res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
+            return
+        }
 
         if (pet.user._id.toString() != user._id.toString()) {  //verificando se a requisição de cocnlusão de adoção vem do usuario que criou o pet
             res.status(422).json({ message: 'Erro ao processar sua operação , por favor verifique o que foi digitado' })
@@ -459,6 +486,10 @@ module.exports = class PetController {
 
         const token = GetToken(req)
         const user = await GetUserByToken(token)
+        if(!user){
+            res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
+            return
+        }
 
         pet.adopter.map((index) => {
             if(index._id.toString() === user._id.toString()){
@@ -494,6 +525,10 @@ module.exports = class PetController {
 
         const token = GetToken(req)
         const user = await GetUserByToken(token)
+        if(!user){
+            res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
+            return
+        }
 
         if(pet.user._id.toString() != user._id.toString()){
             res.status(422).json({ message: 'Pet não pertece ao usuario da solicitação , por favor verifique o que foi digitado' })
@@ -532,6 +567,10 @@ module.exports = class PetController {
 
         const token = GetToken(req)
         const user = await GetUserByToken(token)
+        if(!user){
+            res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
+            return
+        }
 
         if(pet.user._id.toString() != user._id.toString()){
             res.status(422).json({ message: 'Erro ao processar sua operação, por favor verifique o que foi digitado' })
@@ -567,6 +606,10 @@ module.exports = class PetController {
 
         const token = GetToken(req)
         const user = await GetUserByToken(token)
+        if(!user){
+            res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
+            return
+        }
         const userDb = await User.findById(user._id)
 
         if(userDb._id.toString()===pet.user._id.toString()){
@@ -606,6 +649,10 @@ module.exports = class PetController {
 
         const token = GetToken(req)
         const user = await GetUserByToken(token)
+        if(!user){
+            res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
+            return
+        }
         const userDb = await User.findById(user._id)
 
         for(let index of userDb.favoritepets){

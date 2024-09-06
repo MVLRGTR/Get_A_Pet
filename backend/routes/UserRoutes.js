@@ -13,5 +13,6 @@ router.get('/checkuser',UserController.CheckUser)
 router.get('/:id',UserController.GetUserById)
 router.patch('/edit',VerifyToken,ImageUpload.single('image'),UserController.EditUser)
 router.patch('/editaddress',VerifyToken,UserController.EditUserAddress)
+router.patch('/receiveremail',VerifyToken,UserController.ReceiverEmail)
 
 module.exports = router

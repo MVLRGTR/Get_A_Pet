@@ -111,7 +111,7 @@ module.exports = class SendEmail {
     }
 
     static async EmailNewPetForAllUsers(pet){
-        const usersEmail = await User.find({}).select('email')
+        const usersEmail = await User.find({}).select('email receiveremail')
 
         const Email = `<!DOCTYPE html>
 <html lang="pt-br">
@@ -142,7 +142,7 @@ module.exports = class SendEmail {
                 </a>
             </div>
             <div style="display: flex; width: 320px; height: 50px; background-color: #ffd400; margin: auto; border-radius: 10px; ">
-                <a style="margin: auto; text-decoration: none; color: black; " href=""${process.env.URL_FRONTEND}/pets/${pet._id}><strong>Conheça o novo Pet</strong></a>
+                <a style="margin: auto; text-decoration: none; color: black; " href="${process.env.URL_FRONTEND}/pets/${pet._id}"><strong>Conheça o novo Pet</strong></a>
             </div>
         </article>
 
@@ -162,8 +162,9 @@ module.exports = class SendEmail {
 </html>`
         
         usersEmail.map((user)=>{
-            Send(user.email, "Venha ver o novo pet", Email)
-            console.log(`E-mail enviado com sucesso !!!`)
+            if(user.receiveremail === true){
+                Send(user.email, "Venha ver o novo pet", Email)
+            }
         })
     }
 }

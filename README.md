@@ -39,9 +39,12 @@ BACKEND :
 9º  [] => E-mail
         [x] : E-mail de verificação de conta
         [x] : E-mail de token para mudança de senha
-        [] : Eviar e-mail para todos os usuarios quando um novo pet for adicionado a plataforma , bem como o link 
+        [x] : Eviar e-mail para todos os usuarios quando um novo pet for adicionado a plataforma , bem como o link 
         [] : E-mail de nova mensagem 
         [] : E-mail de nova notificação
+        [] : Botão de não receber e-mail , somente o e-mail de primarylogin ou o de forgotpassword que ainda con
+9º  [] => SMS 
+        [] : SMS de recuperação de conta 
 8º  [] => Confgiguração das variaveis de ambiente
 8º  [] => Abrir a localização no maps do pet em questão (Integração back e frontend)
 9º  [] => Tratamento de erros da API

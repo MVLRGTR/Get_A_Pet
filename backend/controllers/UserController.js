@@ -206,40 +206,62 @@ module.exports = class UserController{
 
         const token = GetToken(req)
         const user = await GetUserByToken(token)
+        if(!user){
+            res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
+            return
+        }
+
         const userDb = await User.findById(user._id)
 
-        const {name,email,phone,password,confirmpassword} = req.body
+        const {name,email,phone,receiveremail,password,confirmpassword} = req.body
+
+        console.log(`receiveremail : ${receiveremail}`)
 
         if(req.file){
             console.log(`entrou aqui , valor req.file.filename :${req.file.filename} valor req.file : ${req.file}`)
             user.img = req.file.filename
         }
+
         console.log(`valor user.image :${user.image} user:${user}`)
         if(!name){
             res.status(422).json({message:'O nome não pode ser nulo , por favor verifique o que foi digitado'})
             return
         }
         user.name = name
+
         if(!email){
             res.status(422).json({message:'O email não pode ser nulo , por favor verifique o que foi digitado'})
             return
         }
         const UserExistsByEmail = await User.findOne({email:email})
+
         if(userDb.email !== email && UserExistsByEmail){
             res.status(422).json({message:'E-mail inválido , por favor verifique o que foi digitado'})
             return
         }
         user.email = email
+
         if(!phone){
             res.status(422).json({message:'O telefone não pode ser nulo , por favor verifique o que foi digitado'})
             return
         }
         user.phone = phone
 
+        if(!receiveremail){
+            user.receiveremail = true
+        }else{
+            if(receiveremail === 'true' || receiveremail === 'false'){
+                user.receiveremail = receiveremail
+            }else{
+                res.status(422).json({message:'receiver email formato incorreto , por favor verifique o que foi digitado'})
+                return
+            }
+        }
+
         if(password != confirmpassword){
             res.status(422).json({message:'As senhas não conferem , por favor verifique o que foi digitado'})
             return
-        }else if(password == confirmpassword && password != null){
+        }else if(password === confirmpassword && password != null){
             const salt = await bcrypt.genSalt(12)
             const PasswordHash = await bcrypt.hash(password,salt)
             user.password = PasswordHash
@@ -256,14 +278,16 @@ module.exports = class UserController{
             res.status(500).json({message:erro})
             return
         }
-
-        
     }
 
     static async EditUserAddress(req,res){
 
         const token = GetToken(req)
         const user = await GetUserByToken(token)
+        if(!user){
+            res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
+            return
+        }
         const userDb = await User.findById(user._id)
         let address = {}
 
@@ -296,6 +320,29 @@ module.exports = class UserController{
             message: 'Endereço atualizado com sucesso !!!'
         })
 
+    }
+
+    static async ReceiverEmail(req,res){
+        const receiveremail = req.body.receiveremail
+
+        const token = GetToken(req)
+        const user = await GetUserByToken(token)
+
+        if(!user){
+            res.status(422).json({message:'Usuario não encontrado !'})
+            return
+        }
+
+        const userDb = await User.findById(user._id)
+
+
+        if(receiveremail === true || receiveremail === false){
+            userDb.receiveremail = receiveremail
+            await User.findByIdAndUpdate(userDb._id,userDb)
+            res.status(200).json({message : 'Notificações por e-mail foram atualizadas com sucesso !!!'})
+        }else{
+            res.status(422).json({message:'Erro ao processar sua operação , por favor verifique o que foi digitado !'})
+        }
     }
 
 }
