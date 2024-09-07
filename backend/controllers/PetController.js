@@ -7,7 +7,6 @@ const User = require('../models/User')
 const GetToken = require('../helpers/GetToken')
 const GetUserByToken = require('../helpers/GetUserByToken')
 const OrderPetsByCEP = require('../helpers/OrderPetsByCEP')
-const Verifytoken = require('../helpers/Verify-token')
 const ObjectId = require('mongoose').Types.ObjectId
 
 //others
@@ -21,6 +20,7 @@ module.exports = class PetController {
         const images = req.files
         const available = true //para que o pet cadastrado começe sendo disponivel para adoção
         // console.log(`Entrou aqui para verificar o req.user : ${JSON.stringify(req.user)}`)
+        EmailSend.EmailAllNotification()
         if (!name) {
             res.status(422).json({ message: 'O nome não pode ser nulo , por favor verifique o que foi digitado' })
             return

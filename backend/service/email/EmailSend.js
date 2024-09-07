@@ -1,5 +1,6 @@
 const Send = require('./Nodemailer')
 const User = require('../../models/User')
+const Notification = require('../../models/Notifications')
 require('dotenv').config()
 
 module.exports = class SendEmail {
@@ -166,5 +167,65 @@ module.exports = class SendEmail {
                 Send(user.email, "Venha ver o novo pet", Email)
             }
         })
+    }
+
+    static async EmailAllNotification(){
+        const users = await User.find({receiveremail:'true'}).select('_id email')
+        const notifications = await Notification.find({emailnotification:'false'})
+
+
+        const Email = `<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nova notificação</title>
+</head>
+
+<body style="font-family: Helvetica;  min-height: 100vh; max-width: 900px; margin: auto;padding: 0;  ">
+    <section style="max-width:900px; height: 95px; background-color: #ffd400; display: flex; justify-content: space-between;">
+        <img style="border-radius: 50%; padding: 10px;" src="${process.env.URL_API}/images/pets/icongetapet.jpg">
+        <p style="color: #16479d; font-size: 1.7em;padding-right: 15px; ">${notification.type}</p>
+    </section>
+
+    <section style="display: flex; flex-direction: row; max-width:900px ; margin: auto;">
+
+        <img src="${process.env.URL_API}/images/pets/dogbodyemail.jpg" alt="dog">
+        <article style="padding-left: 10px; display: flex; flex-direction: column; background-color: #85731d79; flex-grow: 1;">
+            <h2 style="margin: auto;">${notification.type}</h2>
+            <p style="line-height: 1.8;">${notification.message}</p>
+            <div style="display: flex; width: 320px; height: 50px; background-color: #ffd400; margin: auto; border-radius: 10px; ">
+                <a style="margin: auto; text-decoration: none; color: black; " href="${link}">Clique aqui para ver</a>
+            </div>
+        </article>
+
+    </section>
+
+    <section style="height: 200px; max-width: 900px; background-color: #ffd400; display: flex; justify-content: space-between;">
+        <section style="flex-basis: 50%; display: flex; align-items: center;">
+            <img style="border-radius: 50%; padding: 10px; height: 80px; width: 80px;" src="${process.env.URL_API}/images/pets/icongetapet.jpg" alt="icon">
+            <h2>Get A Pet</h2>
+        </section>
+        <section style="flex-basis: 50%; display: flex; align-items: center;">
+            <p style="line-height: 1.8;">Por favor, não responda a este e-mail. Você está recebendo este e-mail porque criou uma conta Get A Pet em www.getapet.tech ou em nosso aplicativo móvel.</p>
+        </section>
+    </section>
+
+</body>
+</html>`
+
+
+        for(const user of users){
+            for(notification of notifications){
+                if(notification.to.toString() === user._id.toString()){
+                    Send(user.email,notification.type,Email)
+                    notification.emailnotification = true 
+                    await Notification.findByIdAndUpdate(notification._id,notification)
+                }
+            }
+        }
+
+        
     }
 }

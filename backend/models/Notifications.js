@@ -28,6 +28,10 @@ const Notifications = mongoose.model(
         link:{
             type:String
         },
+        emailnotification:{
+            type:Boolean,
+            default:'false'
+        },
     },{timestamps:true})
 )
 

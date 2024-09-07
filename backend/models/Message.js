@@ -10,6 +10,10 @@ const Message = mongoose.model(
         viewed:{
             type:Boolean
         },
+        notification:{
+            type:Boolean,
+            default:'false'
+        },
         to:Object,
         from:Object
     },{timestamps:true})
