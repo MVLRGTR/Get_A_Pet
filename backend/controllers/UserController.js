@@ -235,6 +235,8 @@ module.exports = class UserController{
         }
         const UserExistsByEmail = await User.findOne({email:email})
 
+        console.log(`userDb:${userDb.email} email :${email} UserExistByEmail : ${UserExistsByEmail} `)
+
         if(userDb.email !== email && UserExistsByEmail){
             res.status(422).json({message:'E-mail inválido , por favor verifique o que foi digitado'})
             return

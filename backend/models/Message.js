@@ -14,6 +14,9 @@ const Message = mongoose.model(
             type:Boolean,
             default:'false'
         },
+        files:{
+            type:Array
+        },
         to:Object,
         from:Object
     },{timestamps:true})

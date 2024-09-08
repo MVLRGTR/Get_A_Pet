@@ -21,12 +21,16 @@ module.exports = class MessageController {
         }
         const toExist = await User.findById({ _id: to }).select('_id name img phone')
         if (!toExist) {
-            res.status(404).json({ message: 'Usuário de origem não encontrado' })
+            res.status(404).json({ message: 'Usuário  não encontrado' })
             return
         }
 
         const token = GetToken(req)
         const user = await GetUserByToken(token)
+        if(!user){
+            res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
+            return
+        }
 
         if (user._id.toString() === to.toString()) {
             res.status(422).json({ message: 'A messagem precisar ter origem e destino diferente, por favor verifique o que foi digitado' })

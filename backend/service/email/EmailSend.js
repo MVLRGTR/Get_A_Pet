@@ -1,6 +1,6 @@
 const Send = require('./Nodemailer')
 const User = require('../../models/User')
-const Notification = require('../../models/Notifications')
+const Message = require('../../models/Message')
 require('dotenv').config()
 
 module.exports = class SendEmail {
@@ -112,7 +112,7 @@ module.exports = class SendEmail {
     }
 
     static async EmailNewPetForAllUsers(pet){
-        const usersEmail = await User.find({}).select('email receiveremail')
+        const usersEmail = await User.find({receiveremail:'true'}).select('email')
 
         const Email = `<!DOCTYPE html>
 <html lang="pt-br">
@@ -162,70 +162,79 @@ module.exports = class SendEmail {
 </body>
 </html>`
         
-        usersEmail.map((user)=>{
-            if(user.receiveremail === true){
-                Send(user.email, "Venha ver o novo pet", Email)
-            }
-        })
+        for(const user of usersEmail){
+            await Send(user.email, "Venha ver o novo pet", Email)
+        }
     }
 
-    static async EmailAllNotification(){
+    static async EmailNewMessageChatNotification(){
         const users = await User.find({receiveremail:'true'}).select('_id email')
-        const notifications = await Notification.find({emailnotification:'false'})
 
-
-        const Email = `<!DOCTYPE html>
-<html lang="pt-br">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nova notificação</title>
-</head>
-
-<body style="font-family: Helvetica;  min-height: 100vh; max-width: 900px; margin: auto;padding: 0;  ">
-    <section style="max-width:900px; height: 95px; background-color: #ffd400; display: flex; justify-content: space-between;">
-        <img style="border-radius: 50%; padding: 10px;" src="${process.env.URL_API}/images/pets/icongetapet.jpg">
-        <p style="color: #16479d; font-size: 1.7em;padding-right: 15px; ">${notification.type}</p>
-    </section>
-
-    <section style="display: flex; flex-direction: row; max-width:900px ; margin: auto;">
-
-        <img src="${process.env.URL_API}/images/pets/dogbodyemail.jpg" alt="dog">
-        <article style="padding-left: 10px; display: flex; flex-direction: column; background-color: #85731d79; flex-grow: 1;">
-            <h2 style="margin: auto;">${notification.type}</h2>
-            <p style="line-height: 1.8;">${notification.message}</p>
-            <div style="display: flex; width: 320px; height: 50px; background-color: #ffd400; margin: auto; border-radius: 10px; ">
-                <a style="margin: auto; text-decoration: none; color: black; " href="${link}">Clique aqui para ver</a>
-            </div>
-        </article>
-
-    </section>
-
-    <section style="height: 200px; max-width: 900px; background-color: #ffd400; display: flex; justify-content: space-between;">
-        <section style="flex-basis: 50%; display: flex; align-items: center;">
-            <img style="border-radius: 50%; padding: 10px; height: 80px; width: 80px;" src="${process.env.URL_API}/images/pets/icongetapet.jpg" alt="icon">
-            <h2>Get A Pet</h2>
-        </section>
-        <section style="flex-basis: 50%; display: flex; align-items: center;">
-            <p style="line-height: 1.8;">Por favor, não responda a este e-mail. Você está recebendo este e-mail porque criou uma conta Get A Pet em www.getapet.tech ou em nosso aplicativo móvel.</p>
-        </section>
-    </section>
-
-</body>
-</html>`
-
-
+        // aqui pego todos os usuarios e percorro pelas messagens de cada usuario e verifico quantas conversas diferentes ele tem para enviar o e-mail para n conversar difirentes
         for(const user of users){
-            for(notification of notifications){
-                if(notification.to.toString() === user._id.toString()){
-                    Send(user.email,notification.type,Email)
-                    notification.emailnotification = true 
-                    await Notification.findByIdAndUpdate(notification._id,notification)
-                }
-            }
-        }
+            // console.log('Processando usuário:', user.email)
+            const messages = await Message.find({
+                viewed:false,
+                notification:false,
+                to:user._id
+            })
 
-        
+            let from = []
+
+            await Promise.all(messages.map(async (message) => {
+                await Message.findByIdAndUpdate(message._id, { notification: true })
+                
+                if (!from.includes(message.from)) {
+                    from.push(message.from)
+                }
+            }))
+    
+            // console.log(`from :${from}`)
+            await Promise.all(from.map(async (index) => {
+                const userFrom = await User.findById(index).select('_id name img')
+                const Email = `<!DOCTYPE html>
+                <html lang="pt-br">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Nova notificação</title>
+                </head>
+                <body style="font-family: Helvetica;  min-height: 100vh; max-width: 900px; margin: auto;padding: 0;  ">
+                    <section style="max-width:900px; height: 95px; background-color: #ffd400; display: flex; justify-content: space-between;">
+                        <img style="border-radius: 50%; padding: 10px;" src="${process.env.URL_API}/images/pets/icongetapet.jpg">
+                        <p style="color: #16479d; font-size: 1.7em;padding-right: 15px; ">Nova Mensagem</p>
+                    </section>
+                    <section style="display: flex; flex-direction: row; max-width:900px ; margin: auto;">
+                        <img src="${process.env.URL_API}/images/pets/dogbodyemail.jpg" alt="dog">
+                        <article style="padding-left: 10px; display: flex; flex-direction: column; background-color: #85731d79; flex-grow: 1;">
+                            <h2 style="margin: auto;">Você tem uma nova menssagem de ${userFrom.name}</h2>
+                            <div style="display: flex; padding-top: 20px; justify-content: center; align-items: center;">
+                                <a href="${process.env.URL_FRONTEND}/messages/${userFrom._id}>
+                                    <img style="width: 150px; height: 150px; border-radius: 50%; margin: auto;" src="${process.env.URL_API}/images/users/${userFrom.img}" alt="imgUser">
+                                </a>
+                            </div>
+                            <div style="display: flex; width: 320px; height: 50px; background-color: #ffd400; margin: auto; border-radius: 10px; ">
+                                <a style="margin: auto; text-decoration: none; color: black; " href="${process.env.URL_FRONTEND}/messages/${userFrom._id}">Clique aqui para ver</a>
+                            </div>
+                        </article>
+                    </section>
+                    <section style="height: 200px; max-width: 900px; background-color: #ffd400; display: flex; justify-content: space-between;">
+                        <section style="flex-basis: 50%; display: flex; align-items: center;">
+                            <img style="border-radius: 50%; padding: 10px; height: 80px; width: 80px;" src="${process.env.URL_API}/images/pets/icongetapet.jpg" alt="icon">
+                            <h2>Get A Pet</h2>
+                        </section>
+                        <section style="flex-basis: 50%; display: flex; align-items: center;">
+                            <p style="line-height: 1.8;">Por favor, não responda a este e-mail. Você está recebendo este e-mail porque criou uma conta Get A Pet em www.getapet.tech ou em nosso aplicativo móvel.</p>
+                        </section>
+                    </section>
+                </body>
+                </html>`
+    
+                // console.log(`Enviando e-mail para ${user.email}, mensagem de ${userFrom.name}`)
+                await Send(user.email, "Nova mensagem", Email)
+            }))
+
+            // console.log(`Finalizado para usuário: ${user.email}`)
+        }
     }
 }

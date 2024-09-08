@@ -20,7 +20,6 @@ module.exports = class PetController {
         const images = req.files
         const available = true //para que o pet cadastrado começe sendo disponivel para adoção
         // console.log(`Entrou aqui para verificar o req.user : ${JSON.stringify(req.user)}`)
-        EmailSend.EmailAllNotification()
         if (!name) {
             res.status(422).json({ message: 'O nome não pode ser nulo , por favor verifique o que foi digitado' })
             return
@@ -94,6 +93,7 @@ module.exports = class PetController {
     static async GetAllPets(req, res) {
         const cepUser = req.body.cep
         const pets = await Pet.find({available:true}).sort('-createdAt')
+        EmailSend.EmailNewMessageChatNotification()
 
         if(cepUser){
             console.log(`cepUser :${cepUser} cepUser typeof : ${typeof cepUser} cepUser.lenght :${cepUser.toString().length}`)
