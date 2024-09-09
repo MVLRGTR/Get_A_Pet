@@ -19,7 +19,7 @@ module.exports = class NotificationsController{
             if(image){
                 notification.image = image
             }
-            Notifications.create(notification)
+            await Notifications.create(notification)
         }catch(erro){
             console.log(`erro apresentado : ${erro}`)
         }
@@ -95,7 +95,7 @@ module.exports = class NotificationsController{
             if(image){
                 notification.image = image
             }
-            Notifications.create(notification)
+            await Notifications.create(notification)
         }catch(erro){
             console.log(erro)
         }

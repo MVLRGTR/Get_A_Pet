@@ -12,6 +12,7 @@ const ObjectId = require('mongoose').Types.ObjectId
 //others
 const fs = require('fs')
 const path = require('path')
+require('dotenv').config()
 
 module.exports = class PetController {
 
@@ -82,7 +83,8 @@ module.exports = class PetController {
                 message: 'Pet Cadastrado com sucesso',
                 NewPet
             })
-            NotificationsController.CreateTo(`${user.name} seu pet ${pet.name} foi adicionado para adoção com sucesso !!!`,user._id,'Pet Criado com sucesso',pet.images[0],NewPet._id)
+            NotificationsController.CreateAll(`O pet ${pet.name} está esperendo por você , venha conhecer o seu proximo amigo !!!`,`Novo Pet disponível`,`${process.env.URL_API}/images/pets/${pet.images[0]}`,`${process.env.URL_FRONTEND}/pets/${pet._id}`)
+            // NotificationsController.CreateTo(`${user.name} seu pet ${pet.name} foi adicionado para adoção com sucesso !!!`,user._id,'Pet Criado com sucesso',`${process.env.URL_API}/images/pets/${pet.images[0]}`,`${process.env.URL_FRONTEND}/pets/mypets/${pet._id}`)
             EmailSend.EmailNewPetForAllUsers(pet)
         } catch (error) {
             res.status(500).json({ message: error })
@@ -253,7 +255,7 @@ module.exports = class PetController {
 
         if(pet.adopter.length > 0){
             pet.adopter.map((index) => {
-                NotificationsController.CreateTo(`Infelizmente o pet : ${pet.name} ao qual você tinha interesse foi retirado da adoção pelo seu tutor , mas não se preocupe, pois você pode achar outros pets para doção em nossa plataforma `,index._id,`Pet retirado da adoção`)
+                NotificationsController.CreateTo(`Infelizmente o pet : ${pet.name} ao qual você tinha interesse foi retirado da adoção pelo seu tutor , mas não se preocupe, pois você pode achar outros pets para doção em nossa plataforma `,index._id,`Pet retirado da adoção`,`${process.env.URL_API}/images/pets/icongetapet.jpg`,`${process.env.URL_FRONTEND}`)
             })
         }
 
@@ -356,11 +358,11 @@ module.exports = class PetController {
 
         const token = GetToken(req)
         const user = await GetUserByToken(token)
-        if(!user){
+        const userDb = await User.findById(user._id)
+        if(!userDb){
             res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
             return
         }
-        const userDb = await User.findById(user._id)
 
         if(!userDb.address){
             res.status(422).json({ message: 'Você não pode adotar um pet na nossa plataforma sem ter um endereço cadastrado' })
@@ -391,9 +393,8 @@ module.exports = class PetController {
         res.status(200).json({
             message: `O pedido de adoção foi feito com sucesso , entre em contato com ${pet.user.name} no telefone ${pet.user.phone} para acertar os detelhes da adoção !!!`
         })
-
-        NotificationsController.CreateTo(`Você tem uma nova solicitação de adoção para o seu pet ${pet.name} do possivél tutor ${user.name}`,pet.user._id,'Solicitação de adoção',pet.images[0],pet._id)
-
+        NotificationsController.CreateTo(`Você tem uma nova solicitação de adoção para o seu pet ${pet.name} do possivél tutor ${user.name}`,pet.user._id,'Solicitação de adoção',`${process.env.URL_API}/images/pets/${pet.images[0]}`,`${process.env.URL_FRONTEND}/pets/mypets/${pet._id}`)
+        EmailSend.EmailNewRequestAdopter(pet,userDb)
     }
 
     static async ConcludeAdoption(req, res) {
@@ -411,8 +412,13 @@ module.exports = class PetController {
             res.status(404).json({ message: 'Pet não existe no banco de dados , por favor verifique o que foi digitado' })
             return
         }
-        if (!idAdoption) {
-            res.status(404).json({ message: 'Id do adotante não consta na requisição , por favor verifique o que foi digitado' })
+        if (!ObjectId(idAdoption)) {
+            res.status(404).json({ message: 'Id do adotante inválido , por favor verifique o que foi digitado' })
+            return
+        }
+        const AdopterDb = await User.findById(idAdoption).select('_id name email ')
+        if(!AdopterDb){
+            res.status(422).json({message:'Usuario adotante não encontrado , por favor verifique o que foi digitado'})
             return
         }
         if(!pet.available){
@@ -460,8 +466,13 @@ module.exports = class PetController {
                 NotificationsController.CreateTo(`Infelizmente o pet ${pet.name} foi adotado por outro tutor , mas não se preocupe porque temos varios pets na nossa plataforma , encontre um e seja feliz`,index._id,`Pet retirado da adoção`)
             })
         }
+        //Adotante
+        EmailSend.EmailConcludeAdopter(pet,user,'adopter')
         NotificationsController.CreateTo(`Parabéns !!! você agora é o novo tutor do pet ${pet.name}`,AdoptionOk._id,`Conclusão da adoção`,pet.images[0],pet._id)
-            
+        
+        //Tutor
+        EmailSend.EmailConcludeAdopter(pet,user)
+        NotificationsController.CreateTo(`Adoção para o pet ${pet.name} foi concluida com sucesso , para o adotante :${AdopterDb.name}`,'Adcoção concluida',`${process.env.URL_API}/images/pets/${pet.images[0]}`,`${process.env.URL_FRONTEND}/pets/mypets/${pet._id}`)
     }
 
     static async CancellationRequestAdopter(req,res){

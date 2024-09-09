@@ -1000,4 +1000,500 @@ module.exports = class SendEmail {
             // console.log(`Finalizado para usuário: ${user.email}`)
         }
     }
+
+    static async EmailNewRequestAdopter(pet,user){
+        const Email = `<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Requisição de adoção</title>
+    <style>
+        body {
+            font-family: Helvetica;
+            min-height: 100vh;
+            max-width: 900px;
+            margin: auto;
+            padding: 0;
+        }
+
+        section {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .header {
+            height: 95px;
+            background-color: #ffd400;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header img {
+            border-radius: 50%;
+            padding: 10px;
+            width: 80px;
+        }
+
+        .header p {
+            color: #16479d;
+            font-size: 1.7em;
+            padding-right: 15px;
+        }
+
+        .content {
+            display: flex;
+            flex-direction: row;
+            margin: auto;
+            height: 500px;
+        }
+
+        .content p{
+            line-height: 1.2;
+        }
+
+        .content strong{
+            color: #ffd400;
+        }
+
+        .content img {
+            max-width: 300px;
+        }
+
+        .content article {
+            padding-left: 10px;
+            display: flex;
+            flex-direction: column;
+            background-color: #85731d79;
+            flex-grow: 1;
+            align-items: center;
+        }
+
+        .content h2 {
+            margin: auto;
+        }
+
+        .content p {
+            display: flex;
+            padding-top: 20px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .img-user-container{
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .img-user-container img {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+        }
+
+        .btn-container {
+            display: flex;
+            width: 300px;
+            height: 40px;
+            background-color: #ffd400;
+            margin: auto;
+            border-radius: 10px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn-container a {
+            margin: auto;
+            text-decoration: none;
+            color: black;
+        }
+
+        .footer {
+            height: 200px;
+            background-color: #ffd400;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer img {
+            border-radius: 50%;
+            padding: 10px;
+            height: 80px;
+            width: 80px;
+        }
+
+        .footer p {
+            line-height: 1.8;
+        }
+
+        @media (max-width: 650px) {
+            .header p {
+                font-size: 1.2em;
+            }
+
+            .content img {
+                max-width: 230px;
+            }
+
+            .img-user-container img {
+                width: 80px;
+                height: 80px;
+            }
+
+            .btn-container {
+                width: 250px;
+                height: 40px;
+            }
+
+            .footer {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .footer img {
+                height: 60px;
+                width: 60px;
+            }
+
+            .footer p {
+                padding: 10px;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .header p {
+                font-size: 1.2em;
+            }
+
+            .content h2{
+                font-size: 18px;
+            }
+
+            .content img {
+                max-width: 160px;
+            }
+
+            .img-user-container img {
+                width: 80px;
+                height: 80px;
+            }
+
+            .btn-container {
+                width: 160px;
+                height: 40px;
+            }
+
+            .footer {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .footer img {
+                height: 60px;
+                width: 60px;
+            }
+
+            .footer p {
+                padding: 10px;
+                text-align: center;
+                line-height: 1.2;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <section class="header">
+        <img src="${process.env.URL_API}/images/pets/icongetapet.jpg" alt="icon">
+        <p>Você tem um nova requisição de adoção </p>
+    </section>
+    <section class="content">
+       <img src="${process.env.URL_API}/images/pets/dogbodyemail.jpg" alt="dog">
+        <article>
+            <h2>Nova solicitação para : ${pet.name} 🐾</h2>
+            <p>Você tem uma nova requisição de adoção para o seu pet ${pet.name} , clique no botão abaixo para poder ver na nossa plataforma
+            </p>
+            <div class="img-user-container">
+                <a href="${process.env.URL_FRONTEND}/pets/mypets/${pet._id}">
+                    <img src="${process.env.URL_API}/images/pets/${pet.images[0]}" alt="imgPet">
+                </a>
+            </div>
+            <div class="btn-container">
+                <a href="${process.env.URL_FRONTEND}/pets/mypets/${pet._id}">Clique aqui para ver</a>
+            </div>
+        </article>
+    </section>
+    <section class="footer">
+        <section style="flex-basis: 50%; display: flex; align-items: center;">
+            <img src="${process.env.URL_API}/images/pets/icongetapet.jpg" alt="icon">
+            <h2>Get A Pet</h2>
+        </section>
+        <section style="flex-basis: 50%; display: flex; align-items: center;">
+            <p>Por favor, não responda a este e-mail. Você está recebendo este e-mail porque criou uma conta Get A Pet em www.getapet.tech ou em nosso aplicativo móvel.</p>
+        </section>
+    </section>
+</body>
+</html>`
+
+        if(user.receiveremail){
+            await Send(user.email,"Nova Solicitação de adoção",Email)
+        }
+
+    }
+
+    static async EmailConcludeAdopter(pet,user,type){
+
+        let p  = ``
+        if(type === 'adopter'){
+            p = `Temos uma ótima notícia! A sua solicitação de adoção para o pet ${pet.name} foi aceita  com a ajuda da plataforma Get A Pet. Agradecemos imensamente por confiar em nós para ajudar a encontrar a família perfeita para seu novo amigo peludo.
+            Você pode visualizar os detalhes da adoção clicando no botão abaixo:`
+        }else{
+            p = `Temos uma ótima notícia! O seu pet ${pet.name} encontrou um novo lar com a ajuda da plataforma Get A Pet. Agradecemos imensamente por confiar em nós para ajudar a encontrar a família perfeita para seu amigo peludo. 
+                Você pode visualizar os detalhes da adoção clicando no botão abaixo:`
+        }
+
+        const Email = `<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conclusão de Adoção</title>
+    <style>
+        body {
+            font-family: Helvetica;
+            min-height: 100vh;
+            max-width: 900px;
+            margin: auto;
+            padding: 0;
+        }
+
+        section {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .header {
+            height: 95px;
+            background-color: #ffd400;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header img {
+            border-radius: 50%;
+            padding: 10px;
+            width: 80px;
+        }
+
+        .header p {
+            color: #16479d;
+            font-size: 1.7em;
+            padding-right: 15px;
+        }
+
+        .content {
+            display: flex;
+            flex-direction: row;
+            margin: auto;
+            height: 500px;
+        }
+
+        .content p{
+            line-height: 1.2;
+        }
+
+        .content strong{
+            color: #ffd400;
+        }
+
+        .content img {
+            max-width: 300px;
+        }
+
+        .content article {
+            padding-left: 10px;
+            display: flex;
+            flex-direction: column;
+            background-color: #85731d79;
+            flex-grow: 1;
+            align-items: center;
+        }
+
+        .content h2 {
+            margin: auto;
+        }
+
+        .content p {
+            display: flex;
+            padding-top: 20px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .img-user-container{
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .img-user-container img {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+        }
+
+        .btn-container {
+            display: flex;
+            width: 300px;
+            height: 40px;
+            background-color: #ffd400;
+            margin: auto;
+            border-radius: 10px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn-container a {
+            margin: auto;
+            text-decoration: none;
+            color: black;
+        }
+
+        .footer {
+            height: 200px;
+            background-color: #ffd400;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer img {
+            border-radius: 50%;
+            padding: 10px;
+            height: 80px;
+            width: 80px;
+        }
+
+        .footer p {
+            line-height: 1.8;
+        }
+
+        @media (max-width: 650px) {
+            .header p {
+                font-size: 1.2em;
+            }
+
+            .content img {
+                max-width: 230px;
+            }
+
+            .img-user-container img {
+                width: 80px;
+                height: 80px;
+            }
+
+            .btn-container {
+                width: 250px;
+                height: 40px;
+            }
+
+            .footer {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .footer img {
+                height: 60px;
+                width: 60px;
+            }
+
+            .footer p {
+                padding: 10px;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .header p {
+                font-size: 1.2em;
+            }
+
+            .content h2{
+                font-size: 18px;
+            }
+
+            .content img {
+                max-width: 160px;
+            }
+
+            .img-user-container img {
+                width: 80px;
+                height: 80px;
+            }
+
+            .btn-container {
+                width: 160px;
+                height: 40px;
+            }
+
+            .footer {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .footer img {
+                height: 60px;
+                width: 60px;
+            }
+
+            .footer p {
+                padding: 10px;
+                text-align: center;
+                line-height: 1.2;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <section class="header">
+        <img src="${process.env.URL_API}/images/pets/icongetapet.jpg" alt="icon">
+        <p>Sua adoção foi concluida</p>
+    </section>
+    <section class="content">
+       <img src="${process.env.URL_API}/images/pets/dogbodyemail.jpg" alt="dog">
+        <article>
+            <h2>Parabéns o seu pet ${pet.name} tem um novo lar🐾</h2>
+            <p>${p}</p>
+            <div class="img-user-container">
+                <a href="${process.env.URL_FRONTEND}/pets/mypets/${pet._id}">
+                    <img src="${process.env.URL_API}/images/pets/${pet.images[0]}" alt="imgPet">
+                </a>
+            </div>
+            <div class="btn-container">
+                <a href="${process.env.URL_FRONTEND}/pets/mypets/${pet._id}">Clique aqui para ver</a>
+            </div>
+        </article>
+    </section>
+    <section class="footer">
+        <section style="flex-basis: 50%; display: flex; align-items: center;">
+            <img src="${process.env.URL_API}/images/pets/icongetapet.jpg" alt="icon">
+            <h2>Get A Pet</h2>
+        </section>
+        <section style="flex-basis: 50%; display: flex; align-items: center;">
+            <p>Por favor, não responda a este e-mail. Você está recebendo este e-mail porque criou uma conta Get A Pet em www.getapet.tech ou em nosso aplicativo móvel.</p>
+        </section>
+    </section>
+</body>
+</html>`
+        if(user.receiveremail){
+            await Send(user.email,"Adoção Concluida",Email)
+        }
+    }
+
 }

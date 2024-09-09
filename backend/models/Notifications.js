@@ -20,17 +20,13 @@ const Notifications = mongoose.model(
             type:Array
         },
         image:{
-            type:Array,
+            type:String,
         },
         type:{
             type:String
         },
         link:{
             type:String
-        },
-        emailnotification:{
-            type:Boolean,
-            default:'false'
         },
     },{timestamps:true})
 )

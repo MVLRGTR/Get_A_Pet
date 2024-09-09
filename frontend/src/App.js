@@ -20,6 +20,8 @@ import Message from './components/Layouts/Message'
 /*context */
 import { UserProvider } from './context/UserContext'
 
+//URLs a seream adionadas
+///pets/mypets/:id ver detalhes do meu pet e os possiveis adotantes
 
 function App() {
   return (
