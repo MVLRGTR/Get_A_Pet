@@ -8,6 +8,9 @@ const GetToken = require('../helpers/GetToken')
 const GetUserByToken = require('../helpers/GetUserByToken')
 const EmailSend = require('../service/email/EmailSend')
 
+//others
+const fs = require('fs')
+const path = require('path')
 const jwt = require('jsonwebtoken')
 
 module.exports = class UserController{
@@ -218,8 +221,15 @@ module.exports = class UserController{
         console.log(`receiveremail : ${receiveremail}`)
 
         if(req.file){
-            console.log(`entrou aqui , valor req.file.filename :${req.file.filename} valor req.file : ${req.file}`)
+            // console.log(`entrou aqui , valor req.file.filename :${req.file.filename} valor req.file : ${req.file}`)
+            const imagePath = path.join(__dirname, '..', 'public', 'images', 'users', userDb.img);
+            fs.unlink(imagePath, (err) => {
+                if (err) {
+                    console.error('Erro ao excluir a imagem:', err);
+                }
+            })
             user.img = req.file.filename
+            
         }
 
         console.log(`valor user.image :${user.image} user:${user}`)
@@ -234,8 +244,6 @@ module.exports = class UserController{
             return
         }
         const UserExistsByEmail = await User.findOne({email:email})
-
-        console.log(`userDb:${userDb.email} email :${email} UserExistByEmail : ${UserExistsByEmail} `)
 
         if(userDb.email !== email && UserExistsByEmail){
             res.status(422).json({message:'E-mail inválido , por favor verifique o que foi digitado'})

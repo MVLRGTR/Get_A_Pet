@@ -1,47 +1,237 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Novo Pet na Plataforma</title>
+    <style>
+        body {
+            font-family: Helvetica;
+            min-height: 100vh;
+            max-width: 900px;
+            margin: auto;
+            padding: 0;
+        }
+
+        section {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .header {
+            height: 95px;
+            background-color: #ffd400;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header img {
+            border-radius: 50%;
+            padding: 10px;
+            width: 80px;
+        }
+
+        .header p {
+            color: #16479d;
+            font-size: 1.7em;
+            padding-right: 15px;
+        }
+
+        .content {
+            display: flex;
+            flex-direction: row;
+            margin: auto;
+            height: 500px;
+        }
+
+        .content p{
+            line-height: 1.2;
+        }
+
+        .content strong{
+            color: #ffd400;
+        }
+
+        .content img {
+            max-width: 300px;
+        }
+
+        .content article {
+            padding-left: 10px;
+            display: flex;
+            flex-direction: column;
+            background-color: #85731d79;
+            flex-grow: 1;
+            align-items: center;
+        }
+
+        .content h2 {
+            margin: auto;
+        }
+
+        .content p {
+            display: flex;
+            padding-top: 20px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .img-user-container{
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .img-user-container img {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+        }
+
+        .btn-container {
+            display: flex;
+            width: 300px;
+            height: 40px;
+            background-color: #ffd400;
+            margin: auto;
+            border-radius: 10px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn-container a {
+            margin: auto;
+            text-decoration: none;
+            color: black;
+        }
+
+        .footer {
+            height: 200px;
+            background-color: #ffd400;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer img {
+            border-radius: 50%;
+            padding: 10px;
+            height: 80px;
+            width: 80px;
+        }
+
+        .footer p {
+            line-height: 1.8;
+        }
+
+        @media (max-width: 650px) {
+            .header p {
+                font-size: 1.2em;
+            }
+
+            .content img {
+                max-width: 230px;
+            }
+
+            .img-user-container img {
+                width: 80px;
+                height: 80px;
+            }
+
+            .btn-container {
+                width: 250px;
+                height: 40px;
+            }
+
+            .footer {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .footer img {
+                height: 60px;
+                width: 60px;
+            }
+
+            .footer p {
+                padding: 10px;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .header p {
+                font-size: 1.2em;
+            }
+
+            .content h2{
+                font-size: 18px;
+            }
+
+            .content img {
+                max-width: 160px;
+            }
+
+            .img-user-container img {
+                width: 80px;
+                height: 80px;
+            }
+
+            .btn-container {
+                width: 160px;
+                height: 40px;
+            }
+
+            .footer {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .footer img {
+                height: 60px;
+                width: 60px;
+            }
+
+            .footer p {
+                padding: 10px;
+                text-align: center;
+                line-height: 1.2;
+            }
+        }
+
+    </style>
 </head>
-
-<body style="font-family: Helvetica;  min-height: 100vh; max-width: 900px; margin: auto;padding: 0;  ">
-    <section style="max-width:900px; height: 95px; background-color: #ffd400; display: flex; justify-content: space-between;">
-        <img style="border-radius: 50%; padding: 10px;" src="https://static.vecteezy.com/ti/vetor-gratis/p1/13431434-design-de-logotipo-de-desenho-animado-de-mascote-de-cachorro-fofo-estilo-de-design-plano-vetor.jpg" alt="icon">
-        <p style="color: #16479d; font-size: 1.7em;padding-right: 15px; ">Temos um novo pet disponível </p>
+<body>
+    <section class="header">
+        <img src="http://localhost:5000/images/pets/icongetapet.jpg" alt="icon">
+        <p>Temos um novo pet disponível </p>
     </section>
-
-    <section style="display: flex; flex-direction: row; max-width:900px ; margin: auto;">
-
-        <img src="http://localhost:5000/pets/dogbodyemail" alt="dog">
-        <article style="padding-left: 10px; display: flex; flex-direction: column; background-color: #85731d79;">
-            <h2 style="margin: auto;">${petName} 🐾</h2>
-            <p style="line-height: 1.8;">Esse novo amigo peludo está esperando por você! Acabamos de adicionar esse pet adorável em nossa plataforma, pronto para encontrar um lar cheio de amor.
+    <section class="content">
+        <img src="http://localhost:5000/images/pets/dogbodyemail.jpg" alt="dog">
+        <article>
+            <h2>${petName} 🐾</h2>
+            <p>Esse novo amigo peludo está esperando por você! Acabamos de adicionar esse pet adorável em nossa plataforma, pronto para encontrar um lar cheio de amor.
                 Não perca a chance de conhecer esse novo companheiro e dar a ele uma nova casa. Clique no Link abaixo e venha conhecer o novo pet!
             </p>
-            <div style="display: flex; padding-top: 20px; justify-content: center; align-items: center;">
-                <a href=${linkPet}>
-                    <img style="width: 150px; height: 150px; border-radius: 50%; margin: auto;" src=${imgPet} alt="">
+            <div class="img-user-container">
+                <a href="${process.env.URL_FRONTEND}/messages/${userFrom._id}">
+                    <img src="http://localhost:5000/images/users/17257633099201.png" alt="imgPet">
                 </a>
             </div>
-            <div style="display: flex; width: 320px; height: 50px; background-color: #ffd400; margin: auto; border-radius: 10px; ">
-                <a style="margin: auto; text-decoration: none; color: black; " href=${linkPet}><strong>Conheça o novo Pet</strong></a>
+            <div class="btn-container">
+                <a href="${process.env.URL_FRONTEND}/messages/${userFrom.id}">Clique aqui para ver</a>
             </div>
         </article>
-
     </section>
-
-    <section style="height: 200px; max-width: 900px; background-color: #ffd400; display: flex; justify-content: space-between;">
+    <section class="footer">
         <section style="flex-basis: 50%; display: flex; align-items: center;">
-            <img style="border-radius: 50%; padding: 10px; height: 80px; width: 80px;" src="https://static.vecteezy.com/ti/vetor-gratis/p1/13431434-design-de-logotipo-de-desenho-animado-de-mascote-de-cachorro-fofo-estilo-de-design-plano-vetor.jpg" alt="icon">
+            <img src="http://localhost:5000/images/pets/icongetapet.jpg" alt="icon">
             <h2>Get A Pet</h2>
         </section>
         <section style="flex-basis: 50%; display: flex; align-items: center;">
-            <p style="line-height: 1.8;">Por favor, não responda a este e-mail. Você está recebendo este e-mail porque criou uma conta Get A Pet em www.getapet.tech ou em nosso aplicativo móvel.</p>
+            <p>Por favor, não responda a este e-mail. Você está recebendo este e-mail porque criou uma conta Get A Pet em www.getapet.tech ou em nosso aplicativo móvel.</p>
         </section>
     </section>
-
 </body>
 </html>

@@ -93,7 +93,6 @@ module.exports = class PetController {
     static async GetAllPets(req, res) {
         const cepUser = req.body.cep
         const pets = await Pet.find({available:true}).sort('-createdAt')
-        EmailSend.EmailNewMessageChatNotification()
 
         if(cepUser){
             console.log(`cepUser :${cepUser} cepUser typeof : ${typeof cepUser} cepUser.lenght :${cepUser.toString().length}`)
