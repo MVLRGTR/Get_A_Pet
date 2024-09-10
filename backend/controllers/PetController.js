@@ -496,13 +496,14 @@ module.exports = class PetController {
 
         const token = GetToken(req)
         const user = await GetUserByToken(token)
-        if(!user){
+        const userDb =  await User.findById(user.id).select('_id name email')
+        if(!userDb){
             res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
             return
         }
 
         pet.adopter.map((index) => {
-            if(index._id.toString() === user._id.toString()){
+            if(index._id.toString() === userDb._id.toString()){
                 verifyAdoption = true
             }else{
                 adoptions.push(index)
@@ -513,7 +514,8 @@ module.exports = class PetController {
             pet.adopter = adoptions
             await Pet.findByIdAndUpdate(id,pet)
             res.status(200).json({message: `Exclusão do pedido de adoção  concuido com sucesso para o tutor ${user.name} !!!`})
-            NotificationsController.CreateTo(`Tivemos a desistência da possivél adoção por parte do tutor ${user.name} para o pet ${pet.name}`,pet.user._id,`Desistência da adoção`,pet.images[0])
+            NotificationsController.CreateTo(`Tivemos a desistência da possivél adoção por parte do tutor ${user.name} para o pet ${pet.name}`,pet.user._id,`Desistência da adoção`,`${process.env.URL_API}/images/pets/${pet.images[0]}`,`${process.env.URL_FRONTEND}/pets/mypets/${pet._id}`)
+            EmailSend.EmailCancellationRequestAdopter(user,pet)
         }else{
             res.status(404).json({ message: 'Erro ao processar sua solicitação ,pois não existem solicitações desse usuario para adoção do pet informado, por favor verifique o que foi digitado' })
             return
@@ -535,7 +537,8 @@ module.exports = class PetController {
 
         const token = GetToken(req)
         const user = await GetUserByToken(token)
-        if(!user){
+        const userDb = await User.findById(user._id).select('_id name email receiveremail')
+        if(!userDb){
             res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
             return
         }
@@ -552,6 +555,7 @@ module.exports = class PetController {
         if(pet.adopter.length > 0){
             pet.adopter.map((index) => {
                 NotificationsController.CreateTo(`Infelizmente o pet ${pet.name} foi retirado de adoção pelo tutor atual , mas não se preocupe temos outros pets em nossa plataforma.`,index._id,`Desistência da adoção`)
+                EmailSend.EmailCancellationAdopterByTutor(pet,index)
             })
         }
 

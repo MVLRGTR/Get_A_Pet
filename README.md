@@ -41,10 +41,11 @@ BACKEND :
         [x] : E-mail de token para mudança de senha
         [x] : Enviar e-mail para todos os usuarios quando um novo pet for adicionado a plataforma , bem como o link 
         [x] : E-mail de novas mensagens 
-        [] : E-mail de requisição de adoção
+        [x] : E-mail de requisição de adoção
+        [x] : E-mail de conclusão de adoção para o tutor e adotante
+        [] : E-mail de desistencia de adoção por parte do adopter
         [] : E-mail de Pet deletado
-        [] : E-mail de conclusão de adoção para o tutor e adotante
-        [] : Botão de não receber e-mail , somente o e-mail de primarylogin ou o de forgotpassword que ainda continuarão funcionado 
+        [x] : Botão de não receber e-mail , somente o e-mail de primarylogin ou o de forgotpassword que ainda continuarão funcionado 
 9º  [] => SMS 
         [] : SMS de recuperação de conta 
 8º  [] => Confgiguração das variaveis de ambiente
