@@ -49,6 +49,7 @@ BACKEND :
 9º  [] => Zod Validation
         [] : Pet Validation
                 [x] : Create
+                [] : Adoption request
         [] : User validation
         [] : Notification Validation
         [] : Message Validation
