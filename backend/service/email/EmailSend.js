@@ -992,7 +992,6 @@ module.exports = class SendEmail {
 </body>
 </html>
 `
-    
                 // console.log(`Enviando e-mail para ${user.email}, mensagem de ${userFrom.name}`)
                 await Send(user.email, "Nova mensagem", Email)
             }))
@@ -1002,6 +1001,7 @@ module.exports = class SendEmail {
     }
 
     static async EmailNewRequestAdopter(pet,user){
+
         const Email = `<!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -1240,6 +1240,7 @@ module.exports = class SendEmail {
 </html>`
 
         if(user.receiveremail){
+            console.log(`entrou aqui com user.email : ${user.email}`)
             await Send(user.email,"Nova Solicitação de adoção",Email)
         }
 

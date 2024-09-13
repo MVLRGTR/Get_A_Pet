@@ -46,6 +46,12 @@ BACKEND :
         [] : E-mail de desistencia de adoção por parte do adopter
         [] : E-mail de Pet deletado
         [x] : Botão de não receber e-mail , somente o e-mail de primarylogin ou o de forgotpassword que ainda continuarão funcionado 
+9º  [] => Zod Validation
+        [] : Pet Validation
+                [x] : Create
+        [] : User validation
+        [] : Notification Validation
+        [] : Message Validation
 9º  [] => SMS 
         [] : SMS de recuperação de conta 
 8º  [] => Confgiguração das variaveis de ambiente

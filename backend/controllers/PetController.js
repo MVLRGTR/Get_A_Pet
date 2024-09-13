@@ -2,6 +2,7 @@ const Pet = require('../models/Pet')
 const NotificationsController = require('../controllers/NotificationsController')
 const EmailSend = require('../service/email/EmailSend')
 const User = require('../models/User')
+const z = require('zod')
 
 //helpers
 const GetToken = require('../helpers/GetToken')
@@ -17,65 +18,81 @@ require('dotenv').config()
 module.exports = class PetController {
 
     static async Create(req, res) {
-        const { name, age, weight, color, description } = req.body
+
+        const toNumber = (value) => {
+            const number = Number(value)
+            return isNaN(number) ? value : number
+        }
+        
+        const  petParse = {
+            name: req.body.name,
+            age: toNumber(req.body.age),
+            weight: toNumber(req.body.weight),
+            color: req.body.color,
+            images:[],
+            available:true,
+            description: req.body.description
+        }
+        
         const images = req.files
-        const available = true //para que o pet cadastrado começe sendo disponivel para adoção
-        // console.log(`Entrou aqui para verificar o req.user : ${JSON.stringify(req.user)}`)
-        if (!name) {
-            res.status(422).json({ message: 'O nome não pode ser nulo , por favor verifique o que foi digitado' })
-            return
-        }
-        if (!age) {
-            res.status(422).json({ message: 'A idade não pode ser nula , por favor verifique o que foi digitado' })
-            return
-        }
-        if (!weight) {
-            res.status(422).json({ message: 'O peso não pode ser nulo , por favor verifique o que foi digitado' })
-            return
-        }
-        if (!color) {
-            res.status(422).json({ message: 'A cor nao pode ser nula , por favor verifique o que foi digitado' })
-            return
-        }
-        if (!images) {
-            res.status(422).json({ message: 'pelo menos uma image é obrigatória , por favor verifique o que foi digitado' })
-            return
+
+        for (let image of images) {
+            petParse.images.push(image.filename)
         }
 
-        const token = GetToken(req)
-        const user = await GetUserByToken(token)
-        if(!user){
-            res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
-            return
-        }
-        const userDb = await User.findById(user._id)
+        const petSchema = z.object({
+            name : z.string().min(3,{message:'O nome precisa ter pelo menos 3 caracteres, por favor verifique o que foi digitado'}).max(25, { message: 'O nome pode ter no máximo 25 caracteres ,por favor verifique o que foi digitado'}),
+            age : z.number({message :'Formato da idade digita é inválida'}).min(1,{message:'A idade minima é um 1 mês, por favor verifique o que foi digitado'}).max(30,{message:'A idade maxima para animais é 30 anos'}),
+            weight : z.number({message:'Formato do peso inválido'}).min(1,{message:'Peso minimo 1kg'}).max(50,{message:'Peso maximo 50kg'}),
+            color : z.string().min(3,{message:'Cor inválida'}).max(12,{message:'Cor inválida'}),
+            images : z.array(z.string()).min(1,{message:'Pelo menos imagem precisa ser enviada do Pet'}),
+            description : z.string().max(700,{message:'Número de caracteres não pode ser superior a 700'})
+        })
 
-        if(!userDb.address){
-            res.status(422).json({ message: 'Você não pode adicionar um pet na nossa plataforma sem ter um endereço cadastrado' })
-            return
+        try{
+            petSchema.parse(petParse)
+        }catch(error){
+            let returnErros = []
+            if(error instanceof z.ZodError){
+                error.errors.map((index)=>{
+                    returnErros.push(index.message)
+                    console.log(`erro : ${JSON.stringify(index.message)}`)
+                })
+                res.status(422).json({message:'Erros na requisição :',returnErros})
+                return
+            }
         }
-        //console.log(`user : ${JSON.stringify(user)}`)
+
+        let token ,user ,userDb
+        try{
+            token = GetToken(req)
+            user = await GetUserByToken(token)
+            userDb = await User.findById(user._id)
+            if(!userDb.address){
+                res.status(422).json({ message: 'Você não pode adicionar um pet na nossa plataforma sem ter um endereço cadastrado' })
+                return
+            }
+        }catch(Erro){
+                res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
+                return
+        }
 
         const pet = new Pet({
-            name,
-            age,
-            weight,
-            color,
-            images: [],
-            available,
-            description,
+            name : petParse.name,
+            age : petParse.age,
+            weight : petParse.weight,
+            color : petParse.color,
+            images: petParse.images,
+            available :petParse.available,
+            description :petParse.description,
             user: {
-                _id: user._id,
-                name: user.name,
-                img: user.img,
-                phone: user.phone
+                _id: userDb._id,
+                name: userDb.name,
+                img: userDb.img,
+                phone: userDb.phone
             },
             address:userDb.address
         })
-
-        for (let image of images) {
-            pet.images.push(image.filename)
-        }
 
         try {
             const NewPet = await pet.save()
@@ -84,7 +101,6 @@ module.exports = class PetController {
                 NewPet
             })
             NotificationsController.CreateAll(`O pet ${pet.name} está esperendo por você , venha conhecer o seu proximo amigo !!!`,`Novo Pet disponível`,`${process.env.URL_API}/images/pets/${pet.images[0]}`,`${process.env.URL_FRONTEND}/pets/${pet._id}`)
-            // NotificationsController.CreateTo(`${user.name} seu pet ${pet.name} foi adicionado para adoção com sucesso !!!`,user._id,'Pet Criado com sucesso',`${process.env.URL_API}/images/pets/${pet.images[0]}`,`${process.env.URL_FRONTEND}/pets/mypets/${pet._id}`)
             EmailSend.EmailNewPetForAllUsers(pet)
         } catch (error) {
             res.status(500).json({ message: error })
@@ -119,7 +135,8 @@ module.exports = class PetController {
     static async GetAllUserPets(req, res) {
         const token = GetToken(req)
         const user = await GetUserByToken(token)
-        if(!user){
+        const userDb = await User.findById(user._id)
+        if(!userDb){
             res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
             return
         }
@@ -140,20 +157,24 @@ module.exports = class PetController {
 
     static async GetUserAdoptionsPets(req, res) {
         // Nesse endpoint faço o retorno de requisições de adoções bem como pets com adoção já concluidas para esse usuario , pets com adoção concluidas serão tratadas no front-end
-        const token = GetToken(req)
-        const user = await GetUserByToken(token)
-        if(!user){
-            res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
-            return
+        let token ,user ,userDb
+        try{
+            token = GetToken(req)
+            user = await GetUserByToken(token)
+            userDb = await User.findById(user._id)
+        }catch(Erro){
+                res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
+                return
         }
+
         try{
             const pets = await Pet.find({
                 adopter:{
                     $elemMatch:{_id:user._id}
                 }
             })
-            if(!pets){
-                res.status(404).json({message:'Nenhum pet encontrado para o id do adotante fornecido , por favor verifique o que foi digitado'})
+            if(pets.length === 0){
+                res.status(404).json({message:'Nenhum pet encontrado para o id do adotante fornecido',pets})
                 return 
             }
             res.status(200).json({message:'Pets do adotante retornado com sucesso',pets})
@@ -180,6 +201,10 @@ module.exports = class PetController {
             try{
                 const token = GetToken(req)
                 const user = await GetUserByToken(token)
+                if(!user){
+                    res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
+                    return
+                }
                 if(user._id.toString() === pet.user._id.toString()){
                     res.status(200).json({
                         message: 'Pet retornado com sucesso',
@@ -187,6 +212,7 @@ module.exports = class PetController {
                     })
                     return
                 }
+                console.log(`petAdopter :${pet.adopter}`)
                 if(pet.adopter[0]._id.toString() === user._id.toString() ){
                     res.status(200).json({
                         message: 'Pet retornado com sucesso',
@@ -221,11 +247,18 @@ module.exports = class PetController {
             return
         }
 
-        const token = GetToken(req)
-        const user = await GetUserByToken(token)
-        if(!user){
-            res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
-            return
+        let token ,user ,userDb
+        try{
+            token = GetToken(req)
+            user = await GetUserByToken(token)
+            userDb = await User.findById(user._id)
+            if(!userDb.address){
+                res.status(422).json({ message: 'Você não pode adicionar um pet na nossa plataforma sem ter um endereço cadastrado' })
+                return
+            }
+        }catch(Erro){
+                res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
+                return
         }
 
         if (pet.user._id.toString() !== user._id.toString()) {  //verificando se a requisição de exclusão vem do usuario que criou o pet
@@ -283,7 +316,8 @@ module.exports = class PetController {
 
         const token = GetToken(req)
         const user = await GetUserByToken(token)
-        if(!user){
+        const userDb = await User.findById(user._id)
+        if(!userDb){
             res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
             return
         }
@@ -389,12 +423,14 @@ module.exports = class PetController {
         })
 
         await Pet.findByIdAndUpdate(id, pet)
+        const userTutor = await User.findById(pet.user._id).select('email name phone receiveremail')
+
 
         res.status(200).json({
             message: `O pedido de adoção foi feito com sucesso , entre em contato com ${pet.user.name} no telefone ${pet.user.phone} para acertar os detelhes da adoção !!!`
         })
         NotificationsController.CreateTo(`Você tem uma nova solicitação de adoção para o seu pet ${pet.name} do possivél tutor ${user.name}`,pet.user._id,'Solicitação de adoção',`${process.env.URL_API}/images/pets/${pet.images[0]}`,`${process.env.URL_FRONTEND}/pets/mypets/${pet._id}`)
-        EmailSend.EmailNewRequestAdopter(pet,userDb)
+        EmailSend.EmailNewRequestAdopter(pet,userTutor)
     }
 
     static async ConcludeAdoption(req, res) {
@@ -428,7 +464,8 @@ module.exports = class PetController {
 
         const token = GetToken(req)
         const user = await GetUserByToken(token)
-        if(!user){
+        const userDb = await User.findById(user._id)
+        if(!userDb){
             res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
             return
         }
@@ -581,7 +618,8 @@ module.exports = class PetController {
 
         const token = GetToken(req)
         const user = await GetUserByToken(token)
-        if(!user){
+        const userDb = await User.findById(user._id)
+        if(!userDb){
             res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
             return
         }
@@ -620,12 +658,11 @@ module.exports = class PetController {
 
         const token = GetToken(req)
         const user = await GetUserByToken(token)
-        if(!user){
+        const userDb = await User.findById(user._id)
+        if(!userDb){
             res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
             return
         }
-        const userDb = await User.findById(user._id)
-
         if(userDb._id.toString()===pet.user._id.toString()){
             res.status(422).json({ message: 'Erro ao processar a sua solicitação, você não pode adicionar seu próprio pet como favorito, por favor verifique o que foi digitado' });
             return
@@ -663,11 +700,11 @@ module.exports = class PetController {
 
         const token = GetToken(req)
         const user = await GetUserByToken(token)
-        if(!user){
+        const userDb = await User.findById(user._id)
+        if(!userDb){
             res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
             return
         }
-        const userDb = await User.findById(user._id)
 
         for(let index of userDb.favoritepets){
             if(index._id.toString() === pet._id.toString()){
