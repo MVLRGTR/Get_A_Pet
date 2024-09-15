@@ -49,13 +49,14 @@ BACKEND :
 9º  [] => Zod Validation
         [] : Pet Validation
                 [x] : Create
-                [] : Adoption request
+                [x] : Adoption request
+                [x] : EditPet
         [] : User validation
         [] : Notification Validation
         [] : Message Validation
 9º  [] => SMS 
         [] : SMS de recuperação de conta 
-8º  [] => Confgiguração das variaveis de ambiente
+8º  [x] => Confgiguração das variaveis de ambiente
 8º  [] => Abrir a localização no maps do pet em questão (Integração back e frontend)
 9º  [] => Tratamento de erros da API
 10º [] => Buscar um pet 
