@@ -11,28 +11,39 @@ module.exports = class MessageController {
 
     static async SendMessage(req, res) {
         const { message, to } = req.body
-        if (!message) {
-            res.status(422).json({ message: 'A messagem não pode ser nula , por favor verifique o que foi digitado' })
+
+        function isString(value) {
+            return typeof value === 'string';
+          }
+
+        if (!message || !isString(message)) {
+            res.status(422).json({ message: 'A messagem não pode ser nula, ou enviado com formato inválido , por favor verifique o que foi digitado' })
             return
         }
-        if (!to) {
-            res.status(422).json({ message: 'A messagem precisar ter destino, por favor verifique o que foi digitado' })
+        if (!ObjectId.isValid(to)) {
+            res.status(422).json({ message: 'A messagem precisar ter destino valido, por favor verifique o id do usuario que foi digitado' })
             return
         }
         const toExist = await User.findById({ _id: to }).select('_id name img phone')
         if (!toExist) {
-            res.status(404).json({ message: 'Usuário  não encontrado' })
+            res.status(404).json({ message: 'Usuário  não encontrado para receber a mensagem' })
             return
         }
 
-        const token = GetToken(req)
-        const user = await GetUserByToken(token)
-        if(!user){
-            res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
+        try {
+            token = GetToken(req)
+            user = await GetUserByToken(token)
+            userDb = await User.findById(user._id)
+            if (!userDb.address) {
+                res.status(422).json({ message: 'Você não pode adicionar um pet na nossa plataforma sem ter um endereço cadastrado' })
+                return
+            }
+        } catch (Erro) {
+            res.status(422).json({ message: 'Usuario não encontrado , por favor verifique o que foi digitado' })
             return
         }
 
-        if (user._id.toString() === to.toString()) {
+        if (userDb._id.toString() === to.toString()) {
             res.status(422).json({ message: 'A messagem precisar ter origem e destino diferente, por favor verifique o que foi digitado' })
             return
         }
@@ -41,7 +52,7 @@ module.exports = class MessageController {
             message,
             viewed: false,
             to: new ObjectId(to),
-            from: user._id
+            from: userDb._id
         })
 
         try {
@@ -50,7 +61,7 @@ module.exports = class MessageController {
                 message: 'Messagem enviada com sucesso',
                 NewMessageSend
             })
-            // NotificationController.CreateTo(`Você tem um nova mensagem do tutor(a) ${user.name}`,to,'Nova menssagem')
+            NotificationController.CreateTo(`Você tem um nova mensagem do tutor(a) ${userDb.name}`,to,'Nova menssagem')
         } catch (erro) {
             res.status(500).json({ message: error })
         }
