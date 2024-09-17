@@ -1,8 +1,9 @@
 const User = require('../models/User')
 const bcrypt = require('bcrypt')
+const z = require('zod')
 
 //helpers
-const LoginAuth =  require('../helpers/LoginAuth')
+const LoginAuth = require('../helpers/LoginAuth')
 const CreateUserToken = require('../helpers/CreatedUserToken')
 const GetToken = require('../helpers/GetToken')
 const GetUserByToken = require('../helpers/GetUserByToken')
@@ -13,107 +14,120 @@ const fs = require('fs')
 const path = require('path')
 const jwt = require('jsonwebtoken')
 
-module.exports = class UserController{
-    
-    static async Register(req,res){
+module.exports = class UserController {
+
+    static async Register(req, res) {
 
         function GenerateRandomFourDigitNumber() {
             return Math.floor(1000 + Math.random() * 9000);
         }
 
-        const {name,email,phone,password,confirmpassword} = req.body
+        const toNumber = (value) => {
+            const number = Number(value)
+            return isNaN(number) ? value : number
+        }
+
+        const userParse = {
+            name: req.body.name,
+            email: req.body.email,
+            phone: toNumber(req.body.phone),
+            password: req.body.password,
+            confirmpassword: req.body.confirmpassword,
+        }
+
+        const userSchema = z.object({
+            name: z.string().min(3, { message: 'O nome precisa ter pelo menos 3 caracteres, por favor verifique o que foi digitado' }).max(25, { message: 'O nome pode ter no máximo 25 caracteres ,por favor verifique o que foi digitado' }),
+            email: z.string().email({ message: 'Endereço de email inválido' }),
+            phone: z.number({ message: 'Número com formato digitado inválido' }).min(11, { message: 'Número de telefone digitado inválido, certifique de colocar o ddd da sua localidade' }),
+            password: z.string().min(6, { message: 'Senha muito curta ,mínimo 6 characteres , por favor faça outra' }).max(28, { message: 'Senha muito grande , por favor faça outra' }),
+        })
+
+        try {
+            userSchema.parse(userParse)
+        } catch (error) {
+            let returnErros = []
+            if (error instanceof z.ZodError) {
+                error.errors.map((index) => {
+                    returnErros.push(index.message)
+                    console.log(`erro : ${JSON.stringify(index.message)}`)
+                })
+                res.status(422).json({ message: 'Erros na requisição :', returnErros })
+                return
+            }
+        }
+
+        if (userParse.password !== userParse.confirmpassword) {
+            res.status(422).json({ message: 'A senha e a sua confirmação não são iguais , por favor verifique o que foi digitado' })
+        }
+
+        const UserExists = await User.findOne({ email: userParse.email })
+
+        if (UserExists) {
+            res.status(422).json({ message: 'E-mail já cadastrado , por favor utilize outro !!!' })
+            return
+        }
+
         const primaryLogin = false
 
-        if(!name){
-            res.status(422).json({message:'O nome não pode ser nulo , por favor verifique o que foi digitado'})
-            return
-        }
-        if(!email){
-            res.status(422).json({message:'O email não pode ser nulo , por favor verifique o que foi digitado'})
-            return
-        }
-        if(!phone){
-            res.status(422).json({message:'O telefone não pode ser nulo , por favor verifique o que foi digitado'})
-            return
-        }
-        if(!password){
-            res.status(422).json({message:'A senha não pode ser nula , por favor verifique o que foi digitado'})
-            return
-        }
-        if(!confirmpassword){
-            res.status(422).json({message:'A confirmação de senha não pode ser nula , por favor verifique o que foi digitado'})
-            return
-        }
-        if(password!==confirmpassword){
-            res.status(422).json({message:'A senha e a sua confirmação não são iguais , por favor verifique o que foi digitado'})
-        }
-
-        const UserExists = await User.findOne({email:email})
-
-        if(UserExists){
-            res.status(422).json({message:'E-mail já cadastrado , por favor utilize outro !!!'})
-            return
-        }
-
         const salt = await bcrypt.genSalt(12)
-        const PasswordHash = await bcrypt.hash(password,salt)
+        const PasswordHash = await bcrypt.hash(userParse.password, salt)
         const token = GenerateRandomFourDigitNumber()
 
         const user = new User({
-            name,
-            email,
-            phone,
-            password:PasswordHash,
+            name: userParse.name,
+            email: userParse.email,
+            phone: userParse.phone,
+            password: PasswordHash,
             primaryLogin,
             token
         })
 
-        EmailSend.EmailPrimaryLogin(user.email,token)
+        EmailSend.EmailPrimaryLogin(user.email, token)
 
-        try{
+        try {
             await user.save()
-            res.status(200).json({message:'Usuário criado com sucesso'})
-        }catch(erro){
+            res.status(200).json({ message: 'Usuário criado com sucesso' })
+        } catch (erro) {
             console.log(erro)
-            res.status(500).json({message:erro})
+            res.status(500).json({ message: erro })
         }
     }
 
-    static async Login(req,res){
+    static async Login(req, res) {
 
-        const {email,password} = req.body
+        const { email, password } = req.body
 
-        const ValidationLogin = await LoginAuth.LoginAuthentication(email,password)
-        
-        if(!ValidationLogin.validation){
-            res.status(422).json({message:'Usuário ou senha Incorreto , por favor verifique o que foi digitado !'})
-            return 
+        const ValidationLogin = await LoginAuth.LoginAuthentication(email, password)
+
+        if (!ValidationLogin.validation) {
+            res.status(422).json({ message: 'Usuário ou senha Incorreto , por favor verifique o que foi digitado !' })
+            return
         }
 
-        if(ValidationLogin.Userdb.primaryLogin === false){
-            res.status(422).json({message:'Por favor entre no seu e-mail e coloque o token infromado para validar a sua conta !'})
-            return 
+        if (ValidationLogin.Userdb.primaryLogin === false) {
+            res.status(422).json({ message: 'Por favor entre no seu e-mail e coloque o token infromado para validar a sua conta !' })
+            return
         }
 
-        await CreateUserToken(ValidationLogin.Userdb,req,res)
+        await CreateUserToken(ValidationLogin.Userdb, req, res)
     }
 
-    static async PrimaryLogin(req,res){
-        const {email,password,token} = req.body
+    static async PrimaryLogin(req, res) {
+        const { email, password, token } = req.body
 
-        if(!email){
-            res.status(422).json({message:'O email não pode ser nulo , por favor verifique o que foi digitado'})
+        if (!email) {
+            res.status(422).json({ message: 'O email não pode ser nulo , por favor verifique o que foi digitado' })
             return
         }
-        if(!password){
-            res.status(422).json({message:'A senha não pode ser nula , por favor verifique o que foi digitado'})
+        if (!password) {
+            res.status(422).json({ message: 'A senha não pode ser nula , por favor verifique o que foi digitado' })
             return
         }
 
-        const ValidationLogin = await LoginAuth.LoginAuthentication(email,password)
+        const ValidationLogin = await LoginAuth.LoginAuthentication(email, password)
 
-        if(!ValidationLogin.validation){
-            res.status(422).json({message:'Usuário ou senha Incorreto , por favor verifique o que foi digitado !'})
+        if (!ValidationLogin.validation) {
+            res.status(422).json({ message: 'Usuário ou senha Incorreto , por favor verifique o que foi digitado !' })
             return
         }
 
@@ -121,31 +135,31 @@ module.exports = class UserController{
 
         console.log(`Valor token do Userdb : ${ValidationLogin.Userdb.token} Valor do token:${token}`)
 
-        if(ValidationLogin.Userdb.primaryLogin===false){
-            if(ValidationLogin.Userdb.token === Number(token)){
-                try{
+        if (ValidationLogin.Userdb.primaryLogin === false) {
+            if (ValidationLogin.Userdb.token === Number(token)) {
+                try {
                     await User.findOneAndUpdate(
-                        {_id:ValidationLogin.Userdb._id},
-                        {$set:{primaryLogin:NewPrimaryLogin}}
+                        { _id: ValidationLogin.Userdb._id },
+                        { $set: { primaryLogin: NewPrimaryLogin } }
                     )
-                    await CreateUserToken(ValidationLogin.Userdb,req,res)
-                }catch(erro){
-                    res.status(500).json({message:erro})
+                    await CreateUserToken(ValidationLogin.Userdb, req, res)
+                } catch (erro) {
+                    res.status(500).json({ message: erro })
                     console.log(`Erro de scopo :${erro}`)
                     return
                 }
-                
-            }else{
-                res.status(422).json({message:'Token com valor incorreto , por favor verifique o mesmo'})
+
+            } else {
+                res.status(422).json({ message: 'Token com valor incorreto , por favor verifique o mesmo' })
                 return
             }
-        }else{
-            res.status(422).json({message:'Sua conta já foi checada , por favor se redirecione para o login'})
+        } else {
+            res.status(422).json({ message: 'Sua conta já foi checada , por favor se redirecione para o login' })
             return
         }
     }
 
-    static async ForgotPassword(req,res){
+    static async ForgotPassword(req, res) {
 
         function GenerateRandomFourDigitNumber() {
             return Math.floor(1000 + Math.random() * 9000);
@@ -154,37 +168,37 @@ module.exports = class UserController{
         const email = req.body.email
         const Newtoken = GenerateRandomFourDigitNumber()
 
-        const UserExists = await User.findOne({email:email})
+        const UserExists = await User.findOne({ email: email })
 
-        if(!UserExists){
-            res.status(422).json({message:'E-mail não existe na nossa base de dados , por favor utilize outro !!!'})
+        if (!UserExists) {
+            res.status(422).json({ message: 'E-mail não existe na nossa base de dados , por favor utilize outro !!!' })
             return
         }
 
         await User.findOneAndUpdate(
-            {_id:UserExists._id},
-            {$set:{token:Newtoken}}
+            { _id: UserExists._id },
+            { $set: { token: Newtoken } }
         )
 
-        EmailSend.EmailForgotPassword(UserExists.email,Newtoken)
+        EmailSend.EmailForgotPassword(UserExists.email, Newtoken)
 
-        res.status(200).json({message:'Token enviado com sucesso para o e-mail cadastrado !!!'})
+        res.status(200).json({ message: 'Token enviado com sucesso para o e-mail cadastrado !!!' })
 
     }
 
-    static async CheckUser(req,res){
-        let CurrentUser 
+    static async CheckUser(req, res) {
+        let CurrentUser
 
         console.log(`entrou em checkuser com Autorization : ${req.headers.authorization}`)
 
-        if(req.headers.authorization){
+        if (req.headers.authorization) {
             const Token = GetToken(req)
-            const Decoded =jwt.verify(Token,'meutokenjwt')
+            const Decoded = jwt.verify(Token, 'meutokenjwt')
             console.log(Decoded)
             CurrentUser = await User.findById(Decoded.id)
             CurrentUser.password = undefined
 
-        }else{
+        } else {
             CurrentUser = null
         }
 
@@ -192,166 +206,203 @@ module.exports = class UserController{
 
     }
 
-    static async GetUserById(req,res){
+    static async GetUserById(req, res) {
         const id = req.params.id
         const user = await User.findById(id).select('-password') //elimando o campo do password 
-        console.log(user)
-        if(!user){
-            console.log('entrou aqui')
-            res.status(422).json({message:'Usuário não encontrado , por favor verifique o que foi digitado'})
+        if (!user) {
+            res.status(422).json({ message: 'Usuário não encontrado , por favor verifique o que foi digitado' })
             return
         }
 
-        res.status(200).json({user})
+        res.status(200).json({ user })
     }
 
-    static async EditUser(req,res){
+    static async EditUser(req, res) {
 
-        const token = GetToken(req)
-        const user = await GetUserByToken(token)
-        if(!user){
-            res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
-            return
+        const toNumber = (value) => {
+            const number = Number(value)
+            return isNaN(number) ? value : number
         }
 
-        const userDb = await User.findById(user._id)
-
-        const {name,email,phone,receiveremail,password,confirmpassword} = req.body
-
-        console.log(`receiveremail : ${receiveremail}`)
-
-        if(req.file){
-            // console.log(`entrou aqui , valor req.file.filename :${req.file.filename} valor req.file : ${req.file}`)
-            const imagePath = path.join(__dirname, '..', 'public', 'images', 'users', userDb.img);
-            fs.unlink(imagePath, (err) => {
-                if (err) {
-                    console.error('Erro ao excluir a imagem:', err);
+        const toBoolean = (value) => {
+            if (typeof value === 'boolean') {
+                return value
+            }
+            if (typeof value === 'string') {
+                const lowerValue = value.toLowerCase();
+                if (lowerValue === 'true') {
+                    return true
+                } else if (lowerValue === 'false') {
+                    return false
                 }
-            })
-            user.img = req.file.filename
-            
+            }
+            return value
         }
 
-        console.log(`valor user.image :${user.image} user:${user}`)
-        if(!name){
-            res.status(422).json({message:'O nome não pode ser nulo , por favor verifique o que foi digitado'})
-            return
+        const userParse = {
+            name: req.body.name,
+            email: req.body.email,
+            phone: toNumber(req.body.phone),
+            password: req.body.password,
+            confirmpassword: req.body.confirmpassword,
+            receiveremail: toBoolean(req.body.receiveremail)
         }
-        user.name = name
 
-        if(!email){
-            res.status(422).json({message:'O email não pode ser nulo , por favor verifique o que foi digitado'})
-            return
-        }
-        const UserExistsByEmail = await User.findOne({email:email})
+        const userSchema = z.object({
+            name: z.string().min(3, { message: 'O nome precisa ter pelo menos 3 caracteres, por favor verifique o que foi digitado' }).max(25, { message: 'O nome pode ter no máximo 25 caracteres ,por favor verifique o que foi digitado' }),
+            email: z.string().email({ message: 'Endereço de email inválido' }),
+            phone: z.number({ message: 'Número com formato digitado inválido' }).min(1000000000, { message: 'Número de telefone digitado inválido, certifique de colocar o ddd da sua localidade' }).max(99999999999, { message: 'Número de telefone digitado inválido, certifique dos dados digitados' }),
+            password: z.string().min(6, { message: 'Senha muito curta ,mínimo 6 characteres , por favor faça outra' }).max(28, { message: 'Senha muito grande , por favor faça outra' }),
+            receiveremail: z.boolean({ message: 'Tipo de dado incorreto para o recebimento de e-mail , somente permitido true ou false' })
+        })
 
-        if(userDb.email !== email && UserExistsByEmail){
-            res.status(422).json({message:'E-mail inválido , por favor verifique o que foi digitado'})
-            return
-        }
-        user.email = email
-
-        if(!phone){
-            res.status(422).json({message:'O telefone não pode ser nulo , por favor verifique o que foi digitado'})
-            return
-        }
-        user.phone = phone
-
-        if(!receiveremail){
-            user.receiveremail = true
-        }else{
-            if(receiveremail === 'true' || receiveremail === 'false'){
-                user.receiveremail = receiveremail
-            }else{
-                res.status(422).json({message:'receiver email formato incorreto , por favor verifique o que foi digitado'})
+        try {
+            userSchema.parse(userParse)
+        } catch (error) {
+            let returnErros = []
+            if (error instanceof z.ZodError) {
+                error.errors.map((index) => {
+                    returnErros.push(index.message)
+                    console.log(`erro : ${JSON.stringify(index.message)}`)
+                })
+                res.status(422).json({ message: 'Erros na requisição :', returnErros })
                 return
             }
         }
 
-        if(password != confirmpassword){
-            res.status(422).json({message:'As senhas não conferem , por favor verifique o que foi digitado'})
+        let token, user, userDb
+        try {
+            token = GetToken(req)
+            user = await GetUserByToken(token)
+            userDb = await User.findById(user._id)
+        } catch (Erro) {
+            res.status(422).json({ message: 'Usuario não encontrado , por favor verifique o que foi digitado' })
             return
-        }else if(password === confirmpassword && password != null){
-            const salt = await bcrypt.genSalt(12)
-            const PasswordHash = await bcrypt.hash(password,salt)
-            user.password = PasswordHash
         }
 
-        try{
+        const UserExistsByEmail = await User.findOne({ email: userParse.email }).select('email')
+        if (userDb.email !== userParse.email && UserExistsByEmail) {
+            res.status(422).json({ message: 'E-mail inválido , por favor verifique o que foi digitado' })
+            return
+        }
+
+        if (req.file) {
+            if (userDb.img) {
+                const imagePath = path.join(__dirname, '..', 'public', 'images', 'users', userDb.img);
+                fs.unlink(imagePath, (err) => {
+                    if (err) {
+                        console.error('Erro ao excluir a imagem:', err);
+                    }
+                })
+            }
+            userDb.img = req.file.filename
+        }
+
+        userDb.name = userParse.name
+        userDb.email = userParse.email
+        userDb.phone = userParse.phone
+        userDb.receiveremail = userParse.receiveremail
+       
+
+        if (userParse.password != userParse.confirmpassword) {
+            res.status(422).json({ message: 'As senhas não conferem , por favor verifique o que foi digitado' })
+            return
+        } else if (userParse.password === userParse.confirmpassword && userParse.password != null) {
+            const salt = await bcrypt.genSalt(12)
+            const PasswordHash = await bcrypt.hash(userParse.password, salt)
+            userDb.password = PasswordHash
+        }
+
+        console.log(`userDb antes de atualizar : ${userDb.img}`)
+
+        try {
             await User.findOneAndUpdate(
-                {_id:user.id},
-                {$set:user},
+                { _id: userDb.id },
+                { $set: userDb },
                 // {new:true}
             )
-            res.status(200).json({message:'Usuario atualizado com sucesso !!!'})
-        }catch(erro){
-            res.status(500).json({message:erro})
+            res.status(200).json({ message: 'Usuario atualizado com sucesso !!!' })
+        } catch (erro) {
+            res.status(500).json({ message: erro })
             return
         }
+
     }
 
-    static async EditUserAddress(req,res){
+    static async EditUserAddress(req, res) {
 
-        const token = GetToken(req)
-        const user = await GetUserByToken(token)
-        if(!user){
-            res.status(422).json({message:'Usuario não encontrado , por favor verifique o que foi digitado'})
-            return
+        const toNumber = (value) => {
+            const number = Number(value)
+            return isNaN(number) ? value : number
         }
-        const userDb = await User.findById(user._id)
-        let address = {}
 
-        const {cep,street,number,complement} = req.body
-
-
-        if(!cep || cep.length != 8){
-            res.status(422).json({message:'O CEP fornecido é inválido , por favor verifique o que foi digitado'})
-            return
-        }
-        if(!street || street.length < 4){
-            res.status(422).json({message:'Rua fornecida inválida , por favor verifique o que foi digitado'})
-            return
-        }
-        if(!number || typeof number != 'number'){
-            res.status(422).json({message:'Número incorreto , por favor verifique o que foi digitado'})
+        let token, user, userDb
+        try {
+            token = GetToken(req)
+            user = await GetUserByToken(token)
+            userDb = await User.findById(user._id)
+        } catch (Erro) {
+            res.status(422).json({ message: 'Usuario não encontrado , por favor verifique o que foi digitado' })
             return
         }
 
-        address = {
-            cep,
-            street,
-            number,
-            complement
+        const adrressParse = {
+            cep: req.body.cep,
+            street: req.body.street,
+            number: toNumber(req.body.number),
+            complement: req.body.complement
         }
 
-        userDb.address = address
+        const addressSchema =  z.object({
+            cep: z.string().length(8, { message: 'O CEP deve conter exatamente 8 dígitos' }).regex(/^\d+$/, { message: 'O CEP deve conter apenas números' }),
+            street: z.string().min(6,{message:'Rua muito pequena, por favor verifique o que foi digitado'}).max(100,{message:'Rua muita grande , por favor verifique o que foi digitado'}),
+            number: z.number({message:'Digite um número valido por favor'}).max(100000000000,{message:'Número muito grande'}),
+            complement: z.string().max(800,{message:'Complemento muito grande '})
+        })
+
+        try {
+            addressSchema.parse(adrressParse)
+        } catch (error) {
+            let returnErros = []
+            if (error instanceof z.ZodError) {
+                error.errors.map((index) => {
+                    returnErros.push(index.message)
+                    console.log(`erro : ${JSON.stringify(index.message)}`)
+                })
+                res.status(422).json({ message: 'Erros na requisição :', returnErros })
+                return
+            }
+        }
+
+        userDb.address = adrressParse
         await User.findByIdAndUpdate(userDb._id,userDb)
+
         res.status(200).json({
             message: 'Endereço atualizado com sucesso !!!'
         })
 
     }
 
-    static async ReceiverEmail(req,res){
+    static async ReceiverEmail(req, res) {
         const receiveremail = req.body.receiveremail
 
-        const token = GetToken(req)
-        const user = await GetUserByToken(token)
-
-        if(!user){
-            res.status(422).json({message:'Usuario não encontrado !'})
+        let token, user, userDb
+        try {
+            token = GetToken(req)
+            user = await GetUserByToken(token)
+            userDb = await User.findById(user._id)
+        } catch (Erro) {
+            res.status(422).json({ message: 'Usuario não encontrado , por favor verifique o que foi digitado' })
             return
         }
 
-        const userDb = await User.findById(user._id)
 
-
-        if(receiveremail === true || receiveremail === false){
+        if (receiveremail === true || receiveremail === false) {
             userDb.receiveremail = receiveremail
-            await User.findByIdAndUpdate(userDb._id,userDb)
-            res.status(200).json({message : 'Notificações por e-mail foram atualizadas com sucesso !!!'})
-        }else{
-            res.status(422).json({message:'Erro ao processar sua operação , por favor verifique o que foi digitado !'})
+            await User.findByIdAndUpdate(userDb._id, userDb)
+            res.status(200).json({ message: 'Notificações por e-mail foram atualizadas com sucesso !!!' })
+        } else {
+            res.status(422).json({ message: 'Erro ao processar sua operação , por favor verifique o que foi digitado !' })
         }
     }
 

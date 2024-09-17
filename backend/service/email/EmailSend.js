@@ -2235,5 +2235,5 @@ module.exports = class SendEmail {
         Send(to, "Pet Retirado da adoção", Email)
 
     }
-
+    
 }

@@ -36,15 +36,15 @@ BACKEND :
         [x] : Requisição petbyid
         [x] : requisição updatepetbyid
         [x] : deletepetbyid
-9º  [] => E-mail
+9º  [x] => E-mail
         [x] : E-mail de verificação de conta
         [x] : E-mail de token para mudança de senha
         [x] : Enviar e-mail para todos os usuarios quando um novo pet for adicionado a plataforma , bem como o link 
         [x] : E-mail de novas mensagens 
         [x] : E-mail de requisição de adoção
         [x] : E-mail de conclusão de adoção para o tutor e adotante
-        [] : E-mail de desistencia de adoção por parte do adopter
-        [] : E-mail de Pet deletado
+        [x] : E-mail de desistencia de adoção por parte do adopter
+        [x] : E-mail de Pet deletado
         [x] : Botão de não receber e-mail , somente o e-mail de primarylogin ou o de forgotpassword que ainda continuarão funcionado 
 9º  [] => Zod Validation
         [] : Pet Validation
@@ -52,6 +52,10 @@ BACKEND :
                 [x] : Adoption request
                 [x] : EditPet
         [] : User validation
+                [x] : Register
+                [x] : Edit User
+                [x] : AddressEdit
+                [x] : ReceiverEmail
         [] : Notification Validation
         [] : Message Validation
 9º  [] => SMS 

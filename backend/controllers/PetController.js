@@ -252,10 +252,6 @@ module.exports = class PetController {
             token = GetToken(req)
             user = await GetUserByToken(token)
             userDb = await User.findById(user._id)
-            if (!userDb.address) {
-                res.status(422).json({ message: 'Você não pode adicionar um pet na nossa plataforma sem ter um endereço cadastrado' })
-                return
-            }
         } catch (Erro) {
             res.status(422).json({ message: 'Usuario não encontrado , por favor verifique o que foi digitado' })
             return
@@ -289,6 +285,7 @@ module.exports = class PetController {
         if (pet.adopter.length > 0) {
             pet.adopter.map((index) => {
                 NotificationsController.CreateTo(`Infelizmente o pet : ${pet.name} ao qual você tinha interesse foi retirado da adoção pelo seu tutor , mas não se preocupe, pois você pode achar outros pets para doção em nossa plataforma `, index._id, `Pet retirado da adoção`, `${process.env.URL_API}/images/pets/icongetapet.jpg`, `${process.env.URL_FRONTEND}`)
+                EmailSend.EmailCancellationAdopterByTutor(pet,index)
             })
         }
 
