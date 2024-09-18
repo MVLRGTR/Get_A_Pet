@@ -12,9 +12,9 @@ module.exports = class MessageController {
     static async SendMessage(req, res) {
         const { message, to } = req.body
 
-        function isString(value) {
+        function isString(value){
             return typeof value === 'string';
-          }
+        }
 
         if (!message || !isString(message)) {
             res.status(422).json({ message: 'A messagem não pode ser nula, ou enviado com formato inválido , por favor verifique o que foi digitado' })
@@ -30,14 +30,11 @@ module.exports = class MessageController {
             return
         }
 
+        let token, user, userDb
         try {
             token = GetToken(req)
             user = await GetUserByToken(token)
             userDb = await User.findById(user._id)
-            if (!userDb.address) {
-                res.status(422).json({ message: 'Você não pode adicionar um pet na nossa plataforma sem ter um endereço cadastrado' })
-                return
-            }
         } catch (Erro) {
             res.status(422).json({ message: 'Usuario não encontrado , por favor verifique o que foi digitado' })
             return
@@ -70,8 +67,8 @@ module.exports = class MessageController {
     static async ViewedMsg(req, res) {
         const id = req.body.id
 
-        if (!id) {
-            res.status(422).json({ message: 'A requisição precisa ter o id da mensagem, por favor verifique o que foi digitado' })
+        if (!ObjectId.isValid(id)) {
+            res.status(422).json({ message: 'A requisição precisa ter o id da mensagem valido, por favor verifique o que foi digitado' })
             return
         }
 
@@ -83,12 +80,19 @@ module.exports = class MessageController {
                 return
             }
 
-            const token = GetToken(req)
-            const user = await GetUserByToken(token)
+            let token, user, userDb
+            try {
+                token = GetToken(req)
+                user = await GetUserByToken(token)
+                userDb = await User.findById(user._id)
+            } catch (Erro) {
+                res.status(422).json({ message: 'Usuario não encontrado , por favor verifique o que foi digitado' })
+                return
+            }
 
             //verificação se o usuario que está enviando a requisição de vizualização é o mesmo que recebeu a mensagem
 
-            if (user._id.toString() != toMsgExist.to.toString()) {
+            if (userDb._id.toString() != toMsgExist.to.toString()) {
                 res.status(422).json({ message: 'Erro ao processar sua operação, por favor verifique o que foi digitado' })
                 return
             }
@@ -113,11 +117,18 @@ module.exports = class MessageController {
     static async GetAllMessageChat(req,res){
         const to = req.body.to
 
-        const token = GetToken(req)
-        const user = await GetUserByToken(token)
+        let token, user, userDb
+        try {
+            token = GetToken(req)
+            user = await GetUserByToken(token)
+            userDb = await User.findById(user._id)
+        } catch (Erro) {
+            res.status(422).json({ message: 'Usuario não encontrado , por favor verifique o que foi digitado' })
+            return
+        }
 
-        if (!to) {
-            res.status(422).json({ message: 'A requisição precisa ter o campo de quem recebeu a mensagem, por favor verifique o que foi digitado' })
+        if (!ObjectId.isValid(to)) {
+            res.status(422).json({ message: 'A requisição precisa ter o campo de quem recebeu a mensagem valido, por favor verifique o que foi digitado' })
             return
         }
 
@@ -134,15 +145,15 @@ module.exports = class MessageController {
 
         const messagesChat = await Message.find({
             $or: [
-                { to: new ObjectId(to), from: user._id },
-                { to: user._id, from: new ObjectId(to) }
+                { to: new ObjectId(to), from: userDb._id },
+                { to: userDb._id, from: new ObjectId(to) }
             ]
         }).sort({ createdAt: 1 })
 
         res.status(200).json({
             message:'Mensagens retornadas com sucesso',
             messagesChat,
-            userMessageRequest:user._id
+            userMessageRequest:userDb._id
         })
         
     }
