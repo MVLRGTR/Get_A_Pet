@@ -188,7 +188,7 @@ module.exports = class PetController {
         const id = req.params.id
 
         if (!ObjectId.isValid(id)) {
-            res.status(422).json({ message: 'Id do pet inválido , por favor verifique o que foi digitado' })
+            res.status(422).json({ message: 'Id do pet inválido , por favor verifique o que foi digitado ' })
             return
         }
         const pet = await Pet.findById(id)
@@ -548,10 +548,6 @@ module.exports = class PetController {
             token = GetToken(req)
             user = await GetUserByToken(token)
             userDb = await User.findById(user._id)
-            if (!userDb.address) {
-                res.status(422).json({ message: 'Você não pode adicionar um pet na nossa plataforma sem ter um endereço cadastrado' })
-                return
-            }
         } catch (Erro) {
             res.status(422).json({ message: 'Usuario não encontrado , por favor verifique o que foi digitado' })
             return
@@ -765,6 +761,29 @@ module.exports = class PetController {
             return
         }
 
+    }
+
+    static async SearchPet(req,res){
+
+        const searchPet = req.params.search
+        if(!searchPet){
+            res.status(422).json({ message: 'O campo de busca não pode ser nulo , por favor verifique o que foi digitado' })
+            return
+        }
+
+        const pets = await Pet.find({
+            name: { $regex: `.*${searchPet}.*`, $options: 'i' }
+        })
+
+        if(pets.length === 0){
+            res.status(404).json({ message: 'Nenhum pet encontrado !!!' })
+            return
+        }
+
+        res.status(200).json({
+            message: 'Pets retornados com sucesso',
+            pets
+        })
     }
 
 }

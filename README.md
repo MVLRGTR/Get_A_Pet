@@ -46,25 +46,25 @@ BACKEND :
         [x] : E-mail de desistencia de adoção por parte do adopter
         [x] : E-mail de Pet deletado
         [x] : Botão de não receber e-mail , somente o e-mail de primarylogin ou o de forgotpassword que ainda continuarão funcionado 
-9º  [] => Zod Validation
-        [] : Pet Validation
+9º  [x] => Zod Validation
+        [x] : Pet Validation
                 [x] : Create
                 [x] : Adoption request
                 [x] : EditPet
-        [] : User validation
+        [x] : User validation
                 [x] : Register
                 [x] : Edit User
                 [x] : AddressEdit
                 [x] : ReceiverEmail
-        [] : Notification Validation
-        [] : Message Validation
+        [x] : Notification Validation
+        [x] : Message Validation
 9º  [] => SMS 
         [] : SMS de recuperação de conta 
 8º  [x] => Confgiguração das variaveis de ambiente
 8º  [] => Abrir a localização no maps do pet em questão (Integração back e frontend)
 9º  [] => Tratamento de erros da API
-10º [] => Buscar um pet 
-11º [] => Buscar um tutor ou todos 
+10º [x] => Buscar um pet 
+11º [x] => Buscar um tutor ou todos 
 12º [] => Fale conosco
 13º [] : Área de Administração 
        [] : -Mudanças de senhas

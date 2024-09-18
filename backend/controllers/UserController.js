@@ -406,4 +406,27 @@ module.exports = class UserController {
         }
     }
 
+    static async SearchUser(req,res){
+        const searchUser = req.params.search
+
+        if(!searchUser){
+            res.status(422).json({ message: 'O campo de busca não pode ser nulo , por favor verifique o que foi digitado' })
+            return
+        }
+
+        const users = await User.find({
+            name: { $regex: `.*${searchUser}.*`, $options: 'i' }
+        }).select('_id name email phone ')
+
+        if(users.length === 0){
+            res.status(404).json({ message: 'Nenhum usuario encontrado !!!' })
+            return
+        }
+
+        res.status(200).json({
+            message: 'Usuarios retornados com sucesso',
+            users
+        })
+    }
+
 }
