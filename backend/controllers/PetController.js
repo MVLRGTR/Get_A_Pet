@@ -773,7 +773,7 @@ module.exports = class PetController {
 
         const pets = await Pet.find({
             name: { $regex: `.*${searchPet}.*`, $options: 'i' }
-        })
+        }).select('-adopter')
 
         if(pets.length === 0){
             res.status(404).json({ message: 'Nenhum pet encontrado !!!' })

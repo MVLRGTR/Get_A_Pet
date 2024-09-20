@@ -8,6 +8,7 @@ const CreateUserToken = require('../helpers/CreatedUserToken')
 const GetToken = require('../helpers/GetToken')
 const GetUserByToken = require('../helpers/GetUserByToken')
 const EmailSend = require('../service/email/EmailSend')
+const ObjectId = require('mongoose').Types.ObjectId
 
 //others
 const fs = require('fs')
@@ -208,6 +209,10 @@ module.exports = class UserController {
 
     static async GetUserById(req, res) {
         const id = req.params.id
+        if (!ObjectId.isValid(id)) {
+            res.status(422).json({ message: 'Id do usuario inválido , por favor verifique o que foi digitado ' })
+            return
+        }
         const user = await User.findById(id).select('-password') //elimando o campo do password 
         if (!user) {
             res.status(422).json({ message: 'Usuário não encontrado , por favor verifique o que foi digitado' })

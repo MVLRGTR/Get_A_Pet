@@ -20,7 +20,7 @@ const {ImageUpload} = require('../helpers/ImageUpload')
     router.patch('/renewadoptionbytutor/:id',VerifyToken,PetController.RenewAdoptionByTutor)
     router.patch('/addfavoritepet/:id',VerifyToken,PetController.AddFavoritePet)
     router.patch('/removefavoritepet/:id',VerifyToken,PetController.RemoveFavoritePet)
-    //yugfugffyt
+    
 
 
 module.exports = router
