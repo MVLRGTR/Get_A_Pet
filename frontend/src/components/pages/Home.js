@@ -2,11 +2,17 @@ import { useState,useEffect } from "react"
 import api from "../../utils/api"
 import { Link } from "react-router-dom"
 import styles from './Home.module.css'
+import Input from '../form/Input'
 
 function Home(){
     const [pets,setPets] = useState([])
+    const [searchPetDb,setSearchPet] = useState({})
 
     useEffect(()=>{
+        getAllPets()
+    },[])
+
+    function getAllPets(){
         api.get('/pets')
         .then((response)=>{
             setPets(response.data.pets)
@@ -14,7 +20,23 @@ function Home(){
         }).catch((Erro)=>{
             return Erro.response.data
         })
-    },[])
+    }
+
+    function handleChange(evt){
+        setSearchPet(evt.target.value)
+    }
+
+    function searchPet(evt){
+        evt.preventDefault()
+
+        api.get(`/pets/search/${searchPetDb}`)
+        .then((response)=>{
+            setPets(response.data.pets)
+            console.log(pets)
+        }).catch((Erro)=>{
+            return Erro.response.data
+        })
+    }
 
 
     return(
@@ -22,6 +44,11 @@ function Home(){
             <div className={styles.pet_home_header}>
                 <h1>Adote um Pet</h1>
                 <p>Veja os detalhes de cada um e conheça o tutor deles</p>
+                <form onSubmit={searchPet}>
+                    <Input text='Busque por um pet' type='text' name='search' placeholder='Digite o nome do pet' handleOnChange={handleChange}/>
+                    <input type='submit' value='Buscar'/>
+                </form>
+                <input type="submit" value="Limpar" onClick={getAllPets}/>
             </div>
             <div className={styles.pet_container}>
                 {pets.length > 0 && (

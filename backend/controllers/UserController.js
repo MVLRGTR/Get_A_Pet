@@ -412,12 +412,29 @@ module.exports = class UserController {
     }
 
     static async SearchUser(req,res){
-        const searchUser = req.params.search
 
+        const toNumber = (value) => {
+            const number = Number(value)
+            return isNaN(number) ? value : number
+        }
+
+        const searchUser = req.params.search
+        const page = toNumber(req.params.page)
+        const limit = 15
+
+        if(!page || typeof page != 'number' ){
+            res.status(422).json({ message: 'Pagina de envio Inválida  , por favor verifique o que foi digitado' })
+            return
+        }
         if(!searchUser){
             res.status(422).json({ message: 'O campo de busca não pode ser nulo , por favor verifique o que foi digitado' })
             return
         }
+
+        const totalUsers = await User.countDocuments({
+            name: { $regex: `.*${searchUser}.*`, $options: 'i' }
+        })
+        const totalPages = Math.ceil(totalUsers/limit)
 
         const users = await User.find({
             name: { $regex: `.*${searchUser}.*`, $options: 'i' }
@@ -430,7 +447,7 @@ module.exports = class UserController {
 
         res.status(200).json({
             message: 'Usuarios retornados com sucesso',
-            users
+            users,totalUsers,totalPages
         })
     }
 

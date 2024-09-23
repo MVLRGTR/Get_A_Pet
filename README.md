@@ -58,11 +58,16 @@ BACKEND :
                 [x] : ReceiverEmail
         [x] : Notification Validation
         [x] : Message Validation
+9º  [] => Paginação
+        [x] : Search Users
+        [x] : PetsAll
+        [x] : Search Pets
+        [x] : MyPets
+        [x] : MyAdoptions
 9º  [] => SMS 
         [] : SMS de recuperação de conta 
 8º  [x] => Confgiguração das variaveis de ambiente
-8º  [] => Abrir a localização no maps do pet em questão (Integração back e frontend)
-9º  [] => Tratamento de erros da API
+9º  [x] => Tratamento de erros da API
 10º [x] => Buscar um pet 
 11º [x] => Buscar um tutor ou todos 
 12º [] => Fale conosco
@@ -92,3 +97,4 @@ FRONTEND :
 9º  [] => Pagina minhas adoções mostrar os tutores interessados em um pet especifico
 10º [] => Pagina de tutores
 11º [] => Mostrar pets mais perto de acordo com a localização
+8º  [] => Abrir a localização no maps do pet em questão (Integração back e frontend)

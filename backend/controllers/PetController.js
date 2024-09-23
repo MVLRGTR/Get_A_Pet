@@ -109,54 +109,105 @@ module.exports = class PetController {
     }
 
     static async GetAllPets(req, res) {
+
+        const toNumber = (value) => {
+            const number = Number(value)
+            return isNaN(number) ? value : number
+        }
+
         const cepUser = req.body.cep
-        const pets = await Pet.find({ available: true }).sort('-createdAt')
+        const page = toNumber(req.params.page)
+        const limit = 15 // pets que serão mostrados por paginas
+
+        if (!page || typeof page != 'number') {
+            res.status(422).json({ message: 'Pagina de envio Inválida  , por favor verifique o que foi digitado' })
+            return
+        }
+
+        const pets = await Pet.find({ available: true }).sort('-createdAt').skip((page - 1) * limit).limit(limit) //skip pula os documentos e limit diz quantos serão retornados depois do skip
+        const totalPets = pets.length
+        const totalPages = Math.ceil(totalPets / limit)
 
         if (cepUser) {
             console.log(`cepUser :${cepUser} cepUser typeof : ${typeof cepUser} cepUser.lenght :${cepUser.toString().length}`)
             if (typeof cepUser === 'number' && cepUser.toString().length === 8) {
                 const PetsOrder = OrderPetsByCEP(pets, cepUser)
+                if (PetsOrder.length === 0) {
+                    res.status(404).json({ message: 'Nenhum Pet encontrado ' })
+                    return
+                }
                 res.status(200).json({
                     message: 'Pets retornados com sucesso !!!',
-                    PetsOrder
+                    PetsOrder, totalPages, totalPets
                 })
             } else {
                 res.status(404).json({ message: 'Cep informado inválido , por favor verifique o que foi digitado' })
             }
         } else {
+            if (pets.length === 0) {
+                res.status(404).json({ message: 'Nenhum Pet encontrado ' })
+                return
+            }
             res.status(200).json({
                 message: 'Pets retornados com sucesso !!!',
-                pets
+                pets, totalPages, totalPets
             })
         }
 
     }
 
     static async GetAllUserPets(req, res) {
-        const token = GetToken(req)
-        const user = await GetUserByToken(token)
-        const userDb = await User.findById(user._id)
-        if (!userDb) {
+        const toNumber = (value) => {
+            const number = Number(value)
+            return isNaN(number) ? value : number
+        }
+
+        const limit = 15
+        const page = toNumber(req.params.page)
+        let token, user, userDb
+        try {
+            token = GetToken(req)
+            user = await GetUserByToken(token)
+            userDb = await User.findById(user._id)
+        } catch (Erro) {
             res.status(422).json({ message: 'Usuario não encontrado , por favor verifique o que foi digitado' })
             return
         }
+        if (!page || typeof page != 'number') {
+            res.status(422).json({ message: 'Pagina de envio Inválida  , por favor verifique o que foi digitado' })
+            return
+        }
 
-        const pets = await Pet.find({ 'user._id': user._id }).sort('-createdAt')   //Para acessar sub-documents no mongodb fazemos a utilização dessa sintaxe
+        const pets = await Pet.find({ 'user._id': user._id }).sort('-createdAt').skip((page - 1) * limit).limit(15)   //Para acessar sub-documents no mongodb fazemos a utilização dessa sintaxe
+        const totalPets = pets.length
+        const totalPages = Math.ceil(totalPets / limit)
 
-        if (!pets) {
+        if (pets.length === 0) {
             res.status(404).json({ message: 'Não existem pets para o usuario informado  no banco de dados , por favor verifique o que foi digitado' })
             return
         }
 
         res.status(200).json({
             message: 'Pets do usuario retornados com suscesso !!!',
-            pets
+            pets, totalPages, totalPets
         })
 
     }
 
     static async GetUserAdoptionsPets(req, res) {
         // Nesse endpoint faço o retorno de requisições de adoções bem como pets com adoção já concluidas para esse usuario , pets com adoção concluidas serão tratadas no front-end
+        const toNumber = (value) => {
+            const number = Number(value)
+            return isNaN(number) ? value : number
+        }
+
+        const page = toNumber(req.params.page)
+        const limit = 15
+        if (!page || typeof page != 'number') {
+            res.status(422).json({ message: 'Pagina de envio Inválida  , por favor verifique o que foi digitado' })
+            return
+        }
+
         let token, user, userDb
         try {
             token = GetToken(req)
@@ -170,14 +221,16 @@ module.exports = class PetController {
         try {
             const pets = await Pet.find({
                 adopter: {
-                    $elemMatch: { _id: user._id }
+                    $elemMatch: { _id: userDb._id }
                 }
-            })
+            }).skip((page - 1) * limit).limit(15)
+            const totalPets = pets.length
+            const totalPages = (totalPets / limit)
             if (pets.length === 0) {
                 res.status(404).json({ message: 'Nenhum pet encontrado para o id do adotante fornecido', pets })
                 return
             }
-            res.status(200).json({ message: 'Pets do adotante retornado com sucesso', pets })
+            res.status(200).json({ message: 'Pets do adotante retornado com sucesso', pets, totalPages, totalPets })
         } catch (erro) {
             res.status(500).json({ message: 'Erro ao buscar os pets', erro })
             console.log(`erro : ${erro}`)
@@ -199,28 +252,24 @@ module.exports = class PetController {
 
         if (!pet.available) {
             try {
-                const token = GetToken(req)
-                const user = await GetUserByToken(token)
-                if (!user) {
+                let token, user, userDb
+                try {
+                    token = GetToken(req)
+                    user = await GetUserByToken(token)
+                    userDb = await User.findById(user._id)
+                } catch (Erro) {
                     res.status(422).json({ message: 'Usuario não encontrado , por favor verifique o que foi digitado' })
                     return
                 }
-                if (user._id.toString() === pet.user._id.toString()) {
+                if (userDb._id.toString() === pet.user._id.toString() || pet.adopter[0]._id.toString() === userDb._id.toString()) {
                     res.status(200).json({
                         message: 'Pet retornado com sucesso',
                         pet
                     })
                     return
                 }
-                console.log(`petAdopter :${pet.adopter}`)
-                if (pet.adopter[0]._id.toString() === user._id.toString()) {
-                    res.status(200).json({
-                        message: 'Pet retornado com sucesso',
-                        pet
-                    })
-                    return
-                } else {
-                    res.status(404).json({ message: 'Erro ao processar sua operação , Não autorizado , por favor verifique o que foi digitado ' })
+                else {
+                    res.status(422).json({ message: 'Erro ao processar sua operação , Não autorizado , por favor verifique o que foi digitado ' })
                 }
 
             } catch (error) {
@@ -285,7 +334,7 @@ module.exports = class PetController {
         if (pet.adopter.length > 0) {
             pet.adopter.map((index) => {
                 NotificationsController.CreateTo(`Infelizmente o pet : ${pet.name} ao qual você tinha interesse foi retirado da adoção pelo seu tutor , mas não se preocupe, pois você pode achar outros pets para doção em nossa plataforma `, index._id, `Pet retirado da adoção`, `${process.env.URL_API}/images/pets/icongetapet.jpg`, `${process.env.URL_FRONTEND}`)
-                EmailSend.EmailCancellationAdopterByTutor(pet,index)
+                EmailSend.EmailCancellationAdopterByTutor(pet, index)
             })
         }
 
@@ -368,7 +417,7 @@ module.exports = class PetController {
             return
         }
 
-        await Pet.findByIdAndUpdate(id,petParse)
+        await Pet.findByIdAndUpdate(id, petParse)
 
         res.status(200).json({
             message: 'Pet atualizado com sucesso !!!'
@@ -708,7 +757,7 @@ module.exports = class PetController {
         }
 
         userDb.favoritepets.push(pet)
-        await User.findByIdAndUpdate(user.id, userDb)
+        await User.findByIdAndUpdate(userDb.id, userDb)
 
         res.status(200).json({
             message: `O pet ${pet.name} foi adicionado a sua lista de pets favoritos com sucesso !!!`
@@ -763,26 +812,43 @@ module.exports = class PetController {
 
     }
 
-    static async SearchPet(req,res){
+    static async SearchPet(req, res) {
+
+        const toNumber = (value) => {
+            const number = Number(value)
+            return isNaN(number) ? value : number
+        }
 
         const searchPet = req.params.search
-        if(!searchPet){
+        const page = toNumber(req.params.page)
+        const limit = 15 // pets que serão  por paginas seerão mostrados
+
+        console.log(`page : ${page}`)
+
+        if (!page || typeof page != 'number') {
+            res.status(422).json({ message: 'Pagina de envio Inválida  , por favor verifique o que foi digitado' })
+            return
+        }
+        if (!searchPet) {
             res.status(422).json({ message: 'O campo de busca não pode ser nulo , por favor verifique o que foi digitado' })
             return
         }
 
         const pets = await Pet.find({
-            name: { $regex: `.*${searchPet}.*`, $options: 'i' }
-        }).select('-adopter')
+            name: { $regex: `.*${searchPet}.*`, $options: 'i' },
+            available: true
+        }).select('-adopter').skip((page - 1) * limit).limit(15)
+        const totalPets = pets.length
+        const totalPages = Math.ceil(totalPets / limit)
 
-        if(pets.length === 0){
+        if (pets.length === 0) {
             res.status(404).json({ message: 'Nenhum pet encontrado !!!' })
             return
         }
 
         res.status(200).json({
             message: 'Pets retornados com sucesso',
-            pets
+            pets, totalPages, totalPets
         })
     }
 

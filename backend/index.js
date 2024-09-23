@@ -28,9 +28,12 @@ app.use('/notifications',NotificationsRoutes)
 app.use((req, res, next) => {
     res.status(404).json({ message: 'Rota não encontrada' });
 })
+
+//tratamento de erros , mas não 100%
 app.use((err, req, res, next) => {
     console.error(`Erro: ${err.message}`);
-    res.status(500).json({ message: 'Erro interno no servidor.' });
+    const status = err.status || 500;
+    res.status(status).json({ message: err.message || 'Erro interno no servidor.' });
 })
 
 setInterval(async () => {
