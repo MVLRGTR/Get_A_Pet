@@ -117,28 +117,31 @@ module.exports = class PetController {
 
         const cepUser = req.body.cep
         const page = toNumber(req.params.page)
-        const limit = 15 // pets que serão mostrados por paginas
+        const limit = 4 // pets que serão mostrados por paginas
 
         if (!page || typeof page != 'number') {
             res.status(422).json({ message: 'Pagina de envio Inválida  , por favor verifique o que foi digitado' })
             return
         }
 
-        const pets = await Pet.find({ available: true }).sort('-createdAt').skip((page - 1) * limit).limit(limit) //skip pula os documentos e limit diz quantos serão retornados depois do skip
-        const totalPets = pets.length
+        let pets = await Pet.find({ available: true }).sort('-createdAt').skip((page - 1) * limit).limit(limit) //skip pula os documentos e limit diz quantos serão retornados depois do skip
+        const totalPets = await Pet.countDocuments({ available: true })
         const totalPages = Math.ceil(totalPets / limit)
+
+        console.log(`totalPages :${totalPages} totalPets ${totalPets}`)
 
         if (cepUser) {
             console.log(`cepUser :${cepUser} cepUser typeof : ${typeof cepUser} cepUser.lenght :${cepUser.toString().length}`)
             if (typeof cepUser === 'number' && cepUser.toString().length === 8) {
-                const PetsOrder = OrderPetsByCEP(pets, cepUser)
-                if (PetsOrder.length === 0) {
+                const petsOrder = OrderPetsByCEP(pets, cepUser)
+                pets = petsOrder
+                if (pets.length === 0) {
                     res.status(404).json({ message: 'Nenhum Pet encontrado ' })
                     return
                 }
                 res.status(200).json({
                     message: 'Pets retornados com sucesso !!!',
-                    PetsOrder, totalPages, totalPets
+                    pets, totalPages, totalPets
                 })
             } else {
                 res.status(404).json({ message: 'Cep informado inválido , por favor verifique o que foi digitado' })
@@ -179,7 +182,7 @@ module.exports = class PetController {
         }
 
         const pets = await Pet.find({ 'user._id': user._id }).sort('-createdAt').skip((page - 1) * limit).limit(15)   //Para acessar sub-documents no mongodb fazemos a utilização dessa sintaxe
-        const totalPets = pets.length
+        const totalPets = await Pet.countDocuments({ 'user._id': user._id })
         const totalPages = Math.ceil(totalPets / limit)
 
         if (pets.length === 0) {
@@ -224,8 +227,8 @@ module.exports = class PetController {
                     $elemMatch: { _id: userDb._id }
                 }
             }).skip((page - 1) * limit).limit(15)
-            const totalPets = pets.length
-            const totalPages = (totalPets / limit)
+            const totalPets = await Pet.countDocuments({adopter: {$elemMatch: { _id: userDb._id }}})
+            const totalPages = Math.ceil(totalPets / limit)
             if (pets.length === 0) {
                 res.status(404).json({ message: 'Nenhum pet encontrado para o id do adotante fornecido', pets })
                 return
@@ -821,7 +824,7 @@ module.exports = class PetController {
 
         const searchPet = req.params.search
         const page = toNumber(req.params.page)
-        const limit = 15 // pets que serão  por paginas seerão mostrados
+        const limit = 4 // pets que serão  por paginas seerão mostrados
 
         console.log(`page : ${page}`)
 
@@ -838,7 +841,7 @@ module.exports = class PetController {
             name: { $regex: `.*${searchPet}.*`, $options: 'i' },
             available: true
         }).select('-adopter').skip((page - 1) * limit).limit(15)
-        const totalPets = pets.length
+        const totalPets = await Pet.countDocuments({name: { $regex: `.*${searchPet}.*`, $options: 'i' },available: true})
         const totalPages = Math.ceil(totalPets / limit)
 
         if (pets.length === 0) {
