@@ -9,6 +9,7 @@ function ForgotPassword(){
     const [user,setUser] = useState({})
     const {ForgotPasswordUser} = useContext(Context)
 
+
     function handleChange(evt){
         setUser({email:evt.target.value})
     }

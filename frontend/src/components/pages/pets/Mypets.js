@@ -14,7 +14,11 @@ function Mypets() {
 
     useEffect(() => {
         console.log(`apiUrl : ${apiUrl}`)
-        api.get('/pets/mypets', {
+        getMyPets(1)
+    }, [token])
+
+    async function getMyPets(page) {
+        api.get('/pets/mypets/1', {
             headers: {
                 Authorization: `Bearer ${JSON.parse(token)}`,
             },
@@ -23,7 +27,7 @@ function Mypets() {
         }).catch((Erro) => {
             return Erro.response.data
         })
-    }, [token])
+    }
 
     async function removePet(id) {
         let msgType = 'success'

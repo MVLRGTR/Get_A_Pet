@@ -187,6 +187,58 @@ module.exports = class UserController {
 
     }
 
+    static async ForgotPasswordLogin(req, res) {
+        const { email, password, confirmpassword, token } = req.body
+
+        console.log(`email : ${email} , password = ${password} confirmpassword = ${confirmpassword} token = ${token}`)
+
+        function GenerateRandomFourDigitNumber() {
+            return Math.floor(1000 + Math.random() * 9000);
+        }
+
+        if (!email) {
+            res.status(422).json({ message: 'O email não pode ser nulo , por favor verifique o que foi digitado' })
+            return
+        }
+        if (password.length < 6) {
+            console.log('entrou aqui')
+            res.status(422).json({ message: 'A senha não pode ter menos de 6 characters , por favor verifique o que foi digitado' })
+            return
+        }
+        if (password !== confirmpassword) {
+            res.status(422).json({ message: 'A senha e a sua confirmação são diferentes , por favor verifique o que foi digitado' })
+            return
+        }
+
+        let userDb
+        userDb = await User.findOne({ email: email })
+        if (userDb === undefined || userDb === null || !userDb) {
+            res.status(422).json({ message: 'Usuario não encontrado , por favor verifique o que foi digitado' })
+            return
+        }
+
+        if (userDb.token === Number(token)) {
+            try {
+                const salt = await bcrypt.genSalt(12)
+                const PasswordHash = await bcrypt.hash(password, salt)
+                const newToken = GenerateRandomFourDigitNumber()
+                await User.findOneAndUpdate(
+                    { _id: userDb._id },
+                    { $set: { password: PasswordHash ,token : newToken} }
+                )
+                await CreateUserToken(userDb, req, res)
+            } catch (erro) {
+                res.status(500).json({ message: erro })
+                console.log(`Erro de scopo :${erro}`)
+                return
+            }
+
+        } else {
+            res.status(422).json({ message: 'Token com valor incorreto , por favor verifique o mesmo' })
+            return
+        }
+    }
+
     static async CheckUser(req, res) {
         let CurrentUser
 
@@ -307,7 +359,7 @@ module.exports = class UserController {
         userDb.email = userParse.email
         userDb.phone = userParse.phone
         userDb.receiveremail = userParse.receiveremail
-       
+
 
         if (userParse.password != userParse.confirmpassword) {
             res.status(422).json({ message: 'As senhas não conferem , por favor verifique o que foi digitado' })
@@ -358,11 +410,11 @@ module.exports = class UserController {
             complement: req.body.complement
         }
 
-        const addressSchema =  z.object({
+        const addressSchema = z.object({
             cep: z.string().length(8, { message: 'O CEP deve conter exatamente 8 dígitos' }).regex(/^\d+$/, { message: 'O CEP deve conter apenas números' }),
-            street: z.string().min(6,{message:'Rua muito pequena, por favor verifique o que foi digitado'}).max(100,{message:'Rua muita grande , por favor verifique o que foi digitado'}),
-            number: z.number({message:'Digite um número valido por favor'}).max(100000000000,{message:'Número muito grande'}),
-            complement: z.string().max(800,{message:'Complemento muito grande '})
+            street: z.string().min(6, { message: 'Rua muito pequena, por favor verifique o que foi digitado' }).max(100, { message: 'Rua muita grande , por favor verifique o que foi digitado' }),
+            number: z.number({ message: 'Digite um número valido por favor' }).max(100000000000, { message: 'Número muito grande' }),
+            complement: z.string().max(800, { message: 'Complemento muito grande ' })
         })
 
         try {
@@ -380,7 +432,7 @@ module.exports = class UserController {
         }
 
         userDb.address = adrressParse
-        await User.findByIdAndUpdate(userDb._id,userDb)
+        await User.findByIdAndUpdate(userDb._id, userDb)
 
         res.status(200).json({
             message: 'Endereço atualizado com sucesso !!!'
@@ -411,7 +463,7 @@ module.exports = class UserController {
         }
     }
 
-    static async SearchUser(req,res){
+    static async SearchUser(req, res) {
 
         const toNumber = (value) => {
             const number = Number(value)
@@ -422,11 +474,11 @@ module.exports = class UserController {
         const page = toNumber(req.params.page)
         const limit = 15
 
-        if(!page || typeof page != 'number' ){
+        if (!page || typeof page != 'number') {
             res.status(422).json({ message: 'Pagina de envio Inválida  , por favor verifique o que foi digitado' })
             return
         }
-        if(!searchUser){
+        if (!searchUser) {
             res.status(422).json({ message: 'O campo de busca não pode ser nulo , por favor verifique o que foi digitado' })
             return
         }
@@ -434,20 +486,20 @@ module.exports = class UserController {
         const totalUsers = await User.countDocuments({
             name: { $regex: `.*${searchUser}.*`, $options: 'i' }
         })
-        const totalPages = Math.ceil(totalUsers/limit)
+        const totalPages = Math.ceil(totalUsers / limit)
 
         const users = await User.find({
             name: { $regex: `.*${searchUser}.*`, $options: 'i' }
         }).select('_id name email phone ')
 
-        if(users.length === 0){
+        if (users.length === 0) {
             res.status(404).json({ message: 'Nenhum usuario encontrado !!!' })
             return
         }
 
         res.status(200).json({
             message: 'Usuarios retornados com sucesso',
-            users,totalUsers,totalPages
+            users, totalUsers, totalPages
         })
     }
 

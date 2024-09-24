@@ -42,7 +42,7 @@ function PetDetails() {
     let msgType = 'success'
   
     const data = await 
-      api.patch(`pets/schedule/${pet._id}`, {}, {
+      api.patch(`pets//pets/adoptionrequest/${pet._id}`, {}, {
         headers: {
           Authorization: `Bearer ${JSON.parse(token)}`,
         },
@@ -86,7 +86,7 @@ function PetDetails() {
             <span className="bold">Idade:</span> {pet.age} anos
           </p>
           {token ? (
-            <button onClick={schedule}>Solicitar uma Visita</button>
+            <button onClick={schedule}>Solicitar Processo de Adoção</button>
           ) : (
             <p>
               Você precisa <Link to="/register">criar uma conta</Link> para

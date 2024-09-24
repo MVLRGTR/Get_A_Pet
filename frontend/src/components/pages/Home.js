@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react"
 import api from "../../utils/api"
-import { Link } from "react-router-dom"
+import { Link, useNavigate, useParams } from "react-router-dom"
 import styles from './Home.module.css'
-import Input from '../form/Input'
+
 
 function Home() {
     const [pets, setPets] = useState([])
@@ -10,18 +10,21 @@ function Home() {
     const [totalPages, setTotalPages] = useState(0)
     const [currentPage, setCurrentPage] = useState(1)
 
+    const navigate = useNavigate()
+    const { page } = useParams()
+
     useEffect(() => {
-        getAllPets(1)
-    }, [])
+        const pageNumber = page ? parseInt(page) : 1
+        getAllPets(pageNumber)
+    }, [page])
 
     function getAllPets(page) {
-        console.log('entrou aqui')
         api.get(`/pets/${page}`)
             .then((response) => {
                 setPets(response.data.pets)
+                console.log(`pets retornados : ${response.data.pets}`)
                 setTotalPages(response.data.totalPages)
                 setCurrentPage(page)
-                console.log(pets)
             }).catch((Erro) => {
                 return Erro.response.data
             })
@@ -41,7 +44,6 @@ function Home() {
     }
 
     function changePage(page) {
-        console.log(`entrou aqui com page ${page}`)
         if (searchPetDb) {
             api.get(`/pets/search/${searchPetDb}/${page}`)
                 .then((response) => {
@@ -52,6 +54,7 @@ function Home() {
                 })
         } else {
             getAllPets(page)
+            navigate(`/${page}`)
         }
     }
 
@@ -69,12 +72,21 @@ function Home() {
         <section>
             <div className={styles.pet_home_header}>
                 <h1>Adote um Pet</h1>
-                <p>Veja os detalhes de cada um e conheça o tutor deles</p>
-                <form onSubmit={searchPet}>
-                    <Input text='Busque por um pet' type='text' name='search' placeholder='Digite o nome do pet' handleOnChange={handleChange} value={searchPetDb} />
-                    <input type='submit' value='Buscar' />
+                <form onSubmit={searchPet} className={styles.search_form}>
+                    <div className={styles.search_label}>
+                        <input type='text' name='search' placeholder='Busque por um pet' onChange={handleChange} value={searchPetDb}/>
+                        <button type='submit' className={styles.search_button}>
+                            🔍
+                        </button>
+                        {searchPetDb && (
+                            <button type='button' className={styles.clear_button} onClick={clearSearch}>
+                                ✖
+                            </button>
+                        )}
+                    </div>
                 </form>
-                <input type="submit" value="Limpar" onClick={clearSearch} />
+
+
             </div>
             <div className={styles.pet_container}>
                 {pets.length > 0 && (
@@ -100,13 +112,28 @@ function Home() {
             </div>
             {totalPages > 1 && (
                 <footer className={styles.pagination}>
-                    {/* Paginação */}
                     <button disabled={currentPage === 1} onClick={() => changePage(currentPage - 1)}>{'<'}</button>
-                    {[...Array(totalPages).keys()].map(page => (
+                    {/* {[...Array(totalPages).keys()].map(page => (
                         <button key={page + 1} className={currentPage === page + 1 ? styles.active : ''} onClick={() => changePage(page + 1)}>
                             {page + 1}
                         </button>
-                    ))}
+                    ))} */}
+                    {(() => {
+                        const startPage = Math.max(currentPage - 10, 1)
+                        const endPage = Math.min(currentPage + 10, totalPages)
+                        return [...Array(endPage - startPage + 1).keys()].map(page => {
+                            const pageNumber = startPage + page
+                            return (
+                                <button
+                                    key={pageNumber}
+                                    className={currentPage === pageNumber ? styles.active : ''}
+                                    onClick={() => changePage(pageNumber)}
+                                >
+                                    {pageNumber}
+                                </button>
+                            )
+                        })
+                    })()}
                     <button disabled={currentPage === totalPages} onClick={() => changePage(currentPage + 1)}>{'>'}</button>
                 </footer>
             )}

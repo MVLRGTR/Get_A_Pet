@@ -128,8 +128,6 @@ module.exports = class PetController {
         const totalPets = await Pet.countDocuments({ available: true })
         const totalPages = Math.ceil(totalPets / limit)
 
-        console.log(`totalPages :${totalPages} totalPets ${totalPets}`)
-
         if (cepUser) {
             console.log(`cepUser :${cepUser} cepUser typeof : ${typeof cepUser} cepUser.lenght :${cepUser.toString().length}`)
             if (typeof cepUser === 'number' && cepUser.toString().length === 8) {
@@ -825,8 +823,6 @@ module.exports = class PetController {
         const searchPet = req.params.search
         const page = toNumber(req.params.page)
         const limit = 4 // pets que serão  por paginas seerão mostrados
-
-        console.log(`page : ${page}`)
 
         if (!page || typeof page != 'number') {
             res.status(422).json({ message: 'Pagina de envio Inválida  , por favor verifique o que foi digitado' })

@@ -11,14 +11,14 @@ function MyAdoptions() {
 
     useEffect(() => {
 
-        api.get('/pets/myadoptions', {
+        api.get('/pets/myadoptions/1', {
             headers: {
                 Authorization: `Bearer ${JSON.parse(token)}`
             }
         }).then((reponse) => {
             setPets(reponse.data.pets)
         }).catch((Erro) => {
-            return Erro.reponse.data
+            console.log(`Erro : ${Erro}`)
         })
 
     }, [token])
@@ -56,7 +56,7 @@ function MyAdoptions() {
                         ))
                     ) :
                     (
-                        <p>Ainda não há adoçoes de pets</p>
+                        <p>Você inda não adotou nenhum pet</p>
                     )}
             </div>
         </section>

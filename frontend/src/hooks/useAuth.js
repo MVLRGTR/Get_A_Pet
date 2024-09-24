@@ -44,7 +44,7 @@ export default function useAuth() {
     async function authUser(data) {
         setAuthenticated(true)
         localStorage.setItem('token', JSON.stringify(data.token))
-        navigate('/')
+        navigate('/1')
     }
 
     async function login(user) {
@@ -81,13 +81,29 @@ export default function useAuth() {
         setFlashMessage(msgText, msgType)
     }
 
+    async function forgotPasswordLogin(user) {
+        let msgText = 'Login Realizado com sucesso !!!'
+        let msgType = 'success'
+        const op = true
+
+        try {
+            const data = await api.post('/users/forgotpassword/login',user).then((response)=>{return response.data})
+            await authUser(data,op)
+        } catch (erro) {
+            msgText = erro.response.data.message
+            msgType = 'error'
+            console.log(erro)
+        }
+        setFlashMessage(msgText, msgType)
+    }
+
     async function ForgotPasswordUser(user) {
         let msgText = 'Email enviado com sucesso para o e-mail cadastrado !!!'
         let msgType = 'success'
 
         try {
             await api.post('/users/forgotpassword',user).then((response)=>{return response.data})
-            navigate('/login')
+            navigate('/forgotpassword/login')
         } catch (erro) {
             msgText = erro.response.data.message
             msgType = 'error'
@@ -109,5 +125,5 @@ export default function useAuth() {
 
     }
 
-    return { authenticated, register, logout ,login ,primaryLogin,ForgotPasswordUser}
+    return { authenticated, register, logout ,login ,primaryLogin,ForgotPasswordUser,forgotPasswordLogin}
 }
