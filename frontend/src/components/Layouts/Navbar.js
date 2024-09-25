@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBell, faHeart } from '@fortawesome/free-solid-svg-icons'
 
 function Navbar() {
-    const { authenticated, logout } = useContext(Context)
+    const { authenticated, logout ,notifications,unread} = useContext(Context)
 
     const [showFavorites, setShowFavorites] = useState(false)
     const [showNotifications, setShowNotifications] = useState(false)
@@ -18,7 +18,7 @@ function Navbar() {
     const toggleNotifications = () => setShowNotifications(!showNotifications)
 
     const favorites = ["Pet 1", "Pet 2", "Pet 3", "Pet 4", "Pet 5", "Pet 6"]
-    const notifications = ["Notificação 1", "Notificação 2", "Notificação 3", "Notificação 4", "Notificação 5", "Notificação 6"]
+
 
 
     return (
@@ -32,15 +32,19 @@ function Navbar() {
             <ul className={styles.navbar_ul}>
                 {authenticated ? (
                     <>
+                        {/* Dropdown de notificações com badge */}
                         <li className={styles.dropdown_container}>
-                            <div onClick={toggleNotifications}>
+                            <div onClick={toggleNotifications} className={styles.notification_icon}>
                                 <FontAwesomeIcon icon={faBell} size="lg" />
+                                {unread > 0 && (
+                                    <span className={styles.notification_badge}>{unread}</span>
+                                )}
                             </div>
                             {showNotifications && (
                                 <div className={styles.dropdown_menu}>
                                     <ul>
                                         {notifications.slice(0, 5).map((notif, index) => (
-                                            <li key={index}>{notif}</li>
+                                            <li key={index}>{notif.type}</li>
                                         ))}
                                     </ul>
                                     <Link to='/notifications' className={styles.show_more}>
@@ -49,6 +53,8 @@ function Navbar() {
                                 </div>
                             )}
                         </li>
+
+                        {/* Dropdown de favoritos */}
                         <li className={styles.dropdown_container}>
                             <div onClick={toggleFavorites}>
                                 <FontAwesomeIcon icon={faHeart} size="lg" />

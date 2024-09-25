@@ -1,4 +1,5 @@
 const Notifications = require('../models/Notifications')
+const User = require('../models/User')
 
 //helpers
 const GetToken = require('../helpers/GetToken')
@@ -9,6 +10,68 @@ module.exports = class NotificationsController{
 
     //o tratamento da regra para notificações do sistema é diferente para as notificações de açoes do usuario no sistema
     //sendo a terminação all indicada para notificações globais para todos os usuarios e to para usuarios direcionados
+
+    static async GetAllAndToNotificationsUser(req,res){
+        // trazer todas as notificações
+        const toNumber = (value) => {
+            const number = Number(value)
+            return isNaN(number) ? value : number
+        }
+
+        const page = toNumber(req.params.page)
+        const limit = 10
+
+        if (!page || typeof page != 'number') {
+            res.status(422).json({ message: 'Pagina de envio Inválida  , por favor verifique o que foi digitado' })
+            return
+        }
+        
+        let token, user, userDb
+        try {
+            token = GetToken(req)
+            user = await GetUserByToken(token)
+            userDb = await User.findById(user._id)
+        } catch (Erro) {
+            res.status(422).json({ message: 'Usuario não encontrado , por favor verifique o que foi digitado' })
+            return
+        }
+
+        const unread = await Notifications.countDocuments({
+            $or: [
+                { 
+                  to: user._id, 
+                  viewed: false 
+                },
+                { 
+                  to: 'all', 
+                  userviewed: { $ne: user._id } 
+                }
+              ]
+        })
+
+        const notifications = await Notifications.find({
+            $or: [
+                { to: user._id },  
+                { to: 'all' }      
+            ]
+        }).sort('-createdAt').skip((page - 1) * limit).limit(limit)
+
+        const totalNotifications = await Notifications.countDocuments({
+            $or: [
+                { to: user._id },  
+                { to: 'all' }      
+            ]
+        })
+
+        const totalPages = Math.ceil(totalNotifications / limit)
+
+        if (!notifications) {
+            res.status(404).json({ message: 'Notificação não existe no banco de dados , por favor verifique o que foi digitado' })
+            return
+        }
+
+        res.status(200).json({message:'Notificações retornadas com sucesso',notifications,unread,totalNotifications,totalPages})
+    }
 
     static async CreateAll(text,type,image,link){
         try{
@@ -26,14 +89,15 @@ module.exports = class NotificationsController{
     }
 
     static async GetAllNotificationsUser(req,res){
-        const token = GetToken(req)
-        const user = await GetUserByToken(token)
-        
-        if (!user) {
-            res.status(422).json({ message: 'Nenhum usuario encontrado , por favor verifique o que foi digitado' })
+        let token, user, userDb
+        try {
+            token = GetToken(req)
+            user = await GetUserByToken(token)
+            userDb = await User.findById(user._id)
+        } catch (Erro) {
+            res.status(422).json({ message: 'Usuario não encontrado , por favor verifique o que foi digitado' })
             return
         }
-
         const notifications = await Notifications.find({
             to:'all',
             // userviewed:{$nin:[user._id]}
@@ -49,8 +113,15 @@ module.exports = class NotificationsController{
 
     static async ViewedAll(req,res){
         const idnotification = req.params.id
-        const token = GetToken(req)
-        const user = await GetUserByToken(token)
+        let token, user, userDb
+        try {
+            token = GetToken(req)
+            user = await GetUserByToken(token)
+            userDb = await User.findById(user._id)
+        } catch (Erro) {
+            res.status(422).json({ message: 'Usuario não encontrado , por favor verifique o que foi digitado' })
+            return
+        }
 
         if(!ObjectId.isValid(idnotification)){
             res.status(422).json({ message: 'O id da notificação  invalido , por favor verifique o que foi digitado' })
@@ -82,6 +153,14 @@ module.exports = class NotificationsController{
     }
 
     static async CreateTo(text,to,type,image,link){
+
+        try {
+            userDb = await User.findById(to)
+        } catch (Erro) {
+            res.status(422).json({ message: 'Usuario não encontrado , por favor verifique o que foi digitado' })
+            return
+        }
+
         try{
             const notification = new Notifications({
                 message:text,
@@ -102,11 +181,13 @@ module.exports = class NotificationsController{
     }
 
     static async GetToNotificationsUser(req,res){
-        const token = GetToken(req)
-        const user = await GetUserByToken(token)
-        
-        if (!user) {
-            res.status(422).json({ message: 'Nenhum usuario encontrado , por favor verifique o que foi digitado' })
+        let token, user, userDb
+        try {
+            token = GetToken(req)
+            user = await GetUserByToken(token)
+            userDb = await User.findById(user._id)
+        } catch (Erro) {
+            res.status(422).json({ message: 'Usuario não encontrado , por favor verifique o que foi digitado' })
             return
         }
 
@@ -125,8 +206,15 @@ module.exports = class NotificationsController{
 
     static async ViewedTo(req,res){
         const idnotification = req.params.id
-        const token = GetToken(req)
-        const user = await GetUserByToken(token)
+        let token, user, userDb
+        try {
+            token = GetToken(req)
+            user = await GetUserByToken(token)
+            userDb = await User.findById(user._id)
+        } catch (Erro) {
+            res.status(422).json({ message: 'Usuario não encontrado , por favor verifique o que foi digitado' })
+            return
+        }
 
         if(!ObjectId.isValid(idnotification)){
             res.status(422).json({ message: 'O id da notificação  invalido , por favor verifique o que foi digitado' })
