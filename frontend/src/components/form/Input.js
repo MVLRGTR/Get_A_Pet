@@ -1,5 +1,7 @@
 import styles from './Input.module.css'
 
+{/* <Input text='Imagens do Pet' type='file' name='images' handleOnChange={onFileChange} multiple={true} /> */}
+
 function Input({type,text ,name,placeholder,handleOnChange,value,multiple}){
     return(
         <div className={styles.form_control}> 

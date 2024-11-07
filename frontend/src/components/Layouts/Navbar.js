@@ -1,10 +1,9 @@
 import { Link } from "react-router-dom"
-import { useContext } from "react"
+import { useContext ,useState,useEffect} from "react"
 import Logo from '../../assets/img/logo.png'
 import styles from './Navbar.module.css'
 import { Context } from "../../context/UserContext"
-import { useState,useEffect } from "react"
-
+import api from "../../utils/api"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBell, faHeart } from '@fortawesome/free-solid-svg-icons'
 
@@ -13,13 +12,26 @@ function Navbar() {
 
     const [showFavorites, setShowFavorites] = useState(false)
     const [showNotifications, setShowNotifications] = useState(false)
+    const [favoritepets,setFavoritePets] = useState([])
 
     const toggleFavorites = () => setShowFavorites(!showFavorites)
     const toggleNotifications = () => setShowNotifications(!showNotifications)
 
-    const favorites = ["Pet 1", "Pet 2", "Pet 3", "Pet 4", "Pet 5", "Pet 6"]
+    async function getAllUserFavoritePets(page) {
+        await api.get(`pets/favoritepets/${page}`, {
+            headers: {
+                Authorization: `Bearer ${JSON.parse(localStorage.getItem('token'))}`
+            }
+        }).then((response) => {
+            setFavoritePets(response.data.favoritePets)
+        }).catch((Erro) => {
+            console.log(`Erro : ${Erro}`)
+        })
+    }
 
-
+    useEffect(() => {
+        getAllUserFavoritePets(1) 
+    }, [])
 
     return (
         <nav className={styles.navbar}>
@@ -33,7 +45,7 @@ function Navbar() {
                 {authenticated ? (
                     <>
                         {/* Dropdown de notificações com badge */}
-                        <li className={styles.dropdown_container}>
+                        <li className={`${styles.dropdown_container} ${styles.no_hover}`}>
                             <div onClick={toggleNotifications} className={styles.notification_icon}>
                                 <FontAwesomeIcon icon={faBell} size="lg" />
                                 {unread > 0 && (
@@ -44,7 +56,12 @@ function Navbar() {
                                 <div className={styles.dropdown_menu}>
                                     <ul>
                                         {notifications.slice(0, 5).map((notif, index) => (
-                                            <li key={index}>{notif.type}</li>
+                                            <Link to={`${notif.link}`} key={index}>
+                                                <li>
+                                                    <img src={notif.image} ></img>
+                                                    <p>{notif.type}</p>
+                                                </li>
+                                            </Link>
                                         ))}
                                     </ul>
                                     <Link to='/notifications' className={styles.show_more}>
@@ -62,8 +79,13 @@ function Navbar() {
                             {showFavorites && (
                                 <div className={styles.dropdown_menu}>
                                     <ul>
-                                        {favorites.slice(0, 5).map((fav, index) => (
-                                            <li key={index}>{fav}</li>
+                                        {favoritepets.slice(0, 5).map((pet, index) => (
+                                            <Link to={`/pets/getpet/${pet._id}`} key={index}>
+                                                <li>
+                                                    <img src={`${process.env.REACT_APP_API}images/pets/${pet.images[0]}`}></img>
+                                                    <p>{pet.name}</p>
+                                                </li>
+                                            </Link>
                                         ))}
                                     </ul>
                                     <Link to='/pets/favorites' className={styles.show_more}>

@@ -155,9 +155,9 @@ module.exports = class NotificationsController{
     static async CreateTo(text,to,type,image,link){
 
         try {
-            userDb = await User.findById(to)
+            const userDb = await User.findById(to)
         } catch (Erro) {
-            res.status(422).json({ message: 'Usuario não encontrado , por favor verifique o que foi digitado' })
+            console.log(`Erro : ${Erro}`)
             return
         }
 

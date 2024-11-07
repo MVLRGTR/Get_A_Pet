@@ -29,6 +29,7 @@ function Login(){
             <p>Não tem conta  ?<Link to='/register'> Clique aqui </Link> </p>
             <p>Precisa recuperar sua conta ?<Link to='/forgotpassword'> Clique aqui</Link> </p>
         </section>
+        
     )
 }
 

@@ -100,7 +100,7 @@ module.exports = class PetController {
                 message: 'Pet Cadastrado com sucesso',
                 NewPet
             })
-            NotificationsController.CreateAll(`O pet ${pet.name} está esperendo por você , venha conhecer o seu proximo amigo !!!`, `Novo Pet disponível`, `${process.env.URL_API}/images/pets/${pet.images[0]}`, `${process.env.URL_FRONTEND}/pets/${pet._id}`)
+            NotificationsController.CreateAll(`O pet ${pet.name} está esperendo por você , venha conhecer o seu proximo amigo !!!`, `Novo Pet disponível`, `${process.env.URL_API}/images/pets/${pet.images[0]}`, `${process.env.URL_FRONTEND}/pets/getpet/${pet._id}`)
             EmailSend.EmailNewPetForAllUsers(pet)
         } catch (error) {
             res.status(500).json({ message: error })
@@ -154,7 +154,6 @@ module.exports = class PetController {
                 pets, totalPages, totalPets
             })
         }
-
     }
 
     static async GetAllUserPets(req, res) {
@@ -447,16 +446,11 @@ module.exports = class PetController {
             user = await GetUserByToken(token)
             userDb = await User.findById(user._id)
             if (!userDb.address) {
-                res.status(422).json({ message: 'Você não pode adicionar um pet na nossa plataforma sem ter um endereço cadastrado' })
+                res.status(422).json({ message: 'Você não pode adotar um pet na nossa plataforma sem ter um endereço cadastrado' })
                 return
             }
         } catch (Erro) {
             res.status(422).json({ message: 'Usuario não encontrado , por favor verifique o que foi digitado' })
-            return
-        }
-
-        if (!userDb.address) {
-            res.status(422).json({ message: 'Você não pode adotar um pet na nossa plataforma sem ter um endereço cadastrado' })
             return
         }
 
@@ -486,7 +480,7 @@ module.exports = class PetController {
         res.status(200).json({
             message: `O pedido de adoção foi feito com sucesso , entre em contato com ${pet.user.name} no telefone ${pet.user.phone} para acertar os detelhes da adoção !!!`
         })
-        NotificationsController.CreateTo(`Você tem uma nova solicitação de adoção para o seu pet ${pet.name} do possivél tutor ${user.name}`, pet.user._id, 'Solicitação de adoção', `${process.env.URL_API}/images/pets/${pet.images[0]}`, `${process.env.URL_FRONTEND}/pets/mypets/${pet._id}`)
+        NotificationsController.CreateTo(`Você tem uma nova solicitação de adoção para o seu pet ${pet.name} do possivél tutor ${user.name}`, pet.user._id, 'Solicitação de adoção', `${process.env.URL_API}/images/pets/${pet.images[0]}`, `${process.env.URL_FRONTEND}/pets/mypets/pet/${pet._id}`)
         EmailSend.EmailNewRequestAdopter(pet, userTutor)
     }
 
@@ -505,7 +499,7 @@ module.exports = class PetController {
             res.status(404).json({ message: 'Pet não existe no banco de dados , por favor verifique o que foi digitado' })
             return
         }
-        if (!ObjectId(idAdoption)) {
+        if (!ObjectId.isValid(idAdoption)) {
             res.status(404).json({ message: 'Id do adotante inválido , por favor verifique o que foi digitado' })
             return
         }
@@ -567,11 +561,11 @@ module.exports = class PetController {
         }
         //Adotante
         EmailSend.EmailConcludeAdopter(pet, user, 'adopter')
-        NotificationsController.CreateTo(`Parabéns !!! você agora é o novo tutor do pet ${pet.name}`, AdoptionOk._id, `Conclusão da adoção`, pet.images[0], pet._id)
+        NotificationsController.CreateTo(`Parabéns !!! você agora é o novo tutor do pet ${pet.name}`, AdoptionOk._id, `Conclusão da adoção`, `${process.env.URL_API}/images/pets/${pet.images[0]}`, `${process.env.URL_FRONTEND}/pets/myadoptions/pet/${pet._id}`)
 
         //Tutor
         EmailSend.EmailConcludeAdopter(pet, user)
-        NotificationsController.CreateTo(`Adoção para o pet ${pet.name} foi concluida com sucesso , para o adotante :${AdopterDb.name}`, 'Adcoção concluida', `${process.env.URL_API}/images/pets/${pet.images[0]}`, `${process.env.URL_FRONTEND}/pets/mypets/${pet._id}`)
+        NotificationsController.CreateTo(`Adoção para o pet ${pet.name} foi concluida com sucesso , para o adotante :${AdopterDb.name}`, 'Adcoção concluida', `${process.env.URL_API}/images/pets/${pet.images[0]}`, `${process.env.URL_FRONTEND}/pets/mypets/pet/${pet._id}`)
     }
 
     static async CancellationRequestAdopter(req, res) {
@@ -615,7 +609,7 @@ module.exports = class PetController {
             pet.adopter = adoptions
             await Pet.findByIdAndUpdate(id, pet)
             res.status(200).json({ message: `Exclusão do pedido de adoção  concuido com sucesso para o tutor ${userDb.name} !!!` })
-            NotificationsController.CreateTo(`Tivemos a desistência da possivél adoção por parte do tutor ${userDb.name} para o pet ${pet.name}`, pet.user._id, `Desistência da adoção`, `${process.env.URL_API}/images/pets/${pet.images[0]}`, `${process.env.URL_FRONTEND}/pets/mypets/${pet._id}`)
+            NotificationsController.CreateTo(`Tivemos a desistência da possivél adoção por parte do tutor ${userDb.name} para o pet ${pet.name}`, pet.user._id, `Desistência da adoção`, `${process.env.URL_API}/images/pets/${pet.images[0]}`, `${process.env.URL_FRONTEND}/pets/mypets/pet/${pet._id}`)
             EmailSend.EmailCancellationRequestAdopter(user, pet)
         } else {
             res.status(404).json({ message: 'Erro ao processar sua solicitação ,pois não existem solicitações desse usuario para adoção do pet informado, por favor verifique o que foi digitado' })
@@ -737,10 +731,6 @@ module.exports = class PetController {
             token = GetToken(req)
             user = await GetUserByToken(token)
             userDb = await User.findById(user._id)
-            if (!userDb.address) {
-                res.status(422).json({ message: 'Você não pode adicionar um pet na nossa plataforma sem ter um endereço cadastrado' })
-                return
-            }
         } catch (Erro) {
             res.status(422).json({ message: 'Usuario não encontrado , por favor verifique o que foi digitado' })
             return
@@ -811,6 +801,50 @@ module.exports = class PetController {
             return
         }
 
+    }
+
+    static async GetAllFavoritePets(req,res){
+
+        console.log(`Entrou aqui com req.body :${JSON.stringify(req.headers.authorization)}`)
+
+        const toNumber = (value) => {
+            const number = Number(value)
+            return isNaN(number) ? value : number
+        }
+
+        const page = toNumber(req.params.page)
+        const limit = 5
+
+        if (!page || typeof page != 'number') {
+            res.status(422).json({ message: 'Pagina de envio Inválida  , por favor verifique o que foi digitado' })
+            return
+        }
+
+        let token, user, userDb
+        try {
+            token = GetToken(req)
+            user = await GetUserByToken(token)
+            userDb = await User.findById(user._id)
+        } catch (Erro) {
+            res.status(422).json({ message: 'Usuario não encontrado , por favor verifique o que foi digitado' })
+            return
+        }
+
+        const userFavoritePets = await User.find({
+            _id : userDb._id
+        }).select('favoritepets').skip((page - 1) * limit).limit(limit) 
+        const resultFavoritePets = await User.aggregate([
+            { $match: { _id: userDb._id } },
+            { $project: { totalFavoritePets: { $size: "$favoritepets" } } }
+        ])
+        const favoritePets = userFavoritePets.length > 0 ? userFavoritePets[0].favoritepets : []
+        const totalFavoritePets = resultFavoritePets.length > 0 ? resultFavoritePets[0].totalFavoritePets : 0
+        const totalPages = Math.ceil(totalFavoritePets / limit)
+
+        res.status(200).json({
+            message: 'Pets favoritos retornados com sucesso !!!',
+            favoritePets,totalFavoritePets,totalPages
+        })
     }
 
     static async SearchPet(req, res) {

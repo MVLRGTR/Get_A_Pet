@@ -4,6 +4,7 @@ import useFlashMessage from "../../../hooks/useFlashMessage"
 import api from "../../../utils/api"
 import RoundedImage from '../../Layouts/RoundedImage'
 import styles from '../pets/DashBoard.module.css'
+import {  useNavigate } from 'react-router-dom'
 
 
 function Mypets() {
@@ -11,6 +12,7 @@ function Mypets() {
     const [token] = useState(localStorage.getItem('token') || '')
     const { setFlashMessage } = useFlashMessage()
     const apiUrl = process.env.REACT_APP_API
+    const navigate = useNavigate()
 
     useEffect(() => {
         console.log(`apiUrl : ${apiUrl}`)
@@ -18,7 +20,7 @@ function Mypets() {
     }, [token])
 
     async function getMyPets(page) {
-        api.get('/pets/mypets/1', {
+        api.get(`/pets/mypets/${page}`, {
             headers: {
                 Authorization: `Bearer ${JSON.parse(token)}`,
             },
@@ -48,21 +50,9 @@ function Mypets() {
         setFlashMessage(JSON.stringify(data.message), msgType)
     }
 
-    async function concludeAdoption(id){
-        let msgType = 'success'
-
-        const data = await api.patch(`/pets/concludeadopter/${id}`,{},{
-            headers: {
-                Authorization: `Bearer ${JSON.parse(token)}`
-            }
-        }).then((response)=>{
-            return response.data
-        }).catch((Erro)=>{
-            msgType = 'error'
-            return Erro.response.data
-        })
-
-        setFlashMessage(JSON.stringify(data.message), msgType)
+    async function viewAdopters(id){
+        navigate(`/pets/mypets/adoptions/${id}`)
+        
     }
 
     return (
@@ -82,7 +72,7 @@ function Mypets() {
                                     (<>
 
                                         {pet.adopter &&
-                                            <button onClick={()=>concludeAdoption(pet._id)} className={styles.conclude_btn}>Concluir adoção</button>
+                                            <button onClick={()=>viewAdopters(pet._id)} className={styles.conclude_btn}>Ver adoção</button>
                                         }
                                         <Link to={`/pets/edit/${pet._id}`}>Editar</Link>
                                         <button onClick={() => {

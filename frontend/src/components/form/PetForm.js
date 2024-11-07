@@ -46,7 +46,7 @@ function PetForm({ petData, btnText, handleSubmit }) {
             <Input text='Idade do Pet' type='text' name='age' placeholder='Digite a idade do pet em meses' handleOnChange={handleChange} value={pet.age || ''} />
             <Input text='Peso do Pet' type='text' name='weight' placeholder='Digite o peso do pet em  kg' handleOnChange={handleChange} value={pet.weight || ''} />
             <Select name='color' text='Selecione a cor' options={colors} handleOnChange={handleColor} value={pet.color || ''} />
-            <textarea id='description' name='description' rows='20' cols='33' placeholder='Digite a descrição do pet ' handleChange={handleChange} value={pet.description || ''}></textarea>
+            <textarea id='description' name='description' rows='20' cols='33' placeholder='Digite a descrição do pet ' onChange={handleChange} value={pet.description || ''}></textarea>
             <input type="submit" value={btnText} />
         </form>
     )

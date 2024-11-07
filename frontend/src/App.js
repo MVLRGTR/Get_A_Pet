@@ -13,6 +13,7 @@ import MyAdoptions from './components/pages/pets/MyAdoptions'
 import PrimaryLogin from './components/pages/auth/PrimaryLogin'
 import ForgotPassword from './components/pages/auth/ForgotPassword'
 import ForgotPasswordLogin from './components/pages/auth/ForgotPasswordLogin'
+import PetAdoptions from './components/pages/pets/PetAdoptions'
 /*Components */
 import Navbar from './components/Layouts/Navbar'
 import Footer from './components/Layouts/Footer'
@@ -41,9 +42,10 @@ function App() {
             <Route path='/pets/mypets' element={<Mypets />} />
             <Route path='/pets/addpet' element={<AddPet />} />
             <Route path='/pets/edit/:id' element={<EditPet />} />
-            <Route path='/pets/:id' element={<PetDetails/>} />
+            <Route path='/pets/getpet/:id' element={<PetDetails/>} />
             <Route path='/pets/myadoptions' element={<MyAdoptions/>} />
             <Route path='/login/primarylogin' element={<PrimaryLogin/>} />
+            <Route path='/pets/mypets/adoptions/:id' element={<PetAdoptions/>} />
             <Route path='/:page' element={<Home />} />
 
           </Routes>

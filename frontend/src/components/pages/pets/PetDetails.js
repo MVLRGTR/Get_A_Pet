@@ -4,6 +4,7 @@ import { useState,useEffect } from 'react'
 import { useParams,Link } from 'react-router-dom'
 import useFlashMessage from '../../../hooks/useFlashMessage'
 
+
 function PetDetails() {
   const [pet, setPet] = useState({})
   const { id } = useParams()
@@ -11,11 +12,17 @@ function PetDetails() {
   const [token] = useState(localStorage.getItem('token') || '')
 
   useEffect(() => {
-    api.get(`/pets/${id}`).then((response) => {
-      setPet(response.data.pet)
-    })
+    petById(id)
   }, [id])
 
+  async function petById(id){
+    api.get(`/pets/getpet/${id}`).then((response) => {
+      console.log(`response : ${response}`)
+      setPet(response.data.pet)
+    }).catch((Erro)=>{
+      console.log(`erro : ${Erro}`)
+    })
+  }
   // async function schedule() {
   //   let msgType = 'success'
 
@@ -38,28 +45,31 @@ function PetDetails() {
   //   setFlashMessage(data.message, msgType)
   // }
 
-  async function schedule() {
-    let msgType = 'success'
+  // async function schedule() {
+  //   let msgType = 'success'
   
-    const data = await 
-      api.patch(`pets//pets/adoptionrequest/${pet._id}`, {}, {
-        headers: {
-          Authorization: `Bearer ${JSON.parse(token)}`,
-        },
-      })
-      .then((response) => {
-        console.log(response.data)
-        return response.data
-      })
-      .catch((err) => {
-        console.log(err)
-        msgType = 'error'
-        return err.response.data
-      })
+  //   const data = await 
+  //     api.patch(`pets//pets/adoptionrequest/${pet._id}`, {}, {
+  //       headers: {
+  //         Authorization: `Bearer ${JSON.parse(token)}`,
+  //       },
+  //     })
+  //     .then((response) => {
+  //       console.log(response.data)
+  //       return response.data
+  //     })
+  //     .catch((err) => {
+  //       console.log(err)
+  //       msgType = 'error'
+  //       return err.response.data
+  //     })
   
-    setFlashMessage(data.message, msgType)
+  //   setFlashMessage(data.message, msgType)
+  // }
+  
+  function voidt(){
+
   }
-  
 
 
   return (
@@ -86,7 +96,7 @@ function PetDetails() {
             <span className="bold">Idade:</span> {pet.age} anos
           </p>
           {token ? (
-            <button onClick={schedule}>Solicitar Processo de Adoção</button>
+            <button onClick={voidt}>Solicitar Processo de Adoção</button>
           ) : (
             <p>
               Você precisa <Link to="/register">criar uma conta</Link> para

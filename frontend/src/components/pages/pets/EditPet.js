@@ -13,9 +13,9 @@ function EditPet(){
     const {setFlashMessage} = useFlashMessage()
 
     useEffect(()=>{
-        api.get(`/pets/${id}`,{
+        api.get(`/pets/getpet/${id}`,{
             headers:{
-                Authorization : `Bearer ${JSON.parse(token)}`
+                Authorization : `Bearer ${JSON.parse(localStorage.getItem('token'))}`
             }
         }).then((response)=>{
             setPet(response.data.pet)

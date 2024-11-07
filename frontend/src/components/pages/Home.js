@@ -98,7 +98,7 @@ function Home() {
                                 <span className="bold">Peso :</span>{pet.weight}kg
                             </p>
                             {pet.available === true ? (
-                                <Link to={`pets/${pet._id}`}>Mais Detalhes</Link>
+                                <Link to={`/pets/getpet/${pet._id}`}>Mais Detalhes</Link>
                             ) :
                                 (
                                     <p className={styles.adopted_text}>Adotado</p>
@@ -138,6 +138,7 @@ function Home() {
                 </footer>
             )}
         </section>
+
     )
 }
 
