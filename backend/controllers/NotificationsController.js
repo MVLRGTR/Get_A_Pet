@@ -1,6 +1,7 @@
 const Notifications = require('../models/Notifications')
 const User = require('../models/User')
 
+
 //helpers
 const GetToken = require('../helpers/GetToken')
 const GetUserByToken = require('../helpers/GetUserByToken')
@@ -11,7 +12,7 @@ module.exports = class NotificationsController{
     //o tratamento da regra para notificações do sistema é diferente para as notificações de açoes do usuario no sistema
     //sendo a terminação all indicada para notificações globais para todos os usuarios e to para usuarios direcionados
 
-    static async GetAllAndToNotificationsUser(req,res){
+    static async GetAllAndToNotificationsUser(req,res){ //esse rota traz todas al notificações do usuario , abaixo temos duas rotas para trazer de froma individual caso precisar
         // trazer todas as notificações
         const toNumber = (value) => {
             const number = Number(value)
@@ -73,7 +74,7 @@ module.exports = class NotificationsController{
         res.status(200).json({message:'Notificações retornadas com sucesso',notifications,unread,totalNotifications,totalPages})
     }
 
-    static async CreateAll(text,type,image,link){
+    static async CreateAll(text,type,image,link,io){
         try{
             const notification = new Notifications({message:text,type:type})
             if(link){
@@ -82,7 +83,9 @@ module.exports = class NotificationsController{
             if(image){
                 notification.image = image
             }
-            await Notifications.create(notification)
+            const savedNotification = await Notifications.create(notification)
+            global.io.emit('newNotification', savedNotification)
+            console.log('Notificação global criada com sucesso:', savedNotification)
         }catch(erro){
             console.log(`erro apresentado : ${erro}`)
         }
@@ -174,7 +177,9 @@ module.exports = class NotificationsController{
             if(image){
                 notification.image = image
             }
-            await Notifications.create(notification)
+            const savedNotification = await Notifications.create(notification)
+            io.emit('newNotification', savedNotification)
+            console.log('Notificação global criada com sucesso:', savedNotification)
         }catch(erro){
             console.log(erro)
         }

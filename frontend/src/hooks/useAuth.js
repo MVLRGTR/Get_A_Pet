@@ -44,6 +44,7 @@ export default function useAuth() {
     async function authUser(data) {
         setAuthenticated(true)
         localStorage.setItem('token', JSON.stringify(data.token))
+        localStorage.setItem('userId', JSON.stringify(data.userId))
         navigate('/1')
     }
 

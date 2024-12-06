@@ -8,14 +8,19 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBell, faHeart } from '@fortawesome/free-solid-svg-icons'
 
 function Navbar() {
-    const { authenticated, logout ,notifications,unread} = useContext(Context)
+    const { authenticated, logout ,notifications,unread ,viewedNotifications} = useContext(Context)
 
     const [showFavorites, setShowFavorites] = useState(false)
     const [showNotifications, setShowNotifications] = useState(false)
     const [favoritepets,setFavoritePets] = useState([])
 
     const toggleFavorites = () => setShowFavorites(!showFavorites)
-    const toggleNotifications = () => setShowNotifications(!showNotifications)
+    const toggleNotifications = () => {
+        setShowNotifications(!showNotifications)
+        if(showNotifications === false){
+            viewedNotifications()
+        }
+    }
 
     async function getAllUserFavoritePets(page) {
         await api.get(`pets/favoritepets/${page}`, {
