@@ -2,6 +2,7 @@ const express = require('express')
 const cors = require('cors')
 require('dotenv').config()
 const EmailSend = require('./service/email/EmailSend')
+const Connection = require('./helpers/Socket')
 
 //Import Routes
 const UserRoutes = require('./routes/UserRoutes')
@@ -26,6 +27,8 @@ global.io = new Server(server, {
         methods: ["GET", "POST"],
     }
 })
+
+// Usei um arquivo a parte para a função abaixo
 global.io.on('connection', (socket) => {
     console.log('Usuário conectado:', socket.id)
     socket.on('newNotification',()=>{
