@@ -805,7 +805,7 @@ module.exports = class PetController {
 
     static async GetAllFavoritePets(req,res){
 
-        console.log(`Entrou aqui com req.body :${JSON.stringify(req.headers.authorization)}`)
+        // console.log(`Entrou aqui com req.body :${JSON.stringify(req.headers.authorization)}`)
 
         const toNumber = (value) => {
             const number = Number(value)

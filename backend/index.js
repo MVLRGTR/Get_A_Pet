@@ -2,7 +2,7 @@ const express = require('express')
 const cors = require('cors')
 require('dotenv').config()
 const EmailSend = require('./service/email/EmailSend')
-const Connection = require('./helpers/Socket')
+const socketController = require('./helpers/Socket')
 
 //Import Routes
 const UserRoutes = require('./routes/UserRoutes')
@@ -29,13 +29,27 @@ global.io = new Server(server, {
 })
 
 // Usei um arquivo a parte para a função abaixo
+
+
+global.userConnectSocket = []
+
 global.io.on('connection', (socket) => {
     console.log('Usuário conectado:', socket.id)
-    socket.on('newNotification',()=>{
-        console.log('entrou aqui !!!')
+
+    socket.on('newUserCheck',async (token)=>{
+        console.log(`entrou em newUserCheck com token : ${token}`)
+        let checkUser = await socketController.newUserCheck(token)
+        if(checkUser !== false){
+            let newUserConnectSocket = [socket.id,checkUser[0],checkUser[1]]
+            global.userConnectSocket.push(newUserConnectSocket)
+            console.log('userConnectSocket : ', global.userConnectSocket)
+        }
     })
+
     socket.on('disconnect', () => {
+        global.userConnectSocket = global.userConnectSocket.filter((user)=> user[0] !== socket.id)
         console.log('Usuário desconectado:', socket.id)
+        console.log('userConnectSocket atualizado : ', global.userConnectSocket)
     })
 })
 
