@@ -120,7 +120,6 @@ export default function useAuth(socketInstance) {
         setAuthenticated(false)
         localStorage.removeItem('token')
         api.defaults.headers.Authorization = undefined
-        socketInstance.disconnect()
 
         navigate('/1')
         setFlashMessage(msgText, msgType)

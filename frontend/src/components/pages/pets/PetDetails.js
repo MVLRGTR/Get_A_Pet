@@ -17,58 +17,29 @@ function PetDetails() {
 
   async function petById(id){
     api.get(`/pets/getpet/${id}`).then((response) => {
-      console.log(`response : ${response}`)
+      // console.log(`response : ${JSON.stringify(response)}`)
       setPet(response.data.pet)
     }).catch((Erro)=>{
       console.log(`erro : ${Erro}`)
     })
   }
-  // async function schedule() {
-  //   let msgType = 'success'
-
-  //   const data = await api
-  //     .patch(`pets/schedule/${pet._id}`,{}, {
-  //       headers: {
-  //         Authorization: `Bearer ${JSON.parse(token)}`,
-  //       },
-  //     })
-  //     .then((response) => {
-  //       console.log(response.data)
-  //       return response.data
-  //     })
-  //     .catch((err) => {
-  //       console.log(err)
-  //       msgType = 'error'
-  //       return err.response.data
-  //     })
-
-  //   setFlashMessage(data.message, msgType)
-  // }
-
-  // async function schedule() {
-  //   let msgType = 'success'
   
-  //   const data = await 
-  //     api.patch(`pets//pets/adoptionrequest/${pet._id}`, {}, {
-  //       headers: {
-  //         Authorization: `Bearer ${JSON.parse(token)}`,
-  //       },
-  //     })
-  //     .then((response) => {
-  //       console.log(response.data)
-  //       return response.data
-  //     })
-  //     .catch((err) => {
-  //       console.log(err)
-  //       msgType = 'error'
-  //       return err.response.data
-  //     })
-  
-  //   setFlashMessage(data.message, msgType)
-  // }
-  
-  function voidt(){
+  async function adoptionRequest(){
+    let msgType = 'success'
+    const data = await api.patch(`pets/adoptionrequest/${pet._id}`,{
+        headers: {
+          Authorization: `Bearer ${JSON.parse(token)}`
+      }
+    }).then((response)=>{
+      return response.data
+    }).catch((Erro)=>{
+      console.log(`Erro : ${Erro}`)
+      msgType = 'error'
+      return Erro.response.data
+    })
 
+    setFlashMessage(data.message, msgType)
+    console.log(`data :${JSON.stringify(data)}`)
   }
 
 
@@ -96,7 +67,7 @@ function PetDetails() {
             <span className="bold">Idade:</span> {pet.age} anos
           </p>
           {token ? (
-            <button onClick={voidt}>Solicitar Processo de Adoção</button>
+            <button onClick={adoptionRequest}>Solicitar Processo de Adoção</button>
           ) : (
             <p>
               Você precisa <Link to="/register">criar uma conta</Link> para

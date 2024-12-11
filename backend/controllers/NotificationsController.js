@@ -6,6 +6,7 @@ const User = require('../models/User')
 const GetToken = require('../helpers/GetToken')
 const GetUserByToken = require('../helpers/GetUserByToken')
 const ObjectId = require('mongoose').Types.ObjectId
+const socketController = require('../helpers/Socket')
 
 module.exports = class NotificationsController{
 
@@ -74,7 +75,7 @@ module.exports = class NotificationsController{
         res.status(200).json({message:'Notificações retornadas com sucesso',notifications,unread,totalNotifications,totalPages})
     }
 
-    static async CreateAll(text,type,image,link,io){
+    static async CreateAll(text,type,image,link){
         try{
             const notification = new Notifications({message:text,type:type})
             if(link){
@@ -84,7 +85,7 @@ module.exports = class NotificationsController{
                 notification.image = image
             }
             const savedNotification = await Notifications.create(notification)
-            global.io.emit('newNotification', savedNotification)
+            socketController.sendNotificationAll(savedNotification)
             console.log('Notificação global criada com sucesso:', savedNotification)
         }catch(erro){
             console.log(`erro apresentado : ${erro}`)
@@ -178,8 +179,8 @@ module.exports = class NotificationsController{
                 notification.image = image
             }
             const savedNotification = await Notifications.create(notification)
-            io.emit('newNotification', savedNotification)
-            console.log('Notificação global criada com sucesso:', savedNotification)
+            socketController.sendNotificationTo(savedNotification)
+            console.log('Notificação direcionada criada com sucesso:', savedNotification)
         }catch(erro){
             console.log(erro)
         }
@@ -228,7 +229,7 @@ module.exports = class NotificationsController{
 
         const notificationUser = await Notifications.findOne({
             _id:idnotification,
-            to:'to'
+            to:userDb._id
         }).sort('-createdAt') 
 
         if (!notificationUser) {

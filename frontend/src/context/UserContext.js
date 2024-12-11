@@ -40,6 +40,7 @@ function UserProvider({ children }) {
     }
 
     async function viewedNotificationTo(notification) {
+        console.log(`entrou em viewedto con notification id : ${JSON.stringify(notification._id).replace(/"/g, '')}`)
         await api.post(`notifications/viewedto/${notification._id}`, {
             headers: {
                 Authorization: `Bearer ${JSON.parse(localStorage.getItem('token'))}`
@@ -109,30 +110,12 @@ function UserProvider({ children }) {
             })
 
             return () => {
-                socketInstance.current.disconnect() // Desconectar o socket quando o componente for desmontado
+                if (socketInstance.current) {
+                    socketInstance.current.disconnect()
+                    socketInstance.current = null 
+                } 
             }
         }
-
-        // console.log(`valor do auth : ${authenticated}`)
-        //     getAllNotifications(1)
-        //     getAllUserFavoritePets(1)
-
-        //     socketInstance.current = io('http://localhost:5000') // Substitua pela URL do seu servidor
-
-        //     socketInstance.current.on('newNotification', (newNotification) => {
-        //         setNotifications((prevNotifications) => [newNotification, ...prevNotifications]) //estrutura do react para calcular o novo valor com o append do anterior
-        //         setUnRead((prevUnread) => prevUnread + 1)
-        //     })
-
-        //     return () => {
-        //         socketInstance.current.disconnect() // Desconectar o socket quando o componente for desmontado
-        //     }
-    
-
-        // const intervalId = setInterval(() => {
-        //     getAllNotifications(1)
-        //     return () => clearInterval(intervalId)
-        // }, 300000)
 
     }, [authenticated])
 
