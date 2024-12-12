@@ -45,7 +45,7 @@ module.exports = class PetController {
             age: z.number({ message: 'Formato da idade digita é inválida' }).min(1, { message: 'A idade minima é um 1 mês, por favor verifique o que foi digitado' }).max(30, { message: 'A idade maxima para animais é 30 anos' }),
             weight: z.number({ message: 'Formato do peso inválido' }).min(1, { message: 'Peso minimo 1kg' }).max(50, { message: 'Peso maximo 50kg' }),
             color: z.string().min(3, { message: 'Cor inválida' }).max(12, { message: 'Cor inválida' }),
-            images: z.array(z.string()).min(1, { message: 'Pelo menos imagem precisa ser enviada do Pet' }),
+            images: z.array(z.string()).min(1, { message: 'Pelo menos imagem precisa ser enviada do Pet' }).max(8, { message: 'São permitidas apenas 8 imagens por Pet' }),
             description: z.string().max(700, { message: 'Número de caracteres não pode ser superior a 700' })
         })
 
@@ -480,7 +480,7 @@ module.exports = class PetController {
         res.status(200).json({
             message: `O pedido de adoção foi feito com sucesso , entre em contato com ${pet.user.name} no telefone ${pet.user.phone} para acertar os detelhes da adoção !!!`
         })
-        NotificationsController.CreateTo(`Você tem uma nova solicitação de adoção para o seu pet ${pet.name} do possivél tutor ${user.name}`, pet.user._id, 'Solicitação de adoção', `${process.env.URL_API}/images/pets/${pet.images[0]}`, `${process.env.URL_FRONTEND}/pets/mypets/pet/${pet._id}`)
+        NotificationsController.CreateTo(`Você tem uma nova solicitação de adoção para o seu pet ${pet.name} do possivél tutor ${user.name}`, pet.user._id, 'Solicitação de adoção', `${process.env.URL_API}/images/pets/${pet.images[0]}`, `${process.env.URL_FRONTEND}/pets/mypets/adoptions/${pet._id}`)
         EmailSend.EmailNewRequestAdopter(pet, userTutor)
     }
 

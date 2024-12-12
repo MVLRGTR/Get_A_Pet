@@ -27,35 +27,35 @@ function UserProvider({ children }) {
     }
 
     async function viewedNotificationAll(notification) {
-        console.log(`valor fo token no notall : ${JSON.parse(localStorage.getItem('token'))}`)
-        await api.post(`notifications/viewedall/${notification._id}`, {
+        const data = await api.post(`notifications/viewedall/${notification._id}`, {
             headers: {
                 Authorization: `Bearer ${JSON.parse(localStorage.getItem('token'))}`
             }
         }).then((response) => {
-            console.log(`Notification all : ${response.data.message}`)
+            return response.data
         }).catch((Erro) => {
             console.log(`Erro : ${Erro}`)
         })
+        console.log(`Notification all : ${JSON.stringify(data)}`)
     }
 
     async function viewedNotificationTo(notification) {
         console.log(`entrou em viewedto con notification id : ${JSON.stringify(notification._id).replace(/"/g, '')}`)
-        await api.post(`notifications/viewedto/${notification._id}`, {
+        const data = await api.post(`notifications/viewedto/${notification._id}`, {
             headers: {
                 Authorization: `Bearer ${JSON.parse(localStorage.getItem('token'))}`
             }
         }).then((response) => {
-            console.log(`Notification to : ${response.data.message}`)
+            return response.data
         }).catch((Erro) => {
             console.log(`Erro : ${Erro}`)
         })
-
+        console.log(`response.data : ${JSON.stringify(data)}`)
     }
 
     async function viewedNotifications() {
         if (unread !== 0) {
-            console.log(`Notifications total : ${JSON.stringify(notifications)}`)
+            // console.log(`Notifications total : ${JSON.stringify(notifications)}`)
 
             const updateNotification = notifications.map(async (notification) => {
                 if (notification.to === 'all') {
