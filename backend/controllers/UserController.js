@@ -28,6 +28,17 @@ module.exports = class UserController {
             return isNaN(number) ? value : number
         }
 
+        const deleteImg = (filename) =>{
+            if(filename !== 'default.jpg'){
+                const imagePath = path.join(__dirname, '..', 'public', 'images', 'users', filename);
+                fs.unlink(imagePath, (err) => {
+                    if (err) {
+                        console.error('Erro ao excluir a imagem:', err);
+                    }
+                })
+            }
+        }
+
         let image = req.file
 
         if (!image) {
@@ -62,12 +73,14 @@ module.exports = class UserController {
                     returnErros.push(index.message)
                     console.log(`erro : ${JSON.stringify(index.message)}`)
                 })
+                deleteImg(image)
                 res.status(422).json({ message: 'Erros na requisição :', returnErros })
                 return
             }
         }
 
         if (userParse.password !== userParse.confirmpassword) {
+            deleteImg(image)
             res.status(422).json({ message: 'A senha e a sua confirmação não são iguais , por favor verifique o que foi digitado' })
             return
         }
@@ -75,6 +88,7 @@ module.exports = class UserController {
         const UserExists = await User.findOne({ email: userParse.email })
 
         if (UserExists) {
+            deleteImg(image)
             res.status(422).json({ message: 'E-mail já cadastrado , por favor utilize outro !!!' })
             return
         }
@@ -101,6 +115,7 @@ module.exports = class UserController {
             await user.save()
             res.status(200).json({ message: 'Usuário criado com sucesso' })
         } catch (erro) {
+            deleteImg(image)
             console.log(erro)
             res.status(500).json({ message: erro })
         }
@@ -293,6 +308,17 @@ module.exports = class UserController {
             return isNaN(number) ? value : number
         }
 
+        const deleteImg = (filename) =>{
+            if(filename !== 'default.jpg'){
+                const imagePath = path.join(__dirname, '..', 'public', 'images', 'users', filename);
+                fs.unlink(imagePath, (err) => {
+                    if (err) {
+                        console.error('Erro ao excluir a imagem:', err);
+                    }
+                })
+            }
+        }
+
         const toBoolean = (value) => {
             if (typeof value === 'boolean') {
                 return value
@@ -346,6 +372,7 @@ module.exports = class UserController {
                     console.log(`erro : ${JSON.stringify(index.message)}`)
                 })
                 res.status(422).json({ message: 'Erros na requisição :', returnErros })
+                deleteImg(image)
                 return
             }
         }
@@ -356,34 +383,42 @@ module.exports = class UserController {
             user = await GetUserByToken(token)
             userDb = await User.findById(user._id)
         } catch (Erro) {
+            deleteImg(image)
             res.status(422).json({ message: 'Usuario não encontrado , por favor verifique o que foi digitado' })
             return
         }
 
         const UserExistsByEmail = await User.findOne({ email: userParse.email }).select('email')
         if (userDb.email !== userParse.email && UserExistsByEmail) {
+            deleteImg(image)
             res.status(422).json({ message: 'E-mail inválido , por favor verifique o que foi digitado' })
             return
         }
 
         if (req.file) {
-            if (userDb.img !== 'default.jpg' && userDb.img) {
-                const imagePath = path.join(__dirname, '..', 'public', 'images', 'users', userDb.img);
-                fs.unlink(imagePath, (err) => {
-                    if (err) {
-                        console.error('Erro ao excluir a imagem:', err);
-                    }
-                })
+            // if (userDb.img !== 'default.jpg' && userDb.img) {
+            //     const imagePath = path.join(__dirname, '..', 'public', 'images', 'users', userDb.img);
+            //     fs.unlink(imagePath, (err) => {
+            //         if (err) {
+            //             console.error('Erro ao excluir a imagem:', err);
+            //         }
+            //     })
+            // }
+            if(userDb.img !== 'default.jpg' && userDb.img){
+                deleteImg(userDb.img)
             }
             userDb.img = req.file.filename
         } else {
-            if (userDb.img !== 'default.jpg' && userDb.img) {
-                const imagePath = path.join(__dirname, '..', 'public', 'images', 'users', userDb.img);
-                fs.unlink(imagePath, (err) => {
-                    if (err) {
-                        console.error('Erro ao excluir a imagem:', err);
-                    }
-                })
+            // if (userDb.img !== 'default.jpg' && userDb.img) {
+            //     const imagePath = path.join(__dirname, '..', 'public', 'images', 'users', userDb.img);
+            //     fs.unlink(imagePath, (err) => {
+            //         if (err) {
+            //             console.error('Erro ao excluir a imagem:', err);
+            //         }
+            //     })
+            // }
+            if(userDb.img !== 'default.jpg' && userDb.img){
+                deleteImg(userDb.img)
             }
             userDb.img = userParse.img
         }
@@ -395,6 +430,7 @@ module.exports = class UserController {
 
 
         if (userParse.password != userParse.confirmpassword) {
+            deleteImg(image)
             res.status(422).json({ message: 'As senhas não conferem , por favor verifique o que foi digitado' })
             return
         } else if (userParse.password === userParse.confirmpassword && userParse.password != null) {
@@ -413,6 +449,7 @@ module.exports = class UserController {
             )
             res.status(200).json({ message: 'Usuario atualizado com sucesso !!!' })
         } catch (erro) {
+            deleteImg(image)
             res.status(500).json({ message: erro })
             return
         }
