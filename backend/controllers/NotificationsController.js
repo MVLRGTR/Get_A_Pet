@@ -1,17 +1,19 @@
 const Notifications = require('../models/Notifications')
 const User = require('../models/User')
 
+
 //helpers
 const GetToken = require('../helpers/GetToken')
 const GetUserByToken = require('../helpers/GetUserByToken')
 const ObjectId = require('mongoose').Types.ObjectId
+const socketController = require('../helpers/Socket')
 
 module.exports = class NotificationsController{
 
     //o tratamento da regra para notificações do sistema é diferente para as notificações de açoes do usuario no sistema
     //sendo a terminação all indicada para notificações globais para todos os usuarios e to para usuarios direcionados
 
-    static async GetAllAndToNotificationsUser(req,res){
+    static async GetAllAndToNotificationsUser(req,res){ //esse rota traz todas al notificações do usuario , abaixo temos duas rotas para trazer de froma individual caso precisar
         // trazer todas as notificações
         const toNumber = (value) => {
             const number = Number(value)
@@ -82,7 +84,9 @@ module.exports = class NotificationsController{
             if(image){
                 notification.image = image
             }
-            await Notifications.create(notification)
+            const savedNotification = await Notifications.create(notification)
+            socketController.sendNotificationAll(savedNotification)
+            console.log('Notificação global criada com sucesso:', savedNotification)
         }catch(erro){
             console.log(`erro apresentado : ${erro}`)
         }
@@ -174,7 +178,9 @@ module.exports = class NotificationsController{
             if(image){
                 notification.image = image
             }
-            await Notifications.create(notification)
+            const savedNotification = await Notifications.create(notification)
+            socketController.sendNotificationTo(savedNotification)
+            console.log('Notificação direcionada criada com sucesso:', savedNotification)
         }catch(erro){
             console.log(erro)
         }
@@ -223,7 +229,7 @@ module.exports = class NotificationsController{
 
         const notificationUser = await Notifications.findOne({
             _id:idnotification,
-            to:'to'
+            to:userDb._id
         }).sort('-createdAt') 
 
         if (!notificationUser) {

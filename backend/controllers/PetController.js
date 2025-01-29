@@ -24,6 +24,17 @@ module.exports = class PetController {
             return isNaN(number) ? value : number
         }
 
+        const deleteImages = (images) =>{
+            images.map((image)=>{
+                const imagePath = path.join(__dirname, '..', 'public', 'images', 'pets', image);
+                fs.unlink(imagePath, (err) => {
+                    if (err) {
+                        console.error('Erro ao excluir a imagem:', err);
+                    }
+                })
+            })
+        }
+
         const petParse = {
             name: req.body.name,
             age: toNumber(req.body.age),
@@ -45,7 +56,7 @@ module.exports = class PetController {
             age: z.number({ message: 'Formato da idade digita é inválida' }).min(1, { message: 'A idade minima é um 1 mês, por favor verifique o que foi digitado' }).max(30, { message: 'A idade maxima para animais é 30 anos' }),
             weight: z.number({ message: 'Formato do peso inválido' }).min(1, { message: 'Peso minimo 1kg' }).max(50, { message: 'Peso maximo 50kg' }),
             color: z.string().min(3, { message: 'Cor inválida' }).max(12, { message: 'Cor inválida' }),
-            images: z.array(z.string()).min(1, { message: 'Pelo menos imagem precisa ser enviada do Pet' }),
+            images: z.array(z.string()).min(1, { message: 'Pelo menos imagem precisa ser enviada do Pet' }).max(8, { message: 'São permitidas apenas 8 imagens por Pet' }),
             description: z.string().max(700, { message: 'Número de caracteres não pode ser superior a 700' })
         })
 
@@ -58,6 +69,7 @@ module.exports = class PetController {
                     returnErros.push(index.message)
                     console.log(`erro : ${JSON.stringify(index.message)}`)
                 })
+                deleteImages(petParse.images)
                 res.status(422).json({ message: 'Erros na requisição :', returnErros })
                 return
             }
@@ -69,10 +81,12 @@ module.exports = class PetController {
             user = await GetUserByToken(token)
             userDb = await User.findById(user._id)
             if (!userDb.address) {
+                deleteImages(petParse.images)
                 res.status(422).json({ message: 'Você não pode adicionar um pet na nossa plataforma sem ter um endereço cadastrado' })
                 return
             }
         } catch (Erro) {
+            deleteImages(petParse.images)
             res.status(422).json({ message: 'Usuario não encontrado , por favor verifique o que foi digitado' })
             return
         }
@@ -103,6 +117,7 @@ module.exports = class PetController {
             NotificationsController.CreateAll(`O pet ${pet.name} está esperendo por você , venha conhecer o seu proximo amigo !!!`, `Novo Pet disponível`, `${process.env.URL_API}/images/pets/${pet.images[0]}`, `${process.env.URL_FRONTEND}/pets/getpet/${pet._id}`)
             EmailSend.EmailNewPetForAllUsers(pet)
         } catch (error) {
+            deleteImages(petParse.images)
             res.status(500).json({ message: error })
         }
 
@@ -350,20 +365,17 @@ module.exports = class PetController {
             return isNaN(number) ? value : number
         }
 
-        try {
-            petDb = await Pet.findById({ _id: id })
-            if (!petDb.available) {
-                res.status(422).json({ message: 'Você não pode editar um pet que foi retirado da adoção' })
-                return
-            }
-            if (!petDb) {
-                res.status(404).json({ message: 'Pet não existe no banco de dados , por favor verifique o que foi digitado' })
-                return
-            }
-        } catch (erro) {
-            res.status(422).json({ message: 'Id do pet inválido , por favor verifique o que foi digitado' })
-            return
+        const deleteImages = (images) =>{
+            images.map((image)=>{
+                const imagePath = path.join(__dirname, '..', 'public', 'images', 'pets', image);
+                fs.unlink(imagePath, (err) => {
+                    if (err) {
+                        console.error('Erro ao excluir a imagem:', err);
+                    }
+                })
+            })
         }
+
 
         const petParse = {
             name: req.body.name,
@@ -397,9 +409,28 @@ module.exports = class PetController {
                     returnErros.push(index.message)
                     console.log(`erro : ${JSON.stringify(index.message)}`)
                 })
+                deleteImages(petParse.images)
                 res.status(422).json({ message: 'Erros na requisição :', returnErros })
                 return
             }
+        }
+
+        try {
+            petDb = await Pet.findById({ _id: id })
+            if (!petDb.available) {
+                deleteImages(petParse.images)
+                res.status(422).json({ message: 'Você não pode editar um pet que foi retirado da adoção' })
+                return
+            }
+            if (!petDb) {
+                deleteImages(petParse.images)
+                res.status(404).json({ message: 'Pet não existe no banco de dados , por favor verifique o que foi digitado' })
+                return
+            }
+        } catch (erro) {
+            deleteImages(petParse.images)
+            res.status(422).json({ message: 'Id do pet inválido , por favor verifique o que foi digitado' })
+            return
         }
 
         let token, user, userDb
@@ -408,11 +439,13 @@ module.exports = class PetController {
             user = await GetUserByToken(token)
             userDb = await User.findById(user._id)
         } catch (Erro) {
+            deleteImages(petParse.images)
             res.status(422).json({ message: 'Usuario não encontrado , por favor verifique o que foi digitado' })
             return
         }
 
         if (petDb.user._id.toString() !== userDb._id.toString()) {  //verificando se a requisição de edição vem do usuario que criou o pet mesma logica acima 
+            deleteImages(petParse.images)
             res.status(422).json({ message: 'Erro ao processar sua operação , por favor verifique o que foi digitado' })
             return
         }
@@ -480,7 +513,7 @@ module.exports = class PetController {
         res.status(200).json({
             message: `O pedido de adoção foi feito com sucesso , entre em contato com ${pet.user.name} no telefone ${pet.user.phone} para acertar os detelhes da adoção !!!`
         })
-        NotificationsController.CreateTo(`Você tem uma nova solicitação de adoção para o seu pet ${pet.name} do possivél tutor ${user.name}`, pet.user._id, 'Solicitação de adoção', `${process.env.URL_API}/images/pets/${pet.images[0]}`, `${process.env.URL_FRONTEND}/pets/mypets/pet/${pet._id}`)
+        NotificationsController.CreateTo(`Você tem uma nova solicitação de adoção para o seu pet ${pet.name} do possivél tutor ${user.name}`, pet.user._id, 'Solicitação de adoção', `${process.env.URL_API}/images/pets/${pet.images[0]}`, `${process.env.URL_FRONTEND}/pets/mypets/adoptions/${pet._id}`)
         EmailSend.EmailNewRequestAdopter(pet, userTutor)
     }
 
@@ -805,7 +838,7 @@ module.exports = class PetController {
 
     static async GetAllFavoritePets(req,res){
 
-        console.log(`Entrou aqui com req.body :${JSON.stringify(req.headers.authorization)}`)
+        // console.log(`Entrou aqui com req.body :${JSON.stringify(req.headers.authorization)}`)
 
         const toNumber = (value) => {
             const number = Number(value)

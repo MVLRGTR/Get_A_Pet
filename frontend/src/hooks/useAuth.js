@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import {  useNavigate } from 'react-router-dom'
 import useFlashMessage from './useFlashMessage'
 
-export default function useAuth() {
+export default function useAuth(socketInstance) {
 
     const { setFlashMessage } = useFlashMessage()
     const [authenticated, setAuthenticated] = useState(false)
@@ -44,6 +44,7 @@ export default function useAuth() {
     async function authUser(data) {
         setAuthenticated(true)
         localStorage.setItem('token', JSON.stringify(data.token))
+        localStorage.setItem('userId', JSON.stringify(data.userId))
         navigate('/1')
     }
 

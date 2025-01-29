@@ -8,35 +8,40 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBell, faHeart } from '@fortawesome/free-solid-svg-icons'
 
 function Navbar() {
-    const { authenticated, logout ,notifications,unread} = useContext(Context)
+    const { authenticated, logout ,notifications,unread ,viewedNotifications,favoritepets} = useContext(Context)
 
     const [showFavorites, setShowFavorites] = useState(false)
     const [showNotifications, setShowNotifications] = useState(false)
-    const [favoritepets,setFavoritePets] = useState([])
+    // const [favoritepets,setFavoritePets] = useState([])
 
     const toggleFavorites = () => setShowFavorites(!showFavorites)
-    const toggleNotifications = () => setShowNotifications(!showNotifications)
-
-    async function getAllUserFavoritePets(page) {
-        await api.get(`pets/favoritepets/${page}`, {
-            headers: {
-                Authorization: `Bearer ${JSON.parse(localStorage.getItem('token'))}`
-            }
-        }).then((response) => {
-            setFavoritePets(response.data.favoritePets)
-        }).catch((Erro) => {
-            console.log(`Erro : ${Erro}`)
-        })
+    const toggleNotifications = () => {
+        setShowNotifications(!showNotifications)
+        if(showNotifications === false){
+            viewedNotifications()
+        }
     }
 
-    useEffect(() => {
-        getAllUserFavoritePets(1) 
-    }, [])
+    // async function getAllUserFavoritePets(page) {
+    //     await api.get(`pets/favoritepets/${page}`, {
+    //         headers: {
+    //             Authorization: `Bearer ${JSON.parse(localStorage.getItem('token'))}`
+    //         }
+    //     }).then((response) => {
+    //         setFavoritePets(response.data.favoritePets)
+    //     }).catch((Erro) => {
+    //         console.log(`Erro : ${Erro}`)
+    //     })
+    // }
+
+    // useEffect(() => {
+    //     getAllUserFavoritePets(1) 
+    // }, [])
 
     return (
         <nav className={styles.navbar}>
             <div >
-                <Link className={styles.navbar_logo} to='/1'>
+                <Link className={styles.navbar_logo} to='/'>
                     <img src={Logo} alt="logo Get A Pet"></img>
                     <h2>Get A Pet</h2>
                 </Link>

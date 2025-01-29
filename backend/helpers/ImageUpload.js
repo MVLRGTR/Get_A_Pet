@@ -6,7 +6,7 @@ const path = require('path')
 const ImageStorages = multer.diskStorage({
     destination: function (req,file,cb){
         let folder = ''
-
+        // console.log(`req.body : ${JSON.stringify(req.body)} req.baseUrl : ${req.baseUrl}  file : ${JSON.stringify(file)}`)
         if(req.baseUrl.includes('users')){
             folder = 'users'
         }else if(req.baseUrl.includes('pets')){
@@ -25,7 +25,6 @@ const ImageUpload = multer({
     fileFilter(req,file,cb){
         if(!file.originalname.match(/\.(png|jpg)$/)) { //verificação da extensão do arquivo
             return cb(new Error('Por favor envie apenas JPG ou PNG !!!'))
-
         }
         cb(undefined,true) 
     }

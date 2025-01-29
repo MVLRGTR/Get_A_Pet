@@ -28,10 +28,30 @@ module.exports = class UserController {
             return isNaN(number) ? value : number
         }
 
+        const deleteImg = (filename) =>{
+            if(filename !== 'default.jpg'){
+                const imagePath = path.join(__dirname, '..', 'public', 'images', 'users', filename);
+                fs.unlink(imagePath, (err) => {
+                    if (err) {
+                        console.error('Erro ao excluir a imagem:', err);
+                    }
+                })
+            }
+        }
+
+        let image = req.file
+
+        if (!image) {
+            image = 'default.jpg'
+        } else {
+            image = image.filename
+        }
+
         const userParse = {
             name: req.body.name,
             email: req.body.email,
             phone: toNumber(req.body.phone),
+            img: image,
             password: req.body.password,
             confirmpassword: req.body.confirmpassword,
         }
@@ -40,6 +60,7 @@ module.exports = class UserController {
             name: z.string().min(3, { message: 'O nome precisa ter pelo menos 3 caracteres, por favor verifique o que foi digitado' }).max(25, { message: 'O nome pode ter no máximo 25 caracteres ,por favor verifique o que foi digitado' }),
             email: z.string().email({ message: 'Endereço de email inválido' }),
             phone: z.number({ message: 'Número com formato digitado inválido' }).min(11, { message: 'Número de telefone digitado inválido, certifique de colocar o ddd da sua localidade' }),
+            img: z.string(),
             password: z.string().min(6, { message: 'Senha muito curta ,mínimo 6 characteres , por favor faça outra' }).max(28, { message: 'Senha muito grande , por favor faça outra' }),
         })
 
@@ -52,18 +73,22 @@ module.exports = class UserController {
                     returnErros.push(index.message)
                     console.log(`erro : ${JSON.stringify(index.message)}`)
                 })
+                deleteImg(image)
                 res.status(422).json({ message: 'Erros na requisição :', returnErros })
                 return
             }
         }
 
         if (userParse.password !== userParse.confirmpassword) {
+            deleteImg(image)
             res.status(422).json({ message: 'A senha e a sua confirmação não são iguais , por favor verifique o que foi digitado' })
+            return
         }
 
         const UserExists = await User.findOne({ email: userParse.email })
 
         if (UserExists) {
+            deleteImg(image)
             res.status(422).json({ message: 'E-mail já cadastrado , por favor utilize outro !!!' })
             return
         }
@@ -78,6 +103,7 @@ module.exports = class UserController {
             name: userParse.name,
             email: userParse.email,
             phone: userParse.phone,
+            img: userParse.img,
             password: PasswordHash,
             primaryLogin,
             token
@@ -89,6 +115,7 @@ module.exports = class UserController {
             await user.save()
             res.status(200).json({ message: 'Usuário criado com sucesso' })
         } catch (erro) {
+            deleteImg(image)
             console.log(erro)
             res.status(500).json({ message: erro })
         }
@@ -224,7 +251,7 @@ module.exports = class UserController {
                 const newToken = GenerateRandomFourDigitNumber()
                 await User.findOneAndUpdate(
                     { _id: userDb._id },
-                    { $set: { password: PasswordHash ,token : newToken} }
+                    { $set: { password: PasswordHash, token: newToken } }
                 )
                 await CreateUserToken(userDb, req, res)
             } catch (erro) {
@@ -281,6 +308,17 @@ module.exports = class UserController {
             return isNaN(number) ? value : number
         }
 
+        const deleteImg = (filename) =>{
+            if(filename !== 'default.jpg'){
+                const imagePath = path.join(__dirname, '..', 'public', 'images', 'users', filename);
+                fs.unlink(imagePath, (err) => {
+                    if (err) {
+                        console.error('Erro ao excluir a imagem:', err);
+                    }
+                })
+            }
+        }
+
         const toBoolean = (value) => {
             if (typeof value === 'boolean') {
                 return value
@@ -296,10 +334,20 @@ module.exports = class UserController {
             return value
         }
 
+        let image = req.file
+        console.log(`image : ${JSON.stringify(image)}`)
+        if (!image) {
+            image = 'default.jpg'
+            console.log('entrou aqui')
+        } else {
+            image = image.filename
+        }
+
         const userParse = {
             name: req.body.name,
             email: req.body.email,
             phone: toNumber(req.body.phone),
+            img: image,
             password: req.body.password,
             confirmpassword: req.body.confirmpassword,
             receiveremail: toBoolean(req.body.receiveremail)
@@ -308,7 +356,8 @@ module.exports = class UserController {
         const userSchema = z.object({
             name: z.string().min(3, { message: 'O nome precisa ter pelo menos 3 caracteres, por favor verifique o que foi digitado' }).max(25, { message: 'O nome pode ter no máximo 25 caracteres ,por favor verifique o que foi digitado' }),
             email: z.string().email({ message: 'Endereço de email inválido' }),
-            phone: z.number({ message: 'Número com formato digitado inválido' }).min(1000000000, { message: 'Número de telefone digitado inválido, certifique de colocar o ddd da sua localidade' }).max(99999999999, { message: 'Número de telefone digitado inválido, certifique dos dados digitados' }),
+            phone: z.number({ message: 'Número com formato digitado inválido' }).min(11, { message: 'Número de telefone digitado inválido, certifique de colocar o ddd da sua localidade' }),
+            img: z.string(),
             password: z.string().min(6, { message: 'Senha muito curta ,mínimo 6 characteres , por favor faça outra' }).max(28, { message: 'Senha muito grande , por favor faça outra' }),
             receiveremail: z.boolean({ message: 'Tipo de dado incorreto para o recebimento de e-mail , somente permitido true ou false' })
         })
@@ -323,6 +372,7 @@ module.exports = class UserController {
                     console.log(`erro : ${JSON.stringify(index.message)}`)
                 })
                 res.status(422).json({ message: 'Erros na requisição :', returnErros })
+                deleteImg(image)
                 return
             }
         }
@@ -333,26 +383,44 @@ module.exports = class UserController {
             user = await GetUserByToken(token)
             userDb = await User.findById(user._id)
         } catch (Erro) {
+            deleteImg(image)
             res.status(422).json({ message: 'Usuario não encontrado , por favor verifique o que foi digitado' })
             return
         }
 
         const UserExistsByEmail = await User.findOne({ email: userParse.email }).select('email')
         if (userDb.email !== userParse.email && UserExistsByEmail) {
+            deleteImg(image)
             res.status(422).json({ message: 'E-mail inválido , por favor verifique o que foi digitado' })
             return
         }
 
         if (req.file) {
-            if (userDb.img) {
-                const imagePath = path.join(__dirname, '..', 'public', 'images', 'users', userDb.img);
-                fs.unlink(imagePath, (err) => {
-                    if (err) {
-                        console.error('Erro ao excluir a imagem:', err);
-                    }
-                })
+            // if (userDb.img !== 'default.jpg' && userDb.img) {
+            //     const imagePath = path.join(__dirname, '..', 'public', 'images', 'users', userDb.img);
+            //     fs.unlink(imagePath, (err) => {
+            //         if (err) {
+            //             console.error('Erro ao excluir a imagem:', err);
+            //         }
+            //     })
+            // }
+            if(userDb.img !== 'default.jpg' && userDb.img){
+                deleteImg(userDb.img)
             }
             userDb.img = req.file.filename
+        } else {
+            // if (userDb.img !== 'default.jpg' && userDb.img) {
+            //     const imagePath = path.join(__dirname, '..', 'public', 'images', 'users', userDb.img);
+            //     fs.unlink(imagePath, (err) => {
+            //         if (err) {
+            //             console.error('Erro ao excluir a imagem:', err);
+            //         }
+            //     })
+            // }
+            if(userDb.img !== 'default.jpg' && userDb.img){
+                deleteImg(userDb.img)
+            }
+            userDb.img = userParse.img
         }
 
         userDb.name = userParse.name
@@ -362,6 +430,7 @@ module.exports = class UserController {
 
 
         if (userParse.password != userParse.confirmpassword) {
+            deleteImg(image)
             res.status(422).json({ message: 'As senhas não conferem , por favor verifique o que foi digitado' })
             return
         } else if (userParse.password === userParse.confirmpassword && userParse.password != null) {
@@ -380,6 +449,7 @@ module.exports = class UserController {
             )
             res.status(200).json({ message: 'Usuario atualizado com sucesso !!!' })
         } catch (erro) {
+            deleteImg(image)
             res.status(500).json({ message: erro })
             return
         }
