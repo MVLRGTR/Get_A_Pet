@@ -67,7 +67,6 @@ function Home() {
         getAllPets(1)
     }
 
-
     return (
         <section>
             <div className={styles.pet_home_header}>

@@ -41,7 +41,7 @@ function Navbar() {
     return (
         <nav className={styles.navbar}>
             <div >
-                <Link className={styles.navbar_logo} to='/1'>
+                <Link className={styles.navbar_logo} to='/'>
                     <img src={Logo} alt="logo Get A Pet"></img>
                     <h2>Get A Pet</h2>
                 </Link>
