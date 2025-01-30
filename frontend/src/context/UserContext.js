@@ -9,7 +9,12 @@ function UserProvider({ children }) {
     const { authenticated, register, logout, login, primaryLogin, ForgotPasswordUser, forgotPasswordLogin } = useAuth()
     const [notifications, setNotifications] = useState([])
     const [unread, setUnRead] = useState(0)
-    const [userId, setUserId] = useState(localStorage.getItem('userId').replace(/"/g, ''))
+    const [totalNotifications,setTotalNotifications] =  useState(0)
+    const [totalPages,setTotalPages] = useState(0)
+    const [userId, setUserId] = useState(() => {
+        const storedUserId = localStorage.getItem('userId')
+        return storedUserId ? storedUserId.replace(/"/g, '') : null
+    })
     const [favoritepets,setFavoritePets] = useState([])
     const socketInstance = useRef(null)
 
@@ -21,6 +26,8 @@ function UserProvider({ children }) {
         }).then((response) => {
             setNotifications(response.data.notifications)
             setUnRead(response.data.unread)
+            setTotalNotifications(response.data.totalNotifications)
+            setTotalPages(response.data.totalPages)
         }).catch((Erro) => {
             console.log(`Erro : ${Erro}`)
         })
@@ -120,7 +127,7 @@ function UserProvider({ children }) {
     }, [authenticated])
 
     return (
-        <Context.Provider value={{ authenticated, register, logout, login, primaryLogin, ForgotPasswordUser, forgotPasswordLogin, notifications, unread, viewedNotifications, socketInstance: socketInstance.current ,favoritepets}}>
+        <Context.Provider value={{ authenticated, register, logout, login, primaryLogin, ForgotPasswordUser, forgotPasswordLogin, notifications, unread,totalNotifications,totalPages,viewedNotifications, socketInstance: socketInstance.current ,favoritepets}}>
             {children}
         </Context.Provider>
     )

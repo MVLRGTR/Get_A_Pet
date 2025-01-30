@@ -14,7 +14,7 @@ function About() {
     }
 
     return (
-        <section>
+        <section className={styles.sectionbody}>
             <h1>Bem vindo ao GetAPet !!!</h1>
             <img src={`${process.env.REACT_APP_API}images/pets/icongetapet.jpg`} className={styles.aboutimg} ></img>
             <p> Esse Projeto foi Criado durante o curso Node.js do Zero a Maestria com diversos Projetos de Matheus Battisti (Hora de Codar)

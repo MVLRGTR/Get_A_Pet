@@ -15,6 +15,7 @@ import ForgotPassword from './components/pages/auth/ForgotPassword'
 import ForgotPasswordLogin from './components/pages/auth/ForgotPasswordLogin'
 import PetAdoptions from './components/pages/pets/PetAdoptions'
 import About from './components/pages/About'
+import Notifications from  './components/pages/User/Notification'
 /*Components */
 import Navbar from './components/Layouts/Navbar'
 import Footer from './components/Layouts/Footer'
@@ -48,6 +49,7 @@ function App() {
             <Route path='/login/primarylogin' element={<PrimaryLogin/>} />
             <Route path='/pets/mypets/adoptions/:id' element={<PetAdoptions/>} />
             <Route path='/:page' element={<Home />} />
+            <Route path='/notifications' element={<Notifications/>}/>
             <Route path='/' element={<About/>}/>
 
           </Routes>
