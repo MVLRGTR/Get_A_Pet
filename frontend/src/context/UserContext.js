@@ -61,6 +61,7 @@ function UserProvider({ children }) {
     }
 
     async function viewedNotifications() {
+        console.log(`entrou aqui com unread ${unread}`)
         if (unread !== 0) {
             // console.log(`Notifications total : ${JSON.stringify(notifications)}`)
 

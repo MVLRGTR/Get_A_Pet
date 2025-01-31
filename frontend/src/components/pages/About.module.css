@@ -1,4 +1,4 @@
-section{
+.sectionbody{
     display: flex;
     flex-direction: column;
 }
@@ -78,7 +78,7 @@ list-style-type: circle;
 .logo img{
     width: 130px;
     height: 130px;
-}
+} 
 
 .butonabout{
     margin: auto;
@@ -92,5 +92,5 @@ list-style-type: circle;
 
 .butonabout:hover{
     transform: scale(1.1);
-}
+} 
   

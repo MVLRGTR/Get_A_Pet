@@ -1,0 +1,39 @@
+.notificationbox{
+    display: flex;
+    flex-direction: column;
+    
+}
+
+
+
+.sectionnotification{
+    
+    margin: auto;
+    margin-bottom: 35px;
+    width: 650px;
+    border: 1px solid #000;
+    border-radius: 10px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    
+}
+
+.linknotif{
+    display: flex;
+    flex-direction: row;
+}
+
+.sectionnotification img{
+    width: 150px;
+    height: 150px;
+    border-radius: 10%;
+    margin-right: 25px;
+}
+
+.divnotification{
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
