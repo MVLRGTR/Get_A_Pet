@@ -1,6 +1,6 @@
 import api from '../utils/api'
 import { useState, useEffect } from 'react'
-import {  useNavigate } from 'react-router-dom'
+import {  json, useNavigate } from 'react-router-dom'
 import useFlashMessage from './useFlashMessage'
 
 export default function useAuth(socketInstance) {
@@ -119,6 +119,7 @@ export default function useAuth(socketInstance) {
 
         setAuthenticated(false)
         localStorage.removeItem('token')
+        localStorage.removeItem('userId')
         api.defaults.headers.Authorization = undefined
 
         navigate('/1')

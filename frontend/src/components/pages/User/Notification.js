@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom'
 function Notifications() {
     const { notifications, authenticated , viewedNotifications,unread} = useContext(Context)
 
-    console.log(`valor do notifications ${JSON.stringify(notifications)}`)
+    // console.log(`valor do notifications ${JSON.stringify(notifications)}`)
     useEffect(() => {
         viewedNotifications()
     }, [unread])
@@ -20,8 +20,8 @@ function Notifications() {
                         <article>
                             {notifications.map((notif, index) => (
                                 
-                                    <div className={styles.sectionnotification}>
-                                        <Link to={`${notif.link}`} key={index} className={styles.linknotif}>
+                                    <div className={styles.sectionnotification} key={index} >
+                                        <Link to={`${notif.link}`} className={styles.linknotif}>
                                         <img src={notif.image} className={styles.imgnotification} alt="Notificação" />
                                         <div className={styles.divnotification}>
                                             <h2>{notif.type}</h2>

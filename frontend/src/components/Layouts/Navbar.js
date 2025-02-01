@@ -69,7 +69,7 @@ function Navbar() {
                                             </Link>
                                         ))}
                                     </ul>
-                                    <Link to='/notifications' className={styles.show_more}>
+                                    <Link to='/notifications' className={styles.show_more} onClick={toggleNotifications}>
                                         Mostrar mais
                                     </Link>
                                 </div>

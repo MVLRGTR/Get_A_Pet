@@ -9,12 +9,12 @@ function UserProvider({ children }) {
     const { authenticated, register, logout, login, primaryLogin, ForgotPasswordUser, forgotPasswordLogin } = useAuth()
     const [notifications, setNotifications] = useState([])
     const [unread, setUnRead] = useState(0)
-    const [totalNotifications,setTotalNotifications] =  useState(0)
-    const [totalPages,setTotalPages] = useState(0)
-    const [userId, setUserId] = useState(() => {
+    const [localUserId,setLocalUserId] = useState(()=>{
         const storedUserId = localStorage.getItem('userId')
         return storedUserId ? storedUserId.replace(/"/g, '') : null
     })
+    const [totalNotifications,setTotalNotifications] =  useState(0)
+    const [totalPages,setTotalPages] = useState(0)
     const [favoritepets,setFavoritePets] = useState([])
     const socketInstance = useRef(null)
 
@@ -61,16 +61,14 @@ function UserProvider({ children }) {
     }
 
     async function viewedNotifications() {
-        console.log(`entrou aqui com unread ${unread}`)
+        console.log(`entrou aqui com unread ${unread}  valor do localUserId ${localUserId}`)
         if (unread !== 0) {
-            // console.log(`Notifications total : ${JSON.stringify(notifications)}`)
-
             const updateNotification = notifications.map(async (notification) => {
                 if (notification.to === 'all') {
 
                     // A lógica aqui pode ser completada && notification.userviewed && notification.userviewed[0]
-                    if (!notification.userviewed.includes(userId)) {
-                        console.log('userId:', userId, 'typeof userId:', typeof userId)
+
+                    if (!notification.userviewed.includes(localUserId)) {
                         console.log('userviewed:', notification.userviewed, 'typeof elements:', notification.userviewed.map(v => typeof v))
                         console.log(`entrou em all com Notification ${JSON.stringify(notification)}`)
                         return viewedNotificationAll(notification)
@@ -101,6 +99,7 @@ function UserProvider({ children }) {
             console.log(`Erro : ${Erro}`)
         })
     }
+
 
 
     useEffect(() => {
