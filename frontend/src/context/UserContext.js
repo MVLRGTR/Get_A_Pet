@@ -8,26 +8,43 @@ const Context = createContext()
 function UserProvider({ children }) {
     const { authenticated, register, logout, login, primaryLogin, ForgotPasswordUser, forgotPasswordLogin } = useAuth()
     const [notifications, setNotifications] = useState([])
+    const [notificationsNew,setNotificationsNew] = useState([])
     const [unread, setUnRead] = useState(0)
     const [localUserId,setLocalUserId] = useState(()=>{
         const storedUserId = localStorage.getItem('userId')
         return storedUserId ? storedUserId.replace(/"/g, '') : null
     })
     const [totalNotifications,setTotalNotifications] =  useState(0)
-    const [totalPages,setTotalPages] = useState(0)
+    const [totalPagesNotifications,setTotalPagesNotifications] = useState(0)
     const [favoritepets,setFavoritePets] = useState([])
     const socketInstance = useRef(null)
 
+    async function getAllNotificationsNew(page) {
+        console.log(`entrou getallnotificationNew com page : ${page}`)
+        await api.get(`notifications/getallandto/${page}`, {
+            headers: {
+                Authorization: `Bearer ${JSON.parse(localStorage.getItem('token'))}`
+            }
+        }).then((response) => {
+            setNotificationsNew(response.data.notifications)
+            setUnRead(response.data.unread)
+            // setTotalNotifications(response.data.totalNotifications)
+            // setTotalPagesNotifications(response.data.totalPages)
+        }).catch((Erro) => {
+            console.log(`Erro : ${Erro}`)
+        })
+    }
+
     async function getAllNotifications(page) {
+        console.log(`entrou getallnotification com page : ${page}`)
         await api.get(`notifications/getallandto/${page}`, {
             headers: {
                 Authorization: `Bearer ${JSON.parse(localStorage.getItem('token'))}`
             }
         }).then((response) => {
             setNotifications(response.data.notifications)
-            setUnRead(response.data.unread)
             setTotalNotifications(response.data.totalNotifications)
-            setTotalPages(response.data.totalPages)
+            setTotalPagesNotifications(response.data.totalPages)
         }).catch((Erro) => {
             console.log(`Erro : ${Erro}`)
         })
@@ -63,7 +80,7 @@ function UserProvider({ children }) {
     async function viewedNotifications() {
         console.log(`entrou aqui com unread ${unread}  valor do localUserId ${localUserId}`)
         if (unread !== 0) {
-            const updateNotification = notifications.map(async (notification) => {
+            const updateNotification = notificationsNew.map(async (notification) => {
                 if (notification.to === 'all') {
 
                     // A lógica aqui pode ser completada && notification.userviewed && notification.userviewed[0]
@@ -85,7 +102,7 @@ function UserProvider({ children }) {
             await Promise.all(updateNotification)
         }
         // Chama a função para pegar todas as notificações
-        getAllNotifications(1)
+        getAllNotificationsNew(1)
     }
 
     async function getAllUserFavoritePets(page) {
@@ -106,13 +123,13 @@ function UserProvider({ children }) {
 
         if (authenticated) {
             console.log(`valor do auth : ${authenticated}`)
-            getAllNotifications(1)
+            getAllNotificationsNew(1)
             getAllUserFavoritePets(1)
 
             socketInstance.current = io('http://localhost:5000') // Substitua pela URL do seu servidor
             socketInstance.current.emit('newUserCheck',localStorage.getItem('token').replace(/"/g, ''))
             socketInstance.current.on('newNotification', (newNotification) => {
-                setNotifications((prevNotifications) => [newNotification, ...prevNotifications]) //estrutura do react para calcular o novo valor com o append do anterior
+                setNotificationsNew((prevNotifications) => [newNotification, ...prevNotifications]) //estrutura do react para calcular o novo valor com o append do anterior
                 setUnRead((prevUnread) => prevUnread + 1)
             })
 
@@ -127,7 +144,7 @@ function UserProvider({ children }) {
     }, [authenticated])
 
     return (
-        <Context.Provider value={{ authenticated, register, logout, login, primaryLogin, ForgotPasswordUser, forgotPasswordLogin, notifications, unread,totalNotifications,totalPages,viewedNotifications, socketInstance: socketInstance.current ,favoritepets}}>
+        <Context.Provider value={{ authenticated, register, logout, login, primaryLogin, ForgotPasswordUser, forgotPasswordLogin,viewedNotifications,getAllNotifications, notifications,notificationsNew, unread,totalNotifications,totalPagesNotifications, socketInstance: socketInstance.current ,favoritepets}}>
             {children}
         </Context.Provider>
     )

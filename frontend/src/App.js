@@ -49,7 +49,7 @@ function App() {
             <Route path='/login/primarylogin' element={<PrimaryLogin/>} />
             <Route path='/pets/mypets/adoptions/:id' element={<PetAdoptions/>} />
             <Route path='/:page' element={<Home />} />
-            <Route path='/notifications' element={<Notifications/>}/>
+            <Route path='/notifications/:page' element={<Notifications/>}/>
             <Route path='/' element={<About/>}/>
 
           </Routes>

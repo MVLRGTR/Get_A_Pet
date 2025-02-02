@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBell, faHeart } from '@fortawesome/free-solid-svg-icons'
 
 function Navbar() {
-    const { authenticated, logout ,notifications,unread ,viewedNotifications,favoritepets} = useContext(Context)
+    const { authenticated, logout ,notificationsNew,unread ,viewedNotifications,favoritepets} = useContext(Context)
 
     const [showFavorites, setShowFavorites] = useState(false)
     const [showNotifications, setShowNotifications] = useState(false)
@@ -60,7 +60,7 @@ function Navbar() {
                             {showNotifications && (
                                 <div className={styles.dropdown_menu}>
                                     <ul>
-                                        {notifications.slice(0, 5).map((notif, index) => (
+                                        {notificationsNew.slice(0, 5).map((notif, index) => (
                                             <Link to={`${notif.link}`} key={index}>
                                                 <li>
                                                     <img src={notif.image} ></img>
@@ -69,7 +69,7 @@ function Navbar() {
                                             </Link>
                                         ))}
                                     </ul>
-                                    <Link to='/notifications' className={styles.show_more} onClick={toggleNotifications}>
+                                    <Link to='/notifications/1' className={styles.show_more} onClick={toggleNotifications}>
                                         Mostrar mais
                                     </Link>
                                 </div>
