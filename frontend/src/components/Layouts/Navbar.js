@@ -93,7 +93,7 @@ function Navbar() {
                                             </Link>
                                         ))}
                                     </ul>
-                                    <Link to='/pets/favorites' className={styles.show_more}>
+                                    <Link to='/favoritepets/1' className={styles.show_more}>
                                         Mostrar mais
                                     </Link>
                                 </div>
