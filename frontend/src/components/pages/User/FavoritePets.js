@@ -1,4 +1,5 @@
 import { useState, useEffect, useContext } from "react"
+import { useCallback } from "react"
 import api from "../../../utils/api"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import { Context } from "../../../context/UserContext"
@@ -15,39 +16,49 @@ function FavoritePets() {
     const navigate = useNavigate()
     const { page } = useParams()
 
-    useEffect(() => {
-        const pageNumber = page ? parseInt(page) : 1
-        getFavoritPets(pageNumber)
-
-    }, [page])
-
-    function getFavoritPets(page) {
+    const getFavoritPets = useCallback((page) => {
         api.get(`/pets/favoritepets/${page}`, {
             headers: {
                 Authorization: `Bearer ${JSON.parse(localStorage.getItem('token'))}`
             }
         })
+        .then((response) => {
+            setFavoritePets(response.data.favoritePets);
+            setTotalPages(response.data.totalPages);
+            setCurrentPage(page);
+        }).catch((Erro) => {
+            console.error("Erro ao buscar pets favoritos:", Erro.response?.data || Erro);
+        });
+    }, [])
+
+    async function removePet(id) {
+        await api.patch(`/pets/removefavoritepet/${id}`, {
+            headers: {
+                Authorization: `Bearer ${JSON.parse(localStorage.getItem('token'))}`
+            }
+        })
             .then((response) => {
-                setFavoritePets(response.data.favoritePets)
-                // console.log(`pets retornados : ${JSON.stringify(response.data.favoritePets)}`)
-                setTotalPages(response.data.totalPages)
-                setCurrentPage(page)
-                console.log(`totalPages : ${totalPages}`)
+                setFavoritePets((prevPets) => prevPets.filter(pet => pet._id !== id))
+                console.log(`response : ${response.data.message}`)
             }).catch((Erro) => {
                 return Erro.response.data
             })
-    }
-
-    function removePet(id) {
-        console.log(`entrou aqui com id : ${id}`)
+        
+            getFavoritPets(currentPage)
     }
 
     async function changePage(page) {
         setCurrentPage(page)
         getFavoritPets(page)
-        navigate(`/pets/favoritepets/${page}`)
+        navigate(`/favoritepets/${page}`)
     }
 
+
+    useEffect(() => {
+        const pageNumber = page ? parseInt(page) : 1
+        getFavoritPets(pageNumber)
+
+    }, [page,getFavoritPets])
 
     return (
         <>
