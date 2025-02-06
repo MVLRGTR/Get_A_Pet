@@ -29,9 +29,10 @@ function FavoritePets() {
         })
             .then((response) => {
                 setFavoritePets(response.data.favoritePets)
-                console.log(`pets retornados : ${JSON.stringify(response.data.favoritePets)}`)
+                // console.log(`pets retornados : ${JSON.stringify(response.data.favoritePets)}`)
                 setTotalPages(response.data.totalPages)
                 setCurrentPage(page)
+                console.log(`totalPages : ${totalPages}`)
             }).catch((Erro) => {
                 return Erro.response.data
             })

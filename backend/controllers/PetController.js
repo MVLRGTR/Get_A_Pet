@@ -24,8 +24,8 @@ module.exports = class PetController {
             return isNaN(number) ? value : number
         }
 
-        const deleteImages = (images) =>{
-            images.map((image)=>{
+        const deleteImages = (images) => {
+            images.map((image) => {
                 const imagePath = path.join(__dirname, '..', 'public', 'images', 'pets', image);
                 fs.unlink(imagePath, (err) => {
                     if (err) {
@@ -239,7 +239,7 @@ module.exports = class PetController {
                     $elemMatch: { _id: userDb._id }
                 }
             }).skip((page - 1) * limit).limit(15)
-            const totalPets = await Pet.countDocuments({adopter: {$elemMatch: { _id: userDb._id }}})
+            const totalPets = await Pet.countDocuments({ adopter: { $elemMatch: { _id: userDb._id } } })
             const totalPages = Math.ceil(totalPets / limit)
             if (pets.length === 0) {
                 res.status(404).json({ message: 'Nenhum pet encontrado para o id do adotante fornecido', pets })
@@ -365,8 +365,8 @@ module.exports = class PetController {
             return isNaN(number) ? value : number
         }
 
-        const deleteImages = (images) =>{
-            images.map((image)=>{
+        const deleteImages = (images) => {
+            images.map((image) => {
                 const imagePath = path.join(__dirname, '..', 'public', 'images', 'pets', image);
                 fs.unlink(imagePath, (err) => {
                     if (err) {
@@ -836,7 +836,7 @@ module.exports = class PetController {
 
     }
 
-    static async GetAllFavoritePets(req,res){
+    static async GetAllFavoritePets(req, res) {
 
         // console.log(`Entrou aqui com req.body :${JSON.stringify(req.headers.authorization)}`)
 
@@ -863,20 +863,24 @@ module.exports = class PetController {
             return
         }
 
-        const userFavoritePets = await User.find({
-            _id : userDb._id
-        }).select('favoritepets').skip((page - 1) * limit).limit(limit) 
+        
+        const userFavoritePets = await User.findOne(
+            { _id: userDb._id },
+            { favoritepets: { $slice: [(page - 1) * limit, limit] } }
+        ).lean()
+        
         const resultFavoritePets = await User.aggregate([
             { $match: { _id: userDb._id } },
             { $project: { totalFavoritePets: { $size: "$favoritepets" } } }
         ])
-        const favoritePets = userFavoritePets.length > 0 ? userFavoritePets[0].favoritepets : []
+
+        const favoritePets = userFavoritePets ? userFavoritePets.favoritepets : []
         const totalFavoritePets = resultFavoritePets.length > 0 ? resultFavoritePets[0].totalFavoritePets : 0
         const totalPages = Math.ceil(totalFavoritePets / limit)
 
         res.status(200).json({
             message: 'Pets favoritos retornados com sucesso !!!',
-            favoritePets,totalFavoritePets,totalPages
+            favoritePets, totalFavoritePets, totalPages
         })
     }
 
@@ -904,7 +908,7 @@ module.exports = class PetController {
             name: { $regex: `.*${searchPet}.*`, $options: 'i' },
             available: true
         }).select('-adopter').skip((page - 1) * limit).limit(15)
-        const totalPets = await Pet.countDocuments({name: { $regex: `.*${searchPet}.*`, $options: 'i' },available: true})
+        const totalPets = await Pet.countDocuments({ name: { $regex: `.*${searchPet}.*`, $options: 'i' }, available: true })
         const totalPages = Math.ceil(totalPets / limit)
 
         if (pets.length === 0) {
