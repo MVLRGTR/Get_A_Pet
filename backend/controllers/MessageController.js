@@ -115,7 +115,21 @@ module.exports = class MessageController {
     }
 
     static async GetAllMessageChat(req,res){
+
+        const toNumber = (value) => {
+            const number = Number(value)
+            return isNaN(number) ? value : number
+        }
+
         const to = req.body.to
+
+        const page = toNumber(req.body.page)
+        const limit = 200
+
+        if (!page || typeof page != 'number') {
+            res.status(422).json({ message: 'Paginação das mensagens de envio Inválida  , por favor verifique o que foi digitado' })
+            return
+        }
 
         let token, user, userDb
         try {
@@ -135,7 +149,7 @@ module.exports = class MessageController {
         try{
             const toExist = await User.findById(to).select('_id')
             if (!toExist) {
-                res.status(422).json({ message: 'Erro ao processar sua operação, por favor verifique o que foi digitado' })
+                res.status(422).json({ message: 'Erro ao processar sua operação,usuario de destino inexistente, por favor verifique o que foi digitado' })
                 return
             }
         }catch(erro){
@@ -143,16 +157,31 @@ module.exports = class MessageController {
                 return
         }
 
+        const unread = await Message.countDocuments({
+            viewed :false,
+            to:new ObjectId(to),
+            from :  userDb._id
+        })
+
+        const totalMesages = await Message.countDocuments({
+            to: new ObjectId(to),
+            from : userDb._id
+        })
+
         const messagesChat = await Message.find({
             $or: [
                 { to: new ObjectId(to), from: userDb._id },
                 { to: userDb._id, from: new ObjectId(to) }
             ]
-        }).sort({ createdAt: 1 })
+        }).sort({ createdAt: 1 }).skip((page - 1) * limit).limit(limit)
+
+        const totalPages = Math.ceil(totalMesages/limit)
 
         res.status(200).json({
             message:'Mensagens retornadas com sucesso',
             messagesChat,
+            unreadMessage:unread,
+            totalPages : totalPages,
             userMessageRequest:userDb._id
         })
         
