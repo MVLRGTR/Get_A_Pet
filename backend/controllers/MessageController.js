@@ -73,12 +73,13 @@ module.exports = class MessageController {
         }
 
         try {
-            const toMsgExist = await Message.findById({ _id: id }).select('_id to from')
+            const toMsgExist = await Message.findById({ _id: id }).select('_id to from viewed')
 
             if (!toMsgExist) {
                 res.status(422).json({ message: 'Mensagem não encontrada na nossa base, por favor verifique o que foi digitado' })
                 return
             }
+
 
             let token, user, userDb
             try {
@@ -91,9 +92,14 @@ module.exports = class MessageController {
             }
 
             //verificação se o usuario que está enviando a requisição de vizualização é o mesmo que recebeu a mensagem
-
+            console.log(`userDb._id : ${userDb._id} toMsgExist.to : ${toMsgExist.to}`)
             if (userDb._id.toString() != toMsgExist.to.toString()) {
-                res.status(422).json({ message: 'Erro ao processar sua operação, por favor verifique o que foi digitado' })
+                res.status(422).json({ message: 'Erro ao processar sua operação,você não vizualizar uma menssagen que não foi enviada para você , por favor verifique o que foi digitado' })
+                return
+            }
+
+            if(toMsgExist.viewed){
+                res.status(422).json({ message: 'Erro ao processar sua operação , messagem já vizualizada, por favor verifique o que foi digitado' })
                 return
             }
 
