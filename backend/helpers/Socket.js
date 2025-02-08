@@ -21,6 +21,7 @@ module.exports = class socketController{
 
     static sendNotificationTo(notification){
         const userSocket = global.userConnectSocket.find((user)=> user[1].toString() === notification.to.toString())
+        console.log(`entrou aqui com userSocket : ${userSocket}`)
         if(userSocket !== undefined){
             global.io.to(userSocket[0]).emit('newNotification',notification)
             console.log(`Notificação enviada para o usuário: ${userSocket[2]}, Socket ID: ${userSocket[0]}`)
@@ -31,12 +32,12 @@ module.exports = class socketController{
 
     static sendNewMessageChat(message){
         const userSocket = global.userConnectSocket.find((user)=> user[1].toString() === message.to.toString())
+        console.log(`entrou aqui com userSocket : ${userSocket}`)
         if(userSocket !== undefined){
             global.io.to(userSocket[0]).emit('newMessage',message)
             console.log(`Mensagem enviada para o usuário: ${userSocket[2]}, Socket ID: ${userSocket[0]}`)
         }else{
             console.log(`Usuário com ID ${notification.to} não está conectado.`)
         }
-
     }
 }

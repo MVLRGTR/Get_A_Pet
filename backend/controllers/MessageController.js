@@ -42,6 +42,7 @@ module.exports = class MessageController {
         }
 
         if (userDb._id.toString() === to.toString()) {
+            console.log(`userDb._id = ${userDb._id} to : ${to}`)
             res.status(422).json({ message: 'A messagem precisar ter origem e destino diferente, por favor verifique o que foi digitado' })
             return
         }
@@ -60,6 +61,7 @@ module.exports = class MessageController {
                 NewMessageSend
             })
             NotificationController.CreateTo(`Você tem um nova mensagem do tutor(a) ${userDb.name}`,to,'Nova menssagem')
+            console.log(`NewMessageSend : ${NewMessageSend} e newMessage : ${NewMessage}`)
             socketController.sendNewMessageChat(NewMessageSend)
         } catch (error) {
             res.status(500).json({ message: error })

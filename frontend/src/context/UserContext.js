@@ -135,6 +135,7 @@ function UserProvider({ children }) {
             })
             socketInstance.current.on('newMessage',(newMessage)=>{
                 setNewMessages((prevMessages)=>[newMessage,...prevMessages])
+                console.log(`enrtou aqui com newMessage : ${JSON.stringify(newMessage)}`)
             })
 
             return () => {
