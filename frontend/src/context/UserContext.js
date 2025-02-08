@@ -7,6 +7,7 @@ const Context = createContext()
 
 function UserProvider({ children }) {
     const { authenticated, register, logout, login, primaryLogin, ForgotPasswordUser, forgotPasswordLogin } = useAuth()
+    const [newMessages,setNewMessages] =useState([])
     const [notifications, setNotifications] = useState([])
     const [notificationsNew,setNotificationsNew] = useState([])
     const [unread, setUnRead] = useState(0)
@@ -131,6 +132,9 @@ function UserProvider({ children }) {
             socketInstance.current.on('newNotification', (newNotification) => {
                 setNotificationsNew((prevNotifications) => [newNotification, ...prevNotifications]) //estrutura do react para calcular o novo valor com o append do anterior
                 setUnRead((prevUnread) => prevUnread + 1)
+            })
+            socketInstance.current.on('newMessage',(newMessage)=>{
+                setNewMessages((prevMessages)=>[newMessage,...prevMessages])
             })
 
             return () => {

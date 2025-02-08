@@ -30,7 +30,6 @@ global.io = new Server(server, {
 
 // Usei um arquivo a parte para a função abaixo
 
-
 global.userConnectSocket = []
 
 global.io.on('connection', (socket) => {

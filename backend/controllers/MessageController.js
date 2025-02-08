@@ -6,6 +6,7 @@ const NotificationController = require('../controllers/NotificationsController')
 const GetToken = require('../helpers/GetToken')
 const GetUserByToken = require('../helpers/GetUserByToken')
 const ObjectId = require('mongoose').Types.ObjectId
+const socketController = require('../helpers/Socket')
 
 module.exports = class MessageController {
 
@@ -59,7 +60,8 @@ module.exports = class MessageController {
                 NewMessageSend
             })
             NotificationController.CreateTo(`Você tem um nova mensagem do tutor(a) ${userDb.name}`,to,'Nova menssagem')
-        } catch (erro) {
+            socketController.sendNewMessageChat(NewMessageSend)
+        } catch (error) {
             res.status(500).json({ message: error })
         }
     }
