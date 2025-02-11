@@ -132,7 +132,7 @@ module.exports = class PetController {
 
         const cepUser = req.body.cep
         const page = toNumber(req.params.page)
-        const limit = 4 // pets que serão mostrados por paginas
+        const limit = 5 // pets que serão mostrados por paginas
 
         if (!page || typeof page != 'number') {
             res.status(422).json({ message: 'Pagina de envio Inválida  , por favor verifique o que foi digitado' })

@@ -37,7 +37,7 @@ module.exports = class socketController{
             global.io.to(userSocket[0]).emit('newMessage',message)
             console.log(`Mensagem enviada para o usuário: ${userSocket[2]}, Socket ID: ${userSocket[0]}`)
         }else{
-            console.log(`Usuário com ID ${notification.to} não está conectado.`)
+            console.log(`Usuário com ID ${message.from} não está conectado.`)
         }
     }
 }

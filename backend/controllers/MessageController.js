@@ -12,6 +12,7 @@ module.exports = class MessageController {
 
     static async SendMessage(req, res) {
         const { message, to } = req.body
+        const urlImage = 'http://localhost:5000/images/users/msg.png'
 
         function isString(value){
             return typeof value === 'string';
@@ -60,7 +61,7 @@ module.exports = class MessageController {
                 message: 'Messagem enviada com sucesso',
                 NewMessageSend
             })
-            NotificationController.CreateTo(`Você tem um nova mensagem do tutor(a) ${userDb.name}`,to,'Nova menssagem')
+            NotificationController.CreateTo(`Você tem um nova mensagem do tutor(a) ${userDb.name}`,to,'Nova menssagem',urlImage)
             console.log(`NewMessageSend : ${NewMessageSend} e newMessage : ${NewMessage}`)
             socketController.sendNewMessageChat(NewMessageSend)
         } catch (error) {
@@ -196,4 +197,100 @@ module.exports = class MessageController {
         })
         
     }
+    
+    static async activeChatsUser(req, res) {
+        const toNumber = (value) => {
+            const number = Number(value)
+            return isNaN(number) ? value : number
+        };
+    
+        const page = toNumber(req.params.page)
+        const limit = 10
+    
+        if (!page || typeof page !== "number") {
+            res.status(422).json({
+                message: "Página inválida. Por favor, verifique o que foi digitado.",
+            })
+            return
+        }
+    
+        try {
+            const token = GetToken(req)
+            const user = await GetUserByToken(token)
+            const userDb = await User.findById(user._id)
+    
+            if (!userDb) {
+                res.status(422).json({ message: "Usuário não encontrado." })
+                return
+            }
+    
+            const userId = userDb._id
+    
+            const activeChats = await Message.aggregate([
+                {
+                    $match: {
+                        $or: [{ from: userId }, { to: userId }],
+                    },
+                },
+                {
+                    $sort: { createdAt: -1 }, // Ordena as mensagens pela data de criação
+                },
+                {
+                    $group: {
+                        _id: {
+                            from: { $cond: [{ $gt: ["$from", "$to"] }, "$from", "$to"] },
+                            to: { $cond: [{ $gt: ["$from", "$to"] }, "$to", "$from"] },
+                        },
+                        lastMessage: { $first: "$message" },
+                        lastMessageAt: { $first: "$createdAt" },
+                        lastMessageFrom: { $first: "$from" },
+                        lastMessageTo: { $first: "$to" },
+                        participants: { $addToSet: "$from" },
+                        participantsTo: { $addToSet: "$to" },
+                    },
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        lastMessage: 1,
+                        lastMessageAt: 1,
+                        lastMessageFrom: 1,
+                        lastMessageTo: 1,
+                        participants: { $setUnion: ["$participants", "$participantsTo"] },
+                    },
+                },
+                {
+                    $sort: { lastMessageAt: -1 }, // Corrigido para ordenar por última mensagem
+                },
+                {
+                    $facet: {
+                        metadata: [{ $count: "totalMessages" }],
+                        messages: [{ $skip: (page - 1) * limit }, { $limit: limit }],
+                    },
+                },
+            ]);
+    
+            console.log("activeChats:", activeChats)
+    
+            const totalChats =
+                activeChats[0].metadata.length > 0 ? activeChats[0].metadata[0].totalMessages: 0
+            const totalPages = Math.ceil(totalChats / limit)
+            const chats = activeChats[0].messages
+    
+            res.status(chats.length > 0 ? 200 : 404).json({
+                message:
+                    chats.length > 0
+                        ? "Chats retornados com sucesso!"
+                        : "Não existem chats para o usuário informado no banco de dados.",
+                totalChats,
+                totalPages,
+                chats,
+                requestingUser: userId,
+            })
+        } catch (error) {
+            console.error("Erro ao buscar chats:", error)
+            res.status(500).json({ message: "Erro interno do servidor" })
+        }
+    }
+    
 }
