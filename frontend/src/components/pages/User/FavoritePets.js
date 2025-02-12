@@ -53,7 +53,6 @@ function FavoritePets() {
         navigate(`/favoritepets/${page}`)
     }
 
-
     useEffect(() => {
         const pageNumber = page ? parseInt(page) : 1
         getFavoritPets(pageNumber)

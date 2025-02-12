@@ -18,6 +18,7 @@ function UserProvider({ children }) {
     const [totalNotifications,setTotalNotifications] =  useState(0)
     const [totalPagesNotifications,setTotalPagesNotifications] = useState(0)
     const [favoritepets,setFavoritePets] = useState([])
+    const [chatsActives,setChatsActives] = useState([])
     const socketInstance = useRef(null)
 
     async function getAllNotificationsNew(page) {

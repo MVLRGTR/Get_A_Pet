@@ -226,6 +226,50 @@ module.exports = class MessageController {
     
             const userId = userDb._id
     
+            // const activeChats = await Message.aggregate([
+            //     {
+            //         $match: {
+            //             $or: [{ from: userId }, { to: userId }],
+            //         },
+            //     },
+            //     {
+            //         $sort: { createdAt: -1 }, // Ordena as mensagens pela data de criação
+            //     },
+            //     {
+            //         $group: {
+            //             _id: {
+            //                 from: { $cond: [{ $gt: ["$from", "$to"] }, "$from", "$to"] },
+            //                 to: { $cond: [{ $gt: ["$from", "$to"] }, "$to", "$from"] },
+            //             },
+            //             lastMessage: { $first: "$message" },
+            //             lastMessageAt: { $first: "$createdAt" },
+            //             lastMessageFrom: { $first: "$from" },
+            //             lastMessageTo: { $first: "$to" },
+            //             participants: { $addToSet: "$from" },
+            //             participantsTo: { $addToSet: "$to" },
+            //         },
+            //     },
+            //     {
+            //         $project: {
+            //             _id: 1,
+            //             lastMessage: 1,
+            //             lastMessageAt: 1,
+            //             lastMessageFrom: 1,
+            //             lastMessageTo: 1,
+            //             participants: { $setUnion: ["$participants", "$participantsTo"] },
+            //         },
+            //     },
+            //     {
+            //         $sort: { lastMessageAt: -1 }, // Corrigido para ordenar por última mensagem
+            //     },
+            //     {
+            //         $facet: {
+            //             metadata: [{ $count: "totalMessages" }],
+            //             messages: [{ $skip: (page - 1) * limit }, { $limit: limit }],
+            //         },
+            //     },
+            // ])
+
             const activeChats = await Message.aggregate([
                 {
                     $match: {
@@ -233,7 +277,7 @@ module.exports = class MessageController {
                     },
                 },
                 {
-                    $sort: { createdAt: -1 }, // Ordena as mensagens pela data de criação
+                    $sort: { createdAt: -1 },
                 },
                 {
                     $group: {
@@ -259,8 +303,38 @@ module.exports = class MessageController {
                         participants: { $setUnion: ["$participants", "$participantsTo"] },
                     },
                 },
+                // Lookup para obter informações do destinatário da última mensagem
                 {
-                    $sort: { lastMessageAt: -1 }, // Corrigido para ordenar por última mensagem
+                    $lookup: {
+                        from: "users",
+                        localField: "lastMessageTo",
+                        foreignField: "_id",
+                        as: "toUser",
+                    },
+                },
+                {
+                    $unwind: {
+                        path: "$toUser",
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                // Lookup para obter informações do remetente da última mensagem
+                {
+                    $lookup: {
+                        from: "users",
+                        localField: "lastMessageFrom",
+                        foreignField: "_id",
+                        as: "fromUser",
+                    },
+                },
+                {
+                    $unwind: {
+                        path: "$fromUser",
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $sort: { lastMessageAt: -1 },
                 },
                 {
                     $facet: {
@@ -268,15 +342,25 @@ module.exports = class MessageController {
                         messages: [{ $skip: (page - 1) * limit }, { $limit: limit }],
                     },
                 },
-            ]);
+            ])
     
             console.log("activeChats:", activeChats)
     
             const totalChats =
                 activeChats[0].metadata.length > 0 ? activeChats[0].metadata[0].totalMessages: 0
             const totalPages = Math.ceil(totalChats / limit)
-            const chats = activeChats[0].messages
-    
+            // const chats = activeChats[0].messages
+            
+            const chats = activeChats[0].messages.map((chat) => ({
+                ...chat,
+                toUser: chat.toUser
+                    ? { _id: chat.toUser._id, name: chat.toUser.name }
+                    : null,
+                fromUser: chat.fromUser
+                    ? { _id: chat.fromUser._id, name: chat.fromUser.name }
+                    : null,
+            }))
+
             res.status(chats.length > 0 ? 200 : 404).json({
                 message:
                     chats.length > 0
