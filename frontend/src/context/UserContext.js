@@ -7,7 +7,7 @@ const Context = createContext()
 
 function UserProvider({ children }) {
     const { authenticated, register, logout, login, primaryLogin, ForgotPasswordUser, forgotPasswordLogin } = useAuth()
-    const [newMessages,setNewMessages] =useState([])
+    const [newMessages,setNewMessages] = useState([])
     const [notifications, setNotifications] = useState([])
     const [notificationsNew,setNotificationsNew] = useState([])
     const [unread, setUnRead] = useState(0)

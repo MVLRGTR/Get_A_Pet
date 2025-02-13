@@ -157,8 +157,10 @@ module.exports = class MessageController {
             return
         }
 
+        let toExist = undefined
+
         try{
-            const toExist = await User.findById(to).select('_id')
+            toExist = await User.findById(to).select('_id img')
             if (!toExist) {
                 res.status(422).json({ message: 'Erro ao processar sua operação,usuario de destino inexistente, por favor verifique o que foi digitado' })
                 return
@@ -188,21 +190,27 @@ module.exports = class MessageController {
 
         const totalPages = Math.ceil(totalMesages/limit)
 
+        if(toExist.img === undefined){
+            toExist.img = 'default.jpg'
+        }
+
         res.status(200).json({
             message:'Mensagens retornadas com sucesso',
             messagesChat,
             unreadMessage:unread,
             totalPages : totalPages,
-            userMessageRequest:userDb._id
+            userMessageRequest:userDb._id,
+            imgTo: toExist.img
         })
         
     }
-    
+
+
     static async activeChatsUser(req, res) {
         const toNumber = (value) => {
             const number = Number(value)
             return isNaN(number) ? value : number
-        };
+        }
     
         const page = toNumber(req.params.page)
         const limit = 10
@@ -226,50 +234,6 @@ module.exports = class MessageController {
     
             const userId = userDb._id
     
-            // const activeChats = await Message.aggregate([
-            //     {
-            //         $match: {
-            //             $or: [{ from: userId }, { to: userId }],
-            //         },
-            //     },
-            //     {
-            //         $sort: { createdAt: -1 }, // Ordena as mensagens pela data de criação
-            //     },
-            //     {
-            //         $group: {
-            //             _id: {
-            //                 from: { $cond: [{ $gt: ["$from", "$to"] }, "$from", "$to"] },
-            //                 to: { $cond: [{ $gt: ["$from", "$to"] }, "$to", "$from"] },
-            //             },
-            //             lastMessage: { $first: "$message" },
-            //             lastMessageAt: { $first: "$createdAt" },
-            //             lastMessageFrom: { $first: "$from" },
-            //             lastMessageTo: { $first: "$to" },
-            //             participants: { $addToSet: "$from" },
-            //             participantsTo: { $addToSet: "$to" },
-            //         },
-            //     },
-            //     {
-            //         $project: {
-            //             _id: 1,
-            //             lastMessage: 1,
-            //             lastMessageAt: 1,
-            //             lastMessageFrom: 1,
-            //             lastMessageTo: 1,
-            //             participants: { $setUnion: ["$participants", "$participantsTo"] },
-            //         },
-            //     },
-            //     {
-            //         $sort: { lastMessageAt: -1 }, // Corrigido para ordenar por última mensagem
-            //     },
-            //     {
-            //         $facet: {
-            //             metadata: [{ $count: "totalMessages" }],
-            //             messages: [{ $skip: (page - 1) * limit }, { $limit: limit }],
-            //         },
-            //     },
-            // ])
-
             const activeChats = await Message.aggregate([
                 {
                     $match: {
@@ -344,23 +308,24 @@ module.exports = class MessageController {
                 },
             ])
     
-            console.log("activeChats:", activeChats)
+            // console.log(`activeChats: ${JSON.stringify(activeChats)}`)
     
             const totalChats =
-                activeChats[0].metadata.length > 0 ? activeChats[0].metadata[0].totalMessages: 0
+                activeChats[0].metadata.length > 0
+                    ? activeChats[0].metadata[0].totalMessages
+                    : 0
             const totalPages = Math.ceil(totalChats / limit)
-            // const chats = activeChats[0].messages
-            
+    
             const chats = activeChats[0].messages.map((chat) => ({
                 ...chat,
                 toUser: chat.toUser
-                    ? { _id: chat.toUser._id, name: chat.toUser.name }
+                    ? { _id: chat.toUser._id, name: chat.toUser.name, img: chat.toUser.img }
                     : null,
                 fromUser: chat.fromUser
-                    ? { _id: chat.fromUser._id, name: chat.fromUser.name }
+                    ? { _id: chat.fromUser._id, name: chat.fromUser.name, img: chat.fromUser.img }
                     : null,
             }))
-
+    
             res.status(chats.length > 0 ? 200 : 404).json({
                 message:
                     chats.length > 0
