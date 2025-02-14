@@ -7,7 +7,7 @@ const Context = createContext()
 
 function UserProvider({ children }) {
     const { authenticated, register, logout, login, primaryLogin, ForgotPasswordUser, forgotPasswordLogin } = useAuth()
-    const [newMessages,setNewMessages] = useState([])
+    const [messagesChats,setMessagesChats] = useState([]) //agrupo cada chat com suas mensagens
     const [notifications, setNotifications] = useState([])
     const [notificationsNew,setNotificationsNew] = useState([])
     const [unread, setUnRead] = useState(0)
@@ -19,6 +19,7 @@ function UserProvider({ children }) {
     const [totalPagesNotifications,setTotalPagesNotifications] = useState(0)
     const [favoritepets,setFavoritePets] = useState([])
     const [chatsActives,setChatsActives] = useState([])
+    const [totalActivesChats,setTotalActivesChats] = useState(1)
     const socketInstance = useRef(null)
 
     async function getAllNotificationsNew(page) {
@@ -119,6 +120,19 @@ function UserProvider({ children }) {
         })
     }
 
+    async function getAllActiveChats(page) {
+        await api.get(`message/activechats/${page}`, {
+            headers: {
+                Authorization: `Bearer ${JSON.parse(localStorage.getItem('token'))}`
+            }
+        }).then((response) => {
+            setChatsActives(response.data.chats)
+            setTotalActivesChats(response.data.totalPages)
+        }).catch((Erro) => {
+            console.log(`Erro : ${Erro}`)
+        })
+    }
+
 
 
     useEffect(() => {
@@ -127,16 +141,18 @@ function UserProvider({ children }) {
             console.log(`valor do auth : ${authenticated}`)
             getAllNotificationsNew(1)
             getAllUserFavoritePets(1)
+            getAllActiveChats(1)
 
-            socketInstance.current = io('http://localhost:5000') // Substitua pela URL do seu servidor
+            socketInstance.current = io('http://localhost:5000') // Substituir pela URL do servidor
             socketInstance.current.emit('newUserCheck',localStorage.getItem('token').replace(/"/g, ''))
             socketInstance.current.on('newNotification', (newNotification) => {
                 setNotificationsNew((prevNotifications) => [newNotification, ...prevNotifications]) //estrutura do react para calcular o novo valor com o append do anterior
                 setUnRead((prevUnread) => prevUnread + 1)
             })
             socketInstance.current.on('newMessage',(newMessage)=>{
-                setNewMessages((prevMessages)=>[newMessage,...prevMessages])
-                console.log(`enrtou aqui com newMessage : ${JSON.stringify(newMessage)}`)
+                // setNewMessages((prevMessages)=>[newMessage,...prevMessages])
+                // console.log(`enrtou aqui com newMessage : ${JSON.stringify(newMessage)}`)
+                
             })
 
             return () => {
@@ -150,7 +166,7 @@ function UserProvider({ children }) {
     }, [authenticated])
 
     return (
-        <Context.Provider value={{ authenticated, register, logout, login, primaryLogin, ForgotPasswordUser, forgotPasswordLogin,viewedNotifications,getAllNotifications, notifications,notificationsNew, unread,totalNotifications,totalPagesNotifications, socketInstance: socketInstance.current ,favoritepets}}>
+        <Context.Provider value={{ authenticated, register, logout, login, primaryLogin, ForgotPasswordUser, forgotPasswordLogin,viewedNotifications,getAllNotifications,getAllActiveChats,chatsActives,totalActivesChats, notifications,notificationsNew, unread,totalNotifications,totalPagesNotifications, socketInstance: socketInstance.current ,favoritepets}}>
             {children}
         </Context.Provider>
     )

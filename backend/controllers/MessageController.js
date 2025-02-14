@@ -205,7 +205,6 @@ module.exports = class MessageController {
         
     }
 
-
     static async activeChatsUser(req, res) {
         const toNumber = (value) => {
             const number = Number(value)
@@ -341,5 +340,4 @@ module.exports = class MessageController {
             res.status(500).json({ message: "Erro interno do servidor" })
         }
     }
-    
 }
