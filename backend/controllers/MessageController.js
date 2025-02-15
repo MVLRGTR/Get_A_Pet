@@ -132,9 +132,9 @@ module.exports = class MessageController {
             return isNaN(number) ? value : number
         }
 
-        const to = req.body.to
+        const to = req.params.to
 
-        const page = toNumber(req.body.page)
+        const page = toNumber(req.params.page)
         const limit = 200
 
         if (!page || typeof page != 'number') {
@@ -200,7 +200,8 @@ module.exports = class MessageController {
             unreadMessage:unread,
             totalPages : totalPages,
             userMessageRequest:userDb._id,
-            imgTo: toExist.img
+            imgTo: toExist.img,
+            currentPage : page
         })
         
     }

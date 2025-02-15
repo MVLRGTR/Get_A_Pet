@@ -19,7 +19,7 @@ function UserProvider({ children }) {
     const [totalPagesNotifications,setTotalPagesNotifications] = useState(0)
     const [favoritepets,setFavoritePets] = useState([])
     const [chatsActives,setChatsActives] = useState([])
-    const [totalActivesChats,setTotalActivesChats] = useState(1)
+    const [totalPagesActivesChats,setTotalPagesActivesChats] = useState(1)
     const socketInstance = useRef(null)
 
     async function getAllNotificationsNew(page) {
@@ -127,10 +127,23 @@ function UserProvider({ children }) {
             }
         }).then((response) => {
             setChatsActives(response.data.chats)
-            setTotalActivesChats(response.data.totalPages)
+            setTotalPagesActivesChats(response.data.totalPages)
         }).catch((Erro) => {
             console.log(`Erro : ${Erro}`)
         })
+    }
+
+    async function getMessagesChat(to, page) {
+        await api.get(`message/getallmessagechat/${to}/${page}`,{
+            headers: {
+                Authorization: `Bearer ${JSON.parse(localStorage.getItem('token'))}`
+            }
+        }).then((response) => {
+
+        }).catch((Erro) => {
+            console.log(`Erro : ${Erro}`)
+        })
+        
     }
 
 
@@ -166,7 +179,7 @@ function UserProvider({ children }) {
     }, [authenticated])
 
     return (
-        <Context.Provider value={{ authenticated, register, logout, login, primaryLogin, ForgotPasswordUser, forgotPasswordLogin,viewedNotifications,getAllNotifications,getAllActiveChats,chatsActives,totalActivesChats, notifications,notificationsNew, unread,totalNotifications,totalPagesNotifications, socketInstance: socketInstance.current ,favoritepets}}>
+        <Context.Provider value={{ authenticated, register, logout, login, primaryLogin, ForgotPasswordUser, forgotPasswordLogin,viewedNotifications,getAllNotifications,getAllActiveChats,chatsActives,totalPagesActivesChats, notifications,notificationsNew, unread,totalNotifications,totalPagesNotifications, socketInstance: socketInstance.current ,favoritepets}}>
             {children}
         </Context.Provider>
     )
