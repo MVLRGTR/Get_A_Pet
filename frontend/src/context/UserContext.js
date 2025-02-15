@@ -7,7 +7,7 @@ const Context = createContext()
 
 function UserProvider({ children }) {
     const { authenticated, register, logout, login, primaryLogin, ForgotPasswordUser, forgotPasswordLogin } = useAuth()
-    const [messagesChats,setMessagesChats] = useState([]) //agrupo cada chat com suas mensagens
+    const [messagesChats,setMessagesChats] = useState([{}]) //agrupo cada chat com suas mensagens
     const [notifications, setNotifications] = useState([])
     const [notificationsNew,setNotificationsNew] = useState([])
     const [unread, setUnRead] = useState(0)
@@ -139,6 +139,29 @@ function UserProvider({ children }) {
                 Authorization: `Bearer ${JSON.parse(localStorage.getItem('token'))}`
             }
         }).then((response) => {
+            const newChat = {
+                id: response.data.to,
+                pages:[],
+                messagesChat: response.data.messagesChat
+            }
+
+            setMessagesChats((prevMessagesChats)=>{
+                const existChat = prevMessagesChats.findIndex(chat => chat.id === newChat.id)
+
+                if(existChat === -1){
+                    return [newChat,...prevMessagesChats]
+                }
+
+                const updateChats = [...prevMessagesChats]
+                const existingChatPages = updateChats[existChat] //obtenho referência do elemento dentro do array , como se fosse um ponteiro e que permiti eu modificar ele no array updateChats sem criar um novo array
+            
+                if(!existingChatPages.pages.includes(page)){
+                    existingChatPages.pages.push(page)
+                    existingChatPages.messagesChat =[...existingChatPages.messagesChat,...response.data.messagesChat]
+                }
+
+                return updateChats
+            })
 
         }).catch((Erro) => {
             console.log(`Erro : ${Erro}`)
