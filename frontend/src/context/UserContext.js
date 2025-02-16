@@ -31,8 +31,6 @@ function UserProvider({ children }) {
         }).then((response) => {
             setNotificationsNew(response.data.notifications)
             setUnRead(response.data.unread)
-            // setTotalNotifications(response.data.totalNotifications)
-            // setTotalPagesNotifications(response.data.totalPages)
         }).catch((Erro) => {
             console.log(`Erro : ${Erro}`)
         })
@@ -169,8 +167,6 @@ function UserProvider({ children }) {
         
     }
 
-
-
     useEffect(() => {
 
         if (authenticated) {
@@ -202,7 +198,7 @@ function UserProvider({ children }) {
     }, [authenticated])
 
     return (
-        <Context.Provider value={{ authenticated, register, logout, login, primaryLogin, ForgotPasswordUser, forgotPasswordLogin,viewedNotifications,getAllNotifications,getAllActiveChats,chatsActives,totalPagesActivesChats, notifications,notificationsNew, unread,totalNotifications,totalPagesNotifications, socketInstance: socketInstance.current ,favoritepets}}>
+        <Context.Provider value={{ authenticated, register, logout, login, primaryLogin, ForgotPasswordUser, forgotPasswordLogin,viewedNotifications,getAllNotifications,getAllActiveChats,getMessagesChat,chatsActives,totalPagesActivesChats, notifications,notificationsNew, unread,totalNotifications,totalPagesNotifications, socketInstance: socketInstance.current ,favoritepets}}>
             {children}
         </Context.Provider>
     )

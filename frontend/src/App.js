@@ -17,6 +17,7 @@ import PetAdoptions from './components/pages/pets/PetAdoptions'
 import About from './components/pages/About'
 import Notifications from  './components/pages/User/Notification'
 import FavoritePets from './components/pages/User/FavoritePets'
+import ActivesChats from './components/pages/User/ChatsActives'
 /*Components */
 import Navbar from './components/Layouts/Navbar'
 import Footer from './components/Layouts/Footer'
@@ -53,13 +54,14 @@ function App() {
             <Route path='/notifications/:page' element={<Notifications/>}/>
             <Route path='/' element={<About/>}/>
             <Route path='/favoritepets/:page' element={<FavoritePets/>}/>
+            <Route path='/activechats/:page' element={<ActivesChats/>}/>
 
           </Routes>
         </Container>
         <Footer />
       </UserProvider>
     </Router>
-  );
+  )
 }
 
-export default App;
+export default App

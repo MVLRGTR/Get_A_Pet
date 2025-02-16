@@ -268,22 +268,7 @@ module.exports = class MessageController {
                         participants: { $setUnion: ["$participants", "$participantsTo"] },
                     },
                 },
-                // Lookup para obter informações do destinatário da última mensagem
-                {
-                    $lookup: {
-                        from: "users",
-                        localField: "lastMessageTo",
-                        foreignField: "_id",
-                        as: "toUser",
-                    },
-                },
-                {
-                    $unwind: {
-                        path: "$toUser",
-                        preserveNullAndEmptyArrays: true,
-                    },
-                },
-                // Lookup para obter informações do remetente da última mensagem
+                // Lookup para obter informações dos usuários
                 {
                     $lookup: {
                         from: "users",
@@ -299,6 +284,20 @@ module.exports = class MessageController {
                     },
                 },
                 {
+                    $lookup: {
+                        from: "users",
+                        localField: "lastMessageTo",
+                        foreignField: "_id",
+                        as: "toUser",
+                    },
+                },
+                {
+                    $unwind: {
+                        path: "$toUser",
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
                     $sort: { lastMessageAt: -1 },
                 },
                 {
@@ -309,23 +308,31 @@ module.exports = class MessageController {
                 },
             ])
     
-            // console.log(`activeChats: ${JSON.stringify(activeChats)}`)
-    
             const totalChats =
                 activeChats[0].metadata.length > 0
                     ? activeChats[0].metadata[0].totalMessages
                     : 0
             const totalPages = Math.ceil(totalChats / limit)
     
-            const chats = activeChats[0].messages.map((chat) => ({
-                ...chat,
-                toUser: chat.toUser
-                    ? { _id: chat.toUser._id, name: chat.toUser.name, img: chat.toUser.img }
-                    : null,
-                fromUser: chat.fromUser
-                    ? { _id: chat.fromUser._id, name: chat.fromUser.name, img: chat.fromUser.img }
-                    : null,
-            }))
+            const chats = activeChats[0].messages.map((chat) => {
+                // Identificando o outro participante da conversa
+                const otherUser =
+                    chat.lastMessageFrom.toString() === userId.toString()
+                        ? chat.toUser
+                        : chat.fromUser
+    
+                return {
+                    _id: chat._id,
+                    lastMessage: chat.lastMessage,
+                    lastMessageAt: chat.lastMessageAt,
+                    lastMessageFrom: chat.lastMessageFrom,
+                    lastMessageTo: chat.lastMessageTo,
+                    participants: chat.participants,
+                    contact: otherUser
+                        ? { _id: otherUser._id, name: otherUser.name, img: otherUser.img }
+                        : null,
+                }
+            })
     
             res.status(chats.length > 0 ? 200 : 404).json({
                 message:
@@ -342,4 +349,5 @@ module.exports = class MessageController {
             res.status(500).json({ message: "Erro interno do servidor" })
         }
     }
+    
 }
