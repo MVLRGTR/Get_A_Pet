@@ -1,4 +1,4 @@
-import { useState,  useContext } from "react"
+import { useState, useContext } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { Context } from "../../../context/UserContext"
 import styles from './ChatsActives.module.css'
@@ -6,7 +6,7 @@ import styles from './ChatsActives.module.css'
 
 function ActivesChats() {
 
-    const { authenticated, chatsActives, totalPagesActivesChats,getAllActiveChats } = useContext(Context)
+    const { authenticated, chatsActives, totalPagesActivesChats, getAllActiveChats } = useContext(Context)
 
     const [currentPage, setCurrentPage] = useState(1)
 
@@ -31,11 +31,14 @@ function ActivesChats() {
                                     {chatsActives.map((chat, index) => (
                                         <article key={index} className={styles.articlechat}>
                                             <Link to={`/chat/${chat.contact._id}/1`} className={styles.linkchat}>
-                                                <img src={`${process.env.REACT_APP_API}/images/users/${chat.contact.img}`} alt={chat.contact.name}/>
+                                                <img src={`${process.env.REACT_APP_API}/images/users/${chat.contact.img}`} alt={chat.contact.name} />
                                                 <div className={styles.divchat}>
                                                     <h2>{chat.contact.name}</h2>
                                                     <div className={styles.boxmessage}>
                                                         <p>{chat.lastMessage}</p>
+                                                        {chat.lastMessageFrom === chat.contact._id ?
+                                                            <p className={styles.messageFrom}>Enviado de : {chat.contact.name}</p>
+                                                            : null}
                                                     </div>
                                                 </div>
                                             </Link>

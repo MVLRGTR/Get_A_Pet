@@ -41,13 +41,45 @@
     margin-left: 50px;
 }
 
-.boxmessage{
+/* .boxmessage{
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    max-width: 300px; 
+    display: block;
     margin-top: 10px;
     background-color: rgb(195, 255, 203);
     border-radius: 10px; 
     padding: 8px;
     border: 1px solid #000;
+} */
+.boxmessage {
+    width: 100%; 
+    max-width: 350px; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    display: flex; 
+    flex-direction: column;
+    align-items: center; 
+    background-color: rgb(195, 255, 203);
+    border-radius: 10px;
+    padding: 8px;
+    border: 1px solid #000;
+}
 
+.boxmessage p {
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+
+.messageFrom{
+    margin-bottom: auto;
+    font-size: smaller;
+    font-weight: bold;
 }
 
 
