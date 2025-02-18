@@ -8,65 +8,61 @@ import styles from './FavoritePets.module.css'
 
 function FavoritePets() {
 
-    const { authenticated } = useContext(Context)
-    const [favoritePets, setFavoritePets] = useState([])
-    const [totalPages, setTotalPages] = useState(0)
+    const { authenticated,getAllFavoritePets,totalPagesFavorite, favoritepets,removeFavoritePet} = useContext(Context)
     const [currentPage, setCurrentPage] = useState(1)
 
     const navigate = useNavigate()
     const { page } = useParams()
 
-    const getFavoritPets = useCallback((page) => {
-        api.get(`/pets/favoritepets/${page}`, {
-            headers: {
-                Authorization: `Bearer ${JSON.parse(localStorage.getItem('token'))}`
-            }
-        })
-        .then((response) => {
-            setFavoritePets(response.data.favoritePets);
-            setTotalPages(response.data.totalPages);
-            setCurrentPage(page);
-        }).catch((Erro) => {
-            console.error("Erro ao buscar pets favoritos:", Erro.response?.data || Erro);
-        });
-    }, [])
+    // const getFavoritPets = useCallback((page) => {
+    //     api.get(`/pets/favoritepets/${page}`, {
+    //         headers: {
+    //             Authorization: `Bearer ${JSON.parse(localStorage.getItem('token'))}`
+    //         }
+    //     })
+    //     .then((response) => {
+    //         setFavoritePets(response.data.favoritePets)
+    //         setTotalPages(response.data.totalPages)
+    //         setCurrentPage(page)
+    //     }).catch((Erro) => {
+    //         console.error("Erro ao buscar pets favoritos:", Erro.response?.data || Erro)
+    //     })
+    // }, [])
 
-    async function removePet(id) {
-        await api.patch(`/pets/removefavoritepet/${id}`, {
-            headers: {
-                Authorization: `Bearer ${JSON.parse(localStorage.getItem('token'))}`
-            }
-        })
-            .then((response) => {
-                setFavoritePets((prevPets) => prevPets.filter(pet => pet._id !== id))
-                console.log(`response : ${response.data.message}`)
-            }).catch((Erro) => {
-                return Erro.response.data
-            })
-        
-            getFavoritPets(currentPage)
-    }
+    // async function removePet(id) {
+    //     await api.patch(`/pets/removefavoritepet/${id}`, {
+    //         headers: {
+    //             Authorization: `Bearer ${JSON.parse(localStorage.getItem('token'))}`
+    //         }
+    //     })
+    //         .then((response) => {
+    //             setFavoritePets((prevPets) => prevPets.filter(pet => pet._id !== id))
+    //             console.log(`response : ${response.data.message}`)
+    //         }).catch((Erro) => {
+    //             return Erro.response.data
+    //         })
+    // }
 
     async function changePage(page) {
         setCurrentPage(page)
-        getFavoritPets(page)
+        getAllFavoritePets(page)
         navigate(`/favoritepets/${page}`)
     }
 
     useEffect(() => {
         const pageNumber = page ? parseInt(page) : 1
-        getFavoritPets(pageNumber)
+        getAllFavoritePets(pageNumber)
 
-    }, [page,getFavoritPets])
+    }, [page])
 
     return (
         <>
             {authenticated ? (
-                favoritePets && favoritePets.length > 0 ? (
+                favoritepets && favoritepets.length > 0 ? (
                     <section className={styles.favoritebox}>
                         <h1>Favoritos</h1>
                         <article>
-                            {favoritePets.map((pet, index) => (
+                            {favoritepets.map((pet, index) => (
                                 <div key={index} className={styles.sectionfavorite}>
                                     <Link to={`/pets/getpet/${pet._id}`}>
                                         <div className={styles.divpet}>
@@ -74,18 +70,18 @@ function FavoritePets() {
                                             <p>{pet.name}</p>
                                         </div>
                                     </Link>
-                                    <button onClick={() => removePet(pet._id)}>Remover Pet</button>
+                                    <button onClick={() => removeFavoritePet(pet._id)}>Remover Pet</button>
                                 </div>
                             ))
 
                             }
                         </article>
-                        {totalPages > 1 && (
+                        {totalPagesFavorite > 1 && (
                             <footer className={styles.pagination}>
                                 <button disabled={currentPage === 1} onClick={() => changePage(currentPage - 1)}>{'<'}</button>
                                 {(() => {
                                     const startPage = Math.max(currentPage - 10, 1)
-                                    const endPage = Math.min(currentPage + 10, totalPages)
+                                    const endPage = Math.min(currentPage + 10, totalPagesFavorite)
                                     return [...Array(endPage - startPage + 1).keys()].map(page => {
                                         const pageNumber = startPage + page
                                         return (
@@ -99,7 +95,7 @@ function FavoritePets() {
                                         )
                                     })
                                 })()}
-                                <button disabled={currentPage === totalPages} onClick={() => changePage(currentPage + 1)}>{'>'}</button>
+                                <button disabled={currentPage === totalPagesFavorite} onClick={() => changePage(currentPage + 1)}>{'>'}</button>
                             </footer>
                         )}
                     </section>

@@ -10,7 +10,7 @@ import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
 
 
 function Navbar() {
-    const { authenticated, logout ,notificationsNew,unread ,viewedNotifications,favoritepets} = useContext(Context)
+    const { authenticated, logout ,notificationsNew,unread ,viewedNotifications,favoritePetsNavbarShow} = useContext(Context)
 
     const [showFavorites, setShowFavorites] = useState(false)
     const [showNotifications, setShowNotifications] = useState(false)
@@ -77,7 +77,7 @@ function Navbar() {
                             {showFavorites && (
                                 <div className={styles.dropdown_menu}>
                                     <ul>
-                                        {favoritepets.slice(0, 5).map((pet, index) => (
+                                        {favoritePetsNavbarShow.slice(0, 5).map((pet, index) => (
                                             <Link to={`/pets/getpet/${pet._id}`} key={index}>
                                                 <li>
                                                     <img src={`${process.env.REACT_APP_API}images/pets/${pet.images[0]}`} alt={pet.name}></img>

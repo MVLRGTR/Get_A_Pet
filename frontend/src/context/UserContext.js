@@ -7,19 +7,21 @@ const Context = createContext()
 
 function UserProvider({ children }) {
     const { authenticated, register, logout, login, primaryLogin, ForgotPasswordUser, forgotPasswordLogin } = useAuth()
-    const [messagesChats,setMessagesChats] = useState([{}]) //agrupo cada chat com suas mensagens
+    const [messagesChats, setMessagesChats] = useState([{}]) //agrupo cada chat com suas mensagens
     const [notifications, setNotifications] = useState([])
-    const [notificationsNew,setNotificationsNew] = useState([])
+    const [notificationsNew, setNotificationsNew] = useState([])
     const [unread, setUnRead] = useState(0)
-    const [localUserId,setLocalUserId] = useState(()=>{
+    const [localUserId, setLocalUserId] = useState(() => {
         const storedUserId = localStorage.getItem('userId')
         return storedUserId ? storedUserId.replace(/"/g, '') : null
     })
-    const [totalNotifications,setTotalNotifications] =  useState(0)
-    const [totalPagesNotifications,setTotalPagesNotifications] = useState(0)
-    const [favoritepets,setFavoritePets] = useState([])
-    const [chatsActives,setChatsActives] = useState([])
-    const [totalPagesActivesChats,setTotalPagesActivesChats] = useState(1)
+    const [totalNotifications, setTotalNotifications] = useState(0)
+    const [totalPagesNotifications, setTotalPagesNotifications] = useState(0)
+    const [favoritepets, setFavoritePets] = useState([])
+    const [totalPagesFavorite, setTotalPagesFavorite] = useState(1)
+    const [favoritePetsNavbarShow,setFavoritePetsNavbarShow] = useState([])
+    const [chatsActives, setChatsActives] = useState([])
+    const [totalPagesActivesChats, setTotalPagesActivesChats] = useState(1)
     const socketInstance = useRef(null)
 
     async function getAllNotificationsNew(page) {
@@ -106,16 +108,46 @@ function UserProvider({ children }) {
         getAllNotificationsNew(1)
     }
 
-    async function getAllUserFavoritePets(page) {
+    async function getAllFavoritePets(page) {
         await api.get(`pets/favoritepets/${page}`, {
             headers: {
                 Authorization: `Bearer ${JSON.parse(localStorage.getItem('token'))}`
             }
         }).then((response) => {
             setFavoritePets(response.data.favoritePets)
+            setTotalPagesFavorite(response.data.totalPages)
         }).catch((Erro) => {
             console.log(`Erro : ${Erro}`)
         })
+    }
+
+    async function removeFavoritePet(id) {
+        await api.patch(`/pets/removefavoritepet/${id}`, {
+            headers: {
+                Authorization: `Bearer ${JSON.parse(localStorage.getItem('token'))}`
+            }
+        })
+            .then((response) => {
+                setFavoritePets((prevPets) => prevPets.filter(pet => pet._id !== id))
+                favoritePetsNavbar()
+                console.log(`response : ${response.data.message}`)
+            }).catch((Erro) => {
+                return Erro.response.data
+            })
+
+    }
+
+    async function favoritePetsNavbar(){
+        await api.get(`pets/favoritepets/1`, {
+            headers: {
+                Authorization: `Bearer ${JSON.parse(localStorage.getItem('token'))}`
+            }
+        }).then((response) => {
+            setFavoritePetsNavbarShow(response.data.favoritePets)
+        }).catch((Erro) => {
+            console.log(`Erro : ${Erro}`)
+        })
+        
     }
 
     async function getAllActiveChats(page) {
@@ -132,30 +164,30 @@ function UserProvider({ children }) {
     }
 
     async function getMessagesChat(to, page) {
-        await api.get(`message/getallmessagechat/${to}/${page}`,{
+        await api.get(`message/getallmessagechat/${to}/${page}`, {
             headers: {
                 Authorization: `Bearer ${JSON.parse(localStorage.getItem('token'))}`
             }
         }).then((response) => {
             const newChat = {
                 id: response.data.to,
-                pages:[],
+                pages: [],
                 messagesChat: response.data.messagesChat
             }
 
-            setMessagesChats((prevMessagesChats)=>{
+            setMessagesChats((prevMessagesChats) => {
                 const existChat = prevMessagesChats.findIndex(chat => chat.id === newChat.id)
 
-                if(existChat === -1){
-                    return [newChat,...prevMessagesChats]
+                if (existChat === -1) {
+                    return [newChat, ...prevMessagesChats]
                 }
 
                 const updateChats = [...prevMessagesChats]
                 const existingChatPages = updateChats[existChat] //obtenho referência do elemento dentro do array , como se fosse um ponteiro e que permiti eu modificar ele no array updateChats sem criar um novo array
-            
-                if(!existingChatPages.pages.includes(page)){
+
+                if (!existingChatPages.pages.includes(page)) {
                     existingChatPages.pages.push(page)
-                    existingChatPages.messagesChat =[...existingChatPages.messagesChat,...response.data.messagesChat]
+                    existingChatPages.messagesChat = [...existingChatPages.messagesChat, ...response.data.messagesChat]
                 }
 
                 return updateChats
@@ -164,41 +196,43 @@ function UserProvider({ children }) {
         }).catch((Erro) => {
             console.log(`Erro : ${Erro}`)
         })
-        
+
     }
+
 
     useEffect(() => {
 
         if (authenticated) {
             console.log(`valor do auth : ${authenticated}`)
             getAllNotificationsNew(1)
-            getAllUserFavoritePets(1)
+            getAllFavoritePets(1)
             getAllActiveChats(1)
+            favoritePetsNavbar()
 
             socketInstance.current = io('http://localhost:5000') // Substituir pela URL do servidor
-            socketInstance.current.emit('newUserCheck',localStorage.getItem('token').replace(/"/g, ''))
+            socketInstance.current.emit('newUserCheck', localStorage.getItem('token').replace(/"/g, ''))
             socketInstance.current.on('newNotification', (newNotification) => {
                 setNotificationsNew((prevNotifications) => [newNotification, ...prevNotifications]) //estrutura do react para calcular o novo valor com o append do anterior
                 setUnRead((prevUnread) => prevUnread + 1)
             })
-            socketInstance.current.on('newMessage',(newMessage)=>{
+            socketInstance.current.on('newMessage', (newMessage) => {
                 // setNewMessages((prevMessages)=>[newMessage,...prevMessages])
                 // console.log(`enrtou aqui com newMessage : ${JSON.stringify(newMessage)}`)
-                
+
             })
 
             return () => {
                 if (socketInstance.current) {
                     socketInstance.current.disconnect()
-                    socketInstance.current = null 
-                } 
+                    socketInstance.current = null
+                }
             }
         }
 
     }, [authenticated])
 
     return (
-        <Context.Provider value={{ authenticated, register, logout, login, primaryLogin, ForgotPasswordUser, forgotPasswordLogin,viewedNotifications,getAllNotifications,getAllActiveChats,getMessagesChat,chatsActives,totalPagesActivesChats, notifications,notificationsNew, unread,totalNotifications,totalPagesNotifications, socketInstance: socketInstance.current ,favoritepets}}>
+        <Context.Provider value={{ authenticated, register, logout, login, primaryLogin, ForgotPasswordUser, forgotPasswordLogin, viewedNotifications, getAllNotifications, getAllActiveChats, getMessagesChat, getAllFavoritePets,removeFavoritePet, totalPagesFavorite, favoritepets,favoritePetsNavbarShow, chatsActives, totalPagesActivesChats, notifications, notificationsNew, unread, totalNotifications, totalPagesNotifications, socketInstance: socketInstance.current }}>
             {children}
         </Context.Provider>
     )

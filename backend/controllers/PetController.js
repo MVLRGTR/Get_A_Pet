@@ -864,17 +864,23 @@ module.exports = class PetController {
         }
 
         
-        const userFavoritePets = await User.findOne(
-            { _id: userDb._id },
-            { favoritepets: { $slice: [(page - 1) * limit, limit] } }
-        ).lean()
-        
+        // const userFavoritePets = await User.findOne(
+        //     { _id: userDb._id },
+        //     { favoritepets: { $slice: [(page - 1) * limit, limit] } }
+        // ).sort('-createdAt')
+
+        const userFavoritePets = await User.aggregate([
+            { $match: { _id: userDb._id } },
+            { $project: { favoritepets: { $reverseArray: "$favoritepets" } } },
+            { $project: { favoritepets: { $slice: ["$favoritepets", (page - 1) * limit, limit] } } }
+        ])
+
         const resultFavoritePets = await User.aggregate([
             { $match: { _id: userDb._id } },
             { $project: { totalFavoritePets: { $size: "$favoritepets" } } }
         ])
 
-        const favoritePets = userFavoritePets ? userFavoritePets.favoritepets : []
+        const favoritePets = userFavoritePets ? userFavoritePets[0].favoritepets : []
         const totalFavoritePets = resultFavoritePets.length > 0 ? resultFavoritePets[0].totalFavoritePets : 0
         const totalPages = Math.ceil(totalFavoritePets / limit)
 
