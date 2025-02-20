@@ -863,12 +863,6 @@ module.exports = class PetController {
             return
         }
 
-        
-        // const userFavoritePets = await User.findOne(
-        //     { _id: userDb._id },
-        //     { favoritepets: { $slice: [(page - 1) * limit, limit] } }
-        // ).sort('-createdAt')
-
         const userFavoritePets = await User.aggregate([
             { $match: { _id: userDb._id } },
             { $project: { favoritepets: { $reverseArray: "$favoritepets" } } },

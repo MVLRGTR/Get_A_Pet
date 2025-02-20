@@ -1,18 +1,23 @@
 const Message = require('../models/Message')
 const User = require('../models/User')
 const NotificationController = require('../controllers/NotificationsController')
+const dotenv = require('dotenv')
 
 //helpers
 const GetToken = require('../helpers/GetToken')
 const GetUserByToken = require('../helpers/GetUserByToken')
 const ObjectId = require('mongoose').Types.ObjectId
 const socketController = require('../helpers/Socket')
+dotenv.config()
+
 
 module.exports = class MessageController {
 
     static async SendMessage(req, res) {
         const { message, to } = req.body
-        const urlImage = 'http://localhost:5000/images/users/msg.png'
+        // const urlImage = 'http://localhost:5000/images/users/msg.png'
+        const urlImage = `${process.env.URL_API}/images/users/msg.png`
+        
 
         function isString(value){
             return typeof value === 'string';
@@ -62,7 +67,7 @@ module.exports = class MessageController {
                 NewMessageSend
             })
             NotificationController.CreateTo(`Você tem um nova mensagem do tutor(a) ${userDb.name}`,to,'Nova menssagem',urlImage)
-            console.log(`NewMessageSend : ${NewMessageSend} e newMessage : ${NewMessage}`)
+            console.log(`NewMessageSend : ${NewMessageSend} e newMessage : ${NewMessage} `)
             socketController.sendNewMessageChat(NewMessageSend)
         } catch (error) {
             res.status(500).json({ message: error })

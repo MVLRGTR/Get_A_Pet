@@ -7,7 +7,7 @@ const Context = createContext()
 
 function UserProvider({ children }) {
     const { authenticated, register, logout, login, primaryLogin, ForgotPasswordUser, forgotPasswordLogin } = useAuth()
-    const [messagesChats, setMessagesChats] = useState([{}]) //agrupo cada chat com suas mensagens
+    // const [messagesChat, setMessagesChat] = useState([{}]) //agrupo cada chat com suas mensagens
     const [notifications, setNotifications] = useState([])
     const [notificationsNew, setNotificationsNew] = useState([])
     const [unread, setUnRead] = useState(0)
@@ -163,41 +163,41 @@ function UserProvider({ children }) {
         })
     }
 
-    async function getMessagesChat(to, page) {
-        await api.get(`message/getallmessagechat/${to}/${page}`, {
-            headers: {
-                Authorization: `Bearer ${JSON.parse(localStorage.getItem('token'))}`
-            }
-        }).then((response) => {
-            const newChat = {
-                id: response.data.to,
-                pages: [],
-                messagesChat: response.data.messagesChat
-            }
+    // async function getMessagesChat(to, page) {
+    //     await api.get(`message/getallmessagechat/${to}/${page}`, {
+    //         headers: {
+    //             Authorization: `Bearer ${JSON.parse(localStorage.getItem('token'))}`
+    //         }
+    //     }).then((response) => {
+    //         const newChat = {
+    //             id: response.data.to,
+    //             pages: [],
+    //             messagesChat: response.data.messagesChat
+    //         }
 
-            setMessagesChats((prevMessagesChats) => {
-                const existChat = prevMessagesChats.findIndex(chat => chat.id === newChat.id)
+    //         setMessagesChat((prevMessagesChats) => {
+    //             const existChat = prevMessagesChats.findIndex(chat => chat.id === newChat.id)
 
-                if (existChat === -1) {
-                    return [newChat, ...prevMessagesChats]
-                }
+    //             if (existChat === -1) {
+    //                 return [newChat, ...prevMessagesChats]
+    //             }
 
-                const updateChats = [...prevMessagesChats]
-                const existingChatPages = updateChats[existChat] //obtenho referência do elemento dentro do array , como se fosse um ponteiro e que permiti eu modificar ele no array updateChats sem criar um novo array
+    //             const updateChats = [...prevMessagesChats]
+    //             const existingChatPages = updateChats[existChat] //obtenho referência do elemento dentro do array , como se fosse um ponteiro e que permiti eu modificar ele no array updateChats sem criar um novo array
 
-                if (!existingChatPages.pages.includes(page)) {
-                    existingChatPages.pages.push(page)
-                    existingChatPages.messagesChat = [...existingChatPages.messagesChat, ...response.data.messagesChat]
-                }
+    //             if (!existingChatPages.pages.includes(page)) {
+    //                 existingChatPages.pages.push(page)
+    //                 existingChatPages.messagesChat = [...existingChatPages.messagesChat, ...response.data.messagesChat]
+    //             }
 
-                return updateChats
-            })
+    //             return updateChats
+    //         })
 
-        }).catch((Erro) => {
-            console.log(`Erro : ${Erro}`)
-        })
+    //     }).catch((Erro) => {
+    //         console.log(`Erro : ${Erro}`)
+    //     })
 
-    }
+    // }
 
 
     useEffect(() => {
@@ -232,7 +232,7 @@ function UserProvider({ children }) {
     }, [authenticated])
 
     return (
-        <Context.Provider value={{ authenticated, register, logout, login, primaryLogin, ForgotPasswordUser, forgotPasswordLogin, viewedNotifications, getAllNotifications, getAllActiveChats, getMessagesChat, getAllFavoritePets,removeFavoritePet, totalPagesFavorite, favoritepets,favoritePetsNavbarShow, chatsActives, totalPagesActivesChats, notifications, notificationsNew, unread, totalNotifications, totalPagesNotifications, socketInstance: socketInstance.current }}>
+        <Context.Provider value={{ authenticated, register, logout, login, primaryLogin, ForgotPasswordUser, forgotPasswordLogin, viewedNotifications, getAllNotifications, getAllActiveChats, getAllFavoritePets,removeFavoritePet, totalPagesFavorite, favoritepets,favoritePetsNavbarShow, chatsActives, totalPagesActivesChats, notifications, notificationsNew, unread, totalNotifications, totalPagesNotifications, socketInstance: socketInstance.current }}>
             {children}
         </Context.Provider>
     )

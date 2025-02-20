@@ -1,6 +1,4 @@
 import { useState, useEffect, useContext } from "react"
-import { useCallback } from "react"
-import api from "../../../utils/api"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import { Context } from "../../../context/UserContext"
 import styles from './FavoritePets.module.css'
@@ -13,35 +11,6 @@ function FavoritePets() {
 
     const navigate = useNavigate()
     const { page } = useParams()
-
-    // const getFavoritPets = useCallback((page) => {
-    //     api.get(`/pets/favoritepets/${page}`, {
-    //         headers: {
-    //             Authorization: `Bearer ${JSON.parse(localStorage.getItem('token'))}`
-    //         }
-    //     })
-    //     .then((response) => {
-    //         setFavoritePets(response.data.favoritePets)
-    //         setTotalPages(response.data.totalPages)
-    //         setCurrentPage(page)
-    //     }).catch((Erro) => {
-    //         console.error("Erro ao buscar pets favoritos:", Erro.response?.data || Erro)
-    //     })
-    // }, [])
-
-    // async function removePet(id) {
-    //     await api.patch(`/pets/removefavoritepet/${id}`, {
-    //         headers: {
-    //             Authorization: `Bearer ${JSON.parse(localStorage.getItem('token'))}`
-    //         }
-    //     })
-    //         .then((response) => {
-    //             setFavoritePets((prevPets) => prevPets.filter(pet => pet._id !== id))
-    //             console.log(`response : ${response.data.message}`)
-    //         }).catch((Erro) => {
-    //             return Erro.response.data
-    //         })
-    // }
 
     async function changePage(page) {
         setCurrentPage(page)
