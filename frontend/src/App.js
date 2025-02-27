@@ -56,7 +56,7 @@ function App() {
             <Route path='/' element={<About/>}/>
             <Route path='/favoritepets/:page' element={<FavoritePets/>}/>
             <Route path='/activechats/:page' element={<ActivesChats/>}/>
-            <Route path='/chat/:id/:page' element={<Chat/>}/>
+            <Route path='/chat/:id' element={<Chat/>}/>
 
           </Routes>
         </Container>

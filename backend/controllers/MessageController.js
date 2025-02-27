@@ -16,9 +16,9 @@ module.exports = class MessageController {
     static async SendMessage(req, res) {
         const { message, to } = req.body
         const urlImage = `${process.env.URL_API}/images/users/msg.png`
-               
 
-        function isString(value){
+
+        function isString(value) {
             return typeof value === 'string';
         }
 
@@ -52,7 +52,7 @@ module.exports = class MessageController {
             return
         }
 
-        const link = `${process.env.URL_FRONTEND}/chat/${userDb._id}/1` 
+        const link = `${process.env.URL_FRONTEND}/chat/${userDb._id}`
 
         const NewMessage = new Message({
             message,
@@ -67,7 +67,7 @@ module.exports = class MessageController {
                 message: 'Messagem enviada com sucesso',
                 NewMessageSend
             })
-            NotificationController.CreateTo(`Você tem um nova mensagem do tutor(a) ${userDb.name}`,to,'Nova menssagem',urlImage,link)
+            NotificationController.CreateTo(`Você tem um nova mensagem do tutor(a) ${userDb.name}`, to, 'Nova menssagem', urlImage, link)
             console.log(`NewMessageSend : ${NewMessageSend} e newMessage : ${NewMessage} `)
             socketController.sendNewMessageChat(NewMessageSend)
         } catch (error) {
@@ -109,7 +109,7 @@ module.exports = class MessageController {
                 return
             }
 
-            if(toMsgExist.viewed){
+            if (toMsgExist.viewed) {
                 res.status(422).json({ message: 'Erro ao processar sua operação , messagem já vizualizada, por favor verifique o que foi digitado' })
                 return
             }
@@ -131,7 +131,7 @@ module.exports = class MessageController {
 
     }
 
-    static async GetAllMessageChat(req,res){
+    static async GetAllMessageChat(req, res) {
 
         const toNumber = (value) => {
             const number = Number(value)
@@ -141,7 +141,7 @@ module.exports = class MessageController {
         const to = req.params.to
 
         const page = toNumber(req.params.page)
-        const limit = 200
+        const limit = 10
 
         if (!page || typeof page != 'number') {
             res.status(422).json({ message: 'Paginação das mensagens de envio Inválida  , por favor verifique o que foi digitado' })
@@ -165,26 +165,30 @@ module.exports = class MessageController {
 
         let toExist = undefined
 
-        try{
+        try {
             toExist = await User.findById(to).select('_id img')
             if (!toExist) {
                 res.status(422).json({ message: 'Erro ao processar sua operação,usuario de destino inexistente, por favor verifique o que foi digitado' })
                 return
             }
-        }catch(erro){
-                res.status(500).json({ message: 'Erro ao processar sua operação, por favor verifique o que foi digitado',erro:erro })
-                return
+        } catch (erro) {
+            res.status(500).json({ message: 'Erro ao processar sua operação, por favor verifique o que foi digitado', erro: erro })
+            return
         }
 
         const unread = await Message.countDocuments({
-            viewed :false,
-            to:new ObjectId(to),
-            from :  userDb._id
+            viewed: false,
+            $or: [
+                { to: new ObjectId(to), from: userDb._id },
+                { to: userDb._id, from: new ObjectId(to) }
+            ]
         })
 
         const totalMesages = await Message.countDocuments({
-            to: new ObjectId(to),
-            from : userDb._id
+            $or: [
+                { to: new ObjectId(to), from: userDb._id },
+                { to: userDb._id, from: new ObjectId(to) }
+            ]
         })
 
         const messagesChat = await Message.find({
@@ -192,27 +196,39 @@ module.exports = class MessageController {
                 { to: new ObjectId(to), from: userDb._id },
                 { to: userDb._id, from: new ObjectId(to) }
             ]
-        }).sort({ createdAt: 1 }).skip((page - 1) * limit).limit(limit)
+        }).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit)
+        messagesChat.reverse()
 
         const userTo = await User.findById(to).select('img name')
 
-        const totalPages = Math.ceil(totalMesages/limit)
+        const totalPages = Math.ceil(totalMesages / limit)
+        
+        console.log(`TotalPages :${totalPages} totalMessages`)
 
-        if(toExist.img === undefined){
+        if (toExist.img === undefined) {
             toExist.img = 'default.jpg'
+        }//apagar esse trecho depois de atualizar o banco de dados
+
+        if (messagesChat.length !== 0) {
+            res.status(200).json({
+                message: 'Mensagens retornadas com sucesso',
+                messagesChat,
+                unreadMessage: unread,
+                totalPages: totalPages,
+                userMessageRequest: userDb._id,
+                userToChat: userTo,
+                imgTo: toExist.img,
+                currentPage: page,
+                limitMessagesPage:limit
+            })
+        }else{
+            res.status(404).json({
+                message: 'Não existem messagem para a pagina solicitada',
+                messagesChat,
+                totalPages:totalPages
+            })
         }
 
-        res.status(200).json({
-            message:'Mensagens retornadas com sucesso',
-            messagesChat,
-            unreadMessage:unread,
-            totalPages : totalPages,
-            userMessageRequest:userDb._id,
-            userToChat : userTo,
-            imgTo: toExist.img,
-            currentPage : page
-        })
-        
     }
 
     static async activeChatsUser(req, res) {
@@ -220,29 +236,29 @@ module.exports = class MessageController {
             const number = Number(value)
             return isNaN(number) ? value : number
         }
-    
+
         const page = toNumber(req.params.page)
         const limit = 10
-    
+
         if (!page || typeof page !== "number") {
             res.status(422).json({
                 message: "Página inválida. Por favor, verifique o que foi digitado.",
             })
             return
         }
-    
+
         try {
             const token = GetToken(req)
             const user = await GetUserByToken(token)
             const userDb = await User.findById(user._id)
-    
+
             if (!userDb) {
                 res.status(422).json({ message: "Usuário não encontrado." })
                 return
             }
-    
+
             const userId = userDb._id
-    
+
             const activeChats = await Message.aggregate([
                 {
                     $match: {
@@ -315,20 +331,20 @@ module.exports = class MessageController {
                     },
                 },
             ])
-    
+
             const totalChats =
                 activeChats[0].metadata.length > 0
                     ? activeChats[0].metadata[0].totalMessages
                     : 0
             const totalPages = Math.ceil(totalChats / limit)
-    
+
             const chats = activeChats[0].messages.map((chat) => {
                 // Identificando o outro participante da conversa
                 const otherUser =
                     chat.lastMessageFrom.toString() === userId.toString()
                         ? chat.toUser
                         : chat.fromUser
-    
+
                 return {
                     _id: chat._id,
                     lastMessage: chat.lastMessage,
@@ -341,7 +357,7 @@ module.exports = class MessageController {
                         : null,
                 }
             })
-    
+
             res.status(chats.length > 0 ? 200 : 404).json({
                 message:
                     chats.length > 0
@@ -357,5 +373,5 @@ module.exports = class MessageController {
             res.status(500).json({ message: "Erro interno do servidor" })
         }
     }
-    
+
 }

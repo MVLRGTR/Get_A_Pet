@@ -30,7 +30,7 @@ function ActivesChats() {
                                 <section>
                                     {chatsActives.map((chat, index) => (
                                         <article key={index} className={styles.articlechat}>
-                                            <Link to={`/chat/${chat.contact._id}/1`} className={styles.linkchat}>
+                                            <Link to={`/chat/${chat.contact._id}`} className={styles.linkchat}>
                                                 <img src={`${process.env.REACT_APP_API}/images/users/${chat.contact.img}`} alt={chat.contact.name} />
                                                 <div className={styles.divchat}>
                                                     <h2>{chat.contact.name}</h2>
