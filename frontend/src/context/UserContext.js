@@ -163,43 +163,6 @@ function UserProvider({ children }) {
         })
     }
 
-    // async function getMessagesChat(to, page) {
-    //     await api.get(`message/getallmessagechat/${to}/${page}`, {
-    //         headers: {
-    //             Authorization: `Bearer ${JSON.parse(localStorage.getItem('token'))}`
-    //         }
-    //     }).then((response) => {
-    //         const newChat = {
-    //             id: response.data.to,
-    //             pages: [],
-    //             messagesChat: response.data.messagesChat
-    //         }
-
-    //         setMessagesChat((prevMessagesChats) => {
-    //             const existChat = prevMessagesChats.findIndex(chat => chat.id === newChat.id)
-
-    //             if (existChat === -1) {
-    //                 return [newChat, ...prevMessagesChats]
-    //             }
-
-    //             const updateChats = [...prevMessagesChats]
-    //             const existingChatPages = updateChats[existChat] //obtenho referência do elemento dentro do array , como se fosse um ponteiro e que permiti eu modificar ele no array updateChats sem criar um novo array
-
-    //             if (!existingChatPages.pages.includes(page)) {
-    //                 existingChatPages.pages.push(page)
-    //                 existingChatPages.messagesChat = [...existingChatPages.messagesChat, ...response.data.messagesChat]
-    //             }
-
-    //             return updateChats
-    //         })
-
-    //     }).catch((Erro) => {
-    //         console.log(`Erro : ${Erro}`)
-    //     })
-
-    // }
-
-
     useEffect(() => {
 
         if (authenticated) {
@@ -209,17 +172,18 @@ function UserProvider({ children }) {
             getAllActiveChats(1)
             favoritePetsNavbar()
 
-            socketInstance.current = io('http://localhost:5000') // Substituir pela URL do servidor
+            // socketInstance.current = io('http://localhost:5000') 
+            socketInstance.current = io(process.env.REACT_APP_API) 
             socketInstance.current.emit('newUserCheck', localStorage.getItem('token').replace(/"/g, ''))
             socketInstance.current.on('newNotification', (newNotification) => {
                 setNotificationsNew((prevNotifications) => [newNotification, ...prevNotifications]) //estrutura do react para calcular o novo valor com o append do anterior
                 setUnRead((prevUnread) => prevUnread + 1)
             })
-            socketInstance.current.on('newMessage', (newMessage) => {
-                // setNewMessages((prevMessages)=>[newMessage,...prevMessages])
-                // console.log(`enrtou aqui com newMessage : ${JSON.stringify(newMessage)}`)
+            // socketInstance.current.on('newMessage', (newMessage) => {
+            //     // setNewMessages((prevMessages)=>[newMessage,...prevMessages])
+            //     console.log(`enrtou aqui com newMessage : ${JSON.stringify(newMessage)}`)
 
-            })
+            // })
 
             return () => {
                 if (socketInstance.current) {

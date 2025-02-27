@@ -16,7 +16,7 @@ function About() {
     return (
         <section className={styles.sectionbody}>
             <h1>Bem vindo ao GetAPet !!!</h1>
-            <img src={`${process.env.REACT_APP_API}images/pets/icongetapet.jpg`} className={styles.aboutimg} ></img>
+            <img src='/icongetapet.jpg' className={styles.aboutimg} ></img>
             <p> Esse Projeto foi Criado durante o curso Node.js do Zero a Maestria com diversos Projetos de Matheus Battisti (Hora de Codar)
 
                 O projeto tem como objetivo trazer o aprendizado de uma arquitetura API.RESTFULL, sendo o projeto composto por autenticação , Utilização do Banco NoSQL , utilização de ODM que no caso é o Mongoose e toda parte de fluxo da arquitetura em questão. Além disso foram adicionados varias funcionalidades ao projeto para poder engrandecer ainda mais o aprendizado durante o curso.

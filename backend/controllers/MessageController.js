@@ -15,9 +15,8 @@ module.exports = class MessageController {
 
     static async SendMessage(req, res) {
         const { message, to } = req.body
-        // const urlImage = 'http://localhost:5000/images/users/msg.png'
         const urlImage = `${process.env.URL_API}/images/users/msg.png`
-        
+               
 
         function isString(value){
             return typeof value === 'string';
@@ -53,6 +52,8 @@ module.exports = class MessageController {
             return
         }
 
+        const link = `${process.env.URL_FRONTEND}/chat/${userDb._id}/1` 
+
         const NewMessage = new Message({
             message,
             viewed: false,
@@ -66,7 +67,7 @@ module.exports = class MessageController {
                 message: 'Messagem enviada com sucesso',
                 NewMessageSend
             })
-            NotificationController.CreateTo(`Você tem um nova mensagem do tutor(a) ${userDb.name}`,to,'Nova menssagem',urlImage)
+            NotificationController.CreateTo(`Você tem um nova mensagem do tutor(a) ${userDb.name}`,to,'Nova menssagem',urlImage,link)
             console.log(`NewMessageSend : ${NewMessageSend} e newMessage : ${NewMessage} `)
             socketController.sendNewMessageChat(NewMessageSend)
         } catch (error) {
@@ -193,6 +194,8 @@ module.exports = class MessageController {
             ]
         }).sort({ createdAt: 1 }).skip((page - 1) * limit).limit(limit)
 
+        const userTo = await User.findById(to).select('img name')
+
         const totalPages = Math.ceil(totalMesages/limit)
 
         if(toExist.img === undefined){
@@ -205,7 +208,7 @@ module.exports = class MessageController {
             unreadMessage:unread,
             totalPages : totalPages,
             userMessageRequest:userDb._id,
-            to:to,
+            userToChat : userTo,
             imgTo: toExist.img,
             currentPage : page
         })
