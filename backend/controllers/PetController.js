@@ -251,7 +251,7 @@ module.exports = class PetController {
             console.log(`erro : ${erro}`)
         }
     }
-
+    
     static async PetById(req, res) {
         const id = req.params.id
 
@@ -291,9 +291,12 @@ module.exports = class PetController {
                 res.status(404).json({ message: 'Erro ao processar sua operação , por favor verifique o que foi digitado ' })
             }
         } else {
+            const adopterIds = pet.adopter.map(adopter => adopter._id)
+            const adopters = await User.find({ _id: { $in: adopterIds } }).select("img phone name")
             res.status(200).json({
                 message: 'Pet retornado com sucesso',
-                pet
+                pet,
+                adopters
             })
         }
     }
@@ -500,10 +503,7 @@ module.exports = class PetController {
         }
 
         pet.adopter.push({
-            _id: userDb._id,
-            name: userDb.name,
-            phone: userDb.phone,
-            img: userDb.img
+            _id: userDb._id
         })
 
         await Pet.findByIdAndUpdate(id, pet)
@@ -522,6 +522,8 @@ module.exports = class PetController {
         const idAdoption = req.body.idadoption
         let AdoptionOk = ''
         let AdoptionsRelease = []
+
+        console.log(`idAdoption : ${idAdoption} idPet ; ${id}`)
 
         if (!ObjectId.isValid(id)) {
             res.status(422).json({ message: 'Id do pet inválido , por favor verifique o que foi digitado' })
@@ -577,6 +579,7 @@ module.exports = class PetController {
             res.status(422).json({ message: 'Erro ao processar sua operação ,Nenhum adotante com esse id fez a solicitação anteriormente, por favor verifique o que foi digitado' })
             return
         }
+        
 
         pet.adopter = AdoptionOk
         pet.available = false
@@ -593,12 +596,13 @@ module.exports = class PetController {
             })
         }
         //Adotante
+        console.log(`AdoptionId : ${JSON.stringify(AdoptionOk)} e adoption._id ${AdoptionOk._id}`)
         EmailSend.EmailConcludeAdopter(pet, user, 'adopter')
         NotificationsController.CreateTo(`Parabéns !!! você agora é o novo tutor do pet ${pet.name}`, AdoptionOk._id, `Conclusão da adoção`, `${process.env.URL_API}/images/pets/${pet.images[0]}`, `${process.env.URL_FRONTEND}/pets/myadoptions/pet/${pet._id}`)
 
         //Tutor
         EmailSend.EmailConcludeAdopter(pet, user)
-        NotificationsController.CreateTo(`Adoção para o pet ${pet.name} foi concluida com sucesso , para o adotante :${AdopterDb.name}`, 'Adcoção concluida', `${process.env.URL_API}/images/pets/${pet.images[0]}`, `${process.env.URL_FRONTEND}/pets/mypets/pet/${pet._id}`)
+        NotificationsController.CreateTo(`Adoção para o pet ${pet.name} foi concluida com sucesso , para o adotante :${AdopterDb.name}`,pet.user._id, 'Adoção concluida', `${process.env.URL_API}/images/pets/${pet.images[0]}`, `${process.env.URL_FRONTEND}/pets/edit/${pet._id}`)
     }
 
     static async CancellationRequestAdopter(req, res) {
