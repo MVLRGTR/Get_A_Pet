@@ -46,7 +46,8 @@ function AddPet() {
         return Erro.response.data
       })
 
-    setFlashMessage(JSON.stringify(data.message), msgType)
+    const erros = `${data.message} ${data.returnErros}`
+    setFlashMessage(erros, msgType)
 
     if (msgType != 'error') {
       navigate('/pets/mypets')

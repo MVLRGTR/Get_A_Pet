@@ -54,7 +54,7 @@ module.exports = class PetController {
         const petSchema = z.object({
             name: z.string().min(3, { message: 'O nome precisa ter pelo menos 3 caracteres, por favor verifique o que foi digitado' }).max(25, { message: 'O nome pode ter no máximo 25 caracteres ,por favor verifique o que foi digitado' }),
             age: z.number({ message: 'Formato da idade digita é inválida' }).min(1, { message: 'A idade minima é um 1 mês, por favor verifique o que foi digitado' }).max(30, { message: 'A idade maxima para animais é 30 anos' }),
-            weight: z.number({ message: 'Formato do peso inválido' }).min(1, { message: 'Peso minimo 1kg' }).max(50, { message: 'Peso maximo 50kg' }),
+            weight: z.number({ message: 'Formato do peso inválido' }).min(1, { message: 'Peso minimo 1kg' }).max(80, { message: 'Peso maximo 80kg' }),
             color: z.string().min(3, { message: 'Cor inválida' }).max(12, { message: 'Cor inválida' }),
             images: z.array(z.string()).min(1, { message: 'Pelo menos imagem precisa ser enviada do Pet' }).max(8, { message: 'São permitidas apenas 8 imagens por Pet' }),
             description: z.string().max(700, { message: 'Número de caracteres não pode ser superior a 700' })
@@ -70,6 +70,7 @@ module.exports = class PetController {
                     console.log(`erro : ${JSON.stringify(index.message)}`)
                 })
                 deleteImages(petParse.images)
+                console.log(`returnErros : ${returnErros}`)
                 res.status(422).json({ message: 'Erros na requisição :', returnErros })
                 return
             }

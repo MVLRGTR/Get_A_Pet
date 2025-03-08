@@ -50,7 +50,8 @@ function EditPet(){
             return Erro.response.data
         })
 
-        setFlashMessage(JSON.stringify(data.message), msgType)
+        const erros = `${data.message} ${data.returnErros}`
+        setFlashMessage(erros, msgType)
 
     }    
 
