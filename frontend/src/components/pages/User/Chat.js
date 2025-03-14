@@ -104,7 +104,7 @@ function Chat() {
             }
         }
 
-    }, [currentPage,messagesChat])
+    }, [currentPage])
 
 
     return (
