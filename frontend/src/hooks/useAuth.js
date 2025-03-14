@@ -26,12 +26,13 @@ export default function useAuth(socketInstance) {
 
     async function register(user) {
 
-        let msgText = 'Cadastro Realizado com sucesso'
+        let msgText = 'Cadastro Realizado com sucesso , Por favor verifique a sua caixa de E-mail'
         let msgType = 'success'
 
         try {
             const data = await api.post('/users/register', user).then((response) => { return response.data })
-            await authUser(data)
+            console.log(`data : ${JSON.stringify(data)}`)
+            navigate('/login/primarylogin')
         } catch (erro) {
             msgText = erro.response.data.message
             msgType = 'error'

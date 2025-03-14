@@ -19,7 +19,7 @@ function UserProvider({ children }) {
     const [totalPagesNotifications, setTotalPagesNotifications] = useState(0)
     const [favoritepets, setFavoritePets] = useState([])
     const [totalPagesFavorite, setTotalPagesFavorite] = useState(1)
-    const [favoritePetsNavbarShow,setFavoritePetsNavbarShow] = useState([])
+    const [favoritePetsNavbarShow, setFavoritePetsNavbarShow] = useState([])
     const [chatsActives, setChatsActives] = useState([])
     const [totalPagesActivesChats, setTotalPagesActivesChats] = useState(1)
     const socketInstance = useRef(null)
@@ -84,6 +84,7 @@ function UserProvider({ children }) {
         console.log(`entrou aqui com unread ${unread}  valor do localUserId ${localUserId}`)
         if (unread !== 0) {
             const updateNotification = notificationsNew.map(async (notification) => {
+                console.log(`entrou aqui com notification : ${JSON.stringify(notification)}`)
                 if (notification.to === 'all') {
 
                     // A lógica aqui pode ser completada && notification.userviewed && notification.userviewed[0]
@@ -105,6 +106,31 @@ function UserProvider({ children }) {
             await Promise.all(updateNotification)
         }
         // Chama a função para pegar todas as notificações
+        getAllNotificationsNew(1)
+    }
+
+    async function viewedNotificationsPage() {
+        if (unread !== 0) {
+            const updateNotification = notifications.map(async (notification) => {
+                console.log(`entrou aqui com notification : ${JSON.stringify(notification)}`)
+                if (notification.to === 'all') {
+
+                    if (!notification.userviewed.includes(localUserId)) {
+                        console.log('userviewed:', notification.userviewed, 'typeof elements:', notification.userviewed.map(v => typeof v))
+                        console.log(`entrou em all com Notification ${JSON.stringify(notification)}`)
+                        return viewedNotificationAll(notification)
+                    }
+
+                } else {
+                    if (notification.viewed === false) {
+                        console.log(`entrou em to`)
+                        return viewedNotificationTo(notification)
+                    }
+                }
+            })
+            await Promise.all(updateNotification)
+        }
+        
         getAllNotificationsNew(1)
     }
 
@@ -137,7 +163,7 @@ function UserProvider({ children }) {
 
     }
 
-    async function favoritePetsNavbar(){
+    async function favoritePetsNavbar() {
         await api.get(`pets/favoritepets/1`, {
             headers: {
                 Authorization: `Bearer ${JSON.parse(localStorage.getItem('token'))}`
@@ -147,7 +173,7 @@ function UserProvider({ children }) {
         }).catch((Erro) => {
             console.log(`Erro : ${Erro}`)
         })
-        
+
     }
 
     async function getAllActiveChats(page) {
@@ -173,7 +199,7 @@ function UserProvider({ children }) {
             favoritePetsNavbar()
 
             // socketInstance.current = io('http://localhost:5000') 
-            socketInstance.current = io(process.env.REACT_APP_API) 
+            socketInstance.current = io(process.env.REACT_APP_API)
             socketInstance.current.emit('newUserCheck', localStorage.getItem('token').replace(/"/g, ''))
             socketInstance.current.on('newNotification', (newNotification) => {
                 setNotificationsNew((prevNotifications) => [newNotification, ...prevNotifications]) //estrutura do react para calcular o novo valor com o append do anterior
@@ -196,7 +222,7 @@ function UserProvider({ children }) {
     }, [authenticated])
 
     return (
-        <Context.Provider value={{ authenticated, register, logout, login, primaryLogin, ForgotPasswordUser, forgotPasswordLogin, viewedNotifications, getAllNotifications, getAllActiveChats, getAllFavoritePets,removeFavoritePet, totalPagesFavorite, favoritepets,favoritePetsNavbarShow, chatsActives, totalPagesActivesChats, notifications, notificationsNew, unread, totalNotifications, totalPagesNotifications, socketInstance: socketInstance.current,localUserId }}>
+        <Context.Provider value={{ authenticated, register, logout, login, primaryLogin, ForgotPasswordUser, forgotPasswordLogin, viewedNotifications, getAllNotifications, getAllActiveChats, getAllFavoritePets, removeFavoritePet,viewedNotificationsPage, totalPagesFavorite, favoritepets, favoritePetsNavbarShow, chatsActives, totalPagesActivesChats, notifications, notificationsNew, unread, totalNotifications, totalPagesNotifications, socketInstance: socketInstance.current, localUserId }}>
             {children}
         </Context.Provider>
     )

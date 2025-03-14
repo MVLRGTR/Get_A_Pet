@@ -4,7 +4,7 @@ import { Context } from '../../../context/UserContext'
 import { Link, useParams, useNavigate, json } from 'react-router-dom'
 
 function Notifications() {
-    const { notifications, totalPagesNotifications, viewedNotifications, getAllNotifications, authenticated, unread } = useContext(Context)
+    const { notifications, totalPagesNotifications, viewedNotificationsPage, getAllNotifications, authenticated, unread } = useContext(Context)
     const [currentPage, setCurrentPage] = useState(1)
 
     const navigate = useNavigate()
@@ -17,7 +17,7 @@ function Notifications() {
     }
 
     function viewNotifications(){
-        viewedNotifications()
+        viewedNotificationsPage()
     }
 
     useEffect(() => {
