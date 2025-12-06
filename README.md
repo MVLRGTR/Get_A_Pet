@@ -60,7 +60,7 @@ O projeto tem como objetivo trazer o aprendizado de uma arquitetura **API RESTfu
         - ✅ ReceiverEmail
     - ✅ Notification Validation
     - ✅ Message Validation
-- ⬜ **17. Paginação**
+- ✅ **17. Paginação**
     - ✅ Search Users
     - ✅ PetsAll
     - ✅ Search Pets
@@ -94,11 +94,11 @@ O projeto tem como objetivo trazer o aprendizado de uma arquitetura **API RESTfu
 - ✅ **4. Página Envio de e-mail** (Recuperação de senha)
 - ⬜ **5. Área de mensagem** (Envio e recuperação de mensagens)
     - ⬜ Página para Mostrar Tutores
-    - ⬜ Área de Mensagens
-- ⬜ **6. Adição do componente busca de um Pet**
+    - ✅ Área de Mensagens
+- ✅ **6. Adição do componente busca de um Pet**
 - ⬜ **7. Adição do componente busca de um tutor**
 - ⬜ **8. Adicionar componente de enviar mensagem na página da descrição do Pet**
-- ⬜ **9. Página minhas adoções** (mostrar os tutores interessados em um pet específico)
+- ✅ **9. Página minhas adoções** (mostrar os tutores interessados em um pet específico)
 - ⬜ **10. Página de tutores**
-- ⬜ **11. Mostrar pets mais perto de acordo com a localização**
+- ✅ **11. Mostrar pets mais perto de acordo com a localização**
 - ⬜ **12. Abrir a localização no maps do pet em questão** (Integração back e frontend)
